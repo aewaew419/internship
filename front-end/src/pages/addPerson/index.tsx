@@ -32,7 +32,7 @@ const AddPerson = () => {
   ];
   return (
     <Layout
-      header={[{ path: PROTECTED_PATH.ADD_PERSON, name: "อัปโหลดรายชื่อ" }]}
+      header={[{ path: PROTECTED_PATH.UPLOAD_LIST, name: "อัปโหลดรายชื่อ" }]}
     >
       <div className="bg-white p-4 mt-4 rounded-lg">
         <h1 className="text-xl font-bold text-secondary-600">ค้นหารายชื่อ</h1>
@@ -78,7 +78,7 @@ const AddPerson = () => {
           </div>
         </div>
         <div className="w-full mt-16">
-          <div className="flex justify-between my-3">
+          <div className="flex justify-between my-5">
             <div>
               <p className="ms-5 text-xl text-black">รายชื่อ</p>
             </div>
@@ -108,8 +108,8 @@ const AddPerson = () => {
               "ข้อมูลเพิ่มเติม",
             ]}
             data={data.map((item, index) => (
-              <tr key={index}>
-                <td className="ps-5">
+              <tr key={index} className="border-b border-x border-text-200">
+                <td className="ps-5 py-3">
                   <FormControl component="fieldset" variant="standard">
                     <Checkbox />
                   </FormControl>

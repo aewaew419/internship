@@ -18,7 +18,7 @@ export const Navbar = () => {
     { name: "หน้าแรก", path: PROTECTED_PATH.DASHBOARD, icon: <Home /> },
     {
       name: "อัปโหลดรายชื่อ",
-      path: PROTECTED_PATH.ADD_PERSON,
+      path: PROTECTED_PATH.UPLOAD_LIST,
       icon: <PersonAddRounded />,
     },
     {

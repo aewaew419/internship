@@ -15,7 +15,7 @@ const Dashboard = () => {
     { topic: "อบรม", date: "7 มิ.ย. 68 - 19 มิ.ย. 68" },
   ];
   return (
-    <Layout header={[{ path: PROTECTED_PATH.ADD_PERSON, name: "หน้าแรก" }]}>
+    <Layout header={[{ path: PROTECTED_PATH.DASHBOARD, name: "หน้าแรก" }]}>
       <div className="grid grid-cols-4 gap-4">
         <div className="col-span-3">
           <div className="bg-white p-4 rounded-2xl my-4">
