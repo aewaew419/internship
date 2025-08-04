@@ -4,7 +4,7 @@ import { compose } from '@adonisjs/core/helpers'
 import hash from '@adonisjs/core/services/hash'
 import { withAuthFinder } from '@adonisjs/auth/mixins/lucid'
 import { DbAccessTokensProvider } from '@adonisjs/auth/access_tokens'
-
+import Role from './role'
 
 const AuthFinder = withAuthFinder(() => hash.use('bcrypt'), {
   uids: ['email'],
@@ -33,6 +33,26 @@ export default class User extends compose(BaseModel, AuthFinder) {
   declare updatedAt: DateTime | null
 
   static accessTokens = DbAccessTokensProvider.forModel(User)
+
+  @manyToMany(() => Role, {
+    pivotTable: 'user_role',
+  })
+  declare roles: ManyToMany<typeof Role>
+
+  async hasRole(roleName: string): Promise<boolean> {
+    const roles = await this.related('roles').query()
+    return roles.some((role) => role.name === roleName)
+  }
+
+  async hasPermission(permissionName: string): Promise<boolean> {
+    const roles = await this.related('roles').query().preload('permissions')
+    for (const role of roles) {
+      if (role.permissions.some((p) => p.name === permissionName)) {
+        return true
+      }
+    }
+    return false
+  }
 
   // @beforeSave()
   // static async hashPassword(user: User) {

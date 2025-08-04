@@ -22,3 +22,17 @@ router.get('/me', [AuthController, 'me']).use(async ({ auth }, next) => {
   await auth.check()
   await next()
 })
+
+router
+  .group(() => {
+    router.resource('roles', 'RoleController').apiOnly()
+    router.resource('permissions', 'PermissionController').apiOnly()
+
+    router.post('roles/assign-permissions', 'RolePermissionController.assign')
+    router.post('users/assign-roles', 'UserRoleController.assign')
+
+    router.resource('users', 'UserController').apiOnly()
+    router.post('users/assign-roles', 'UserController.assignRoles')
+  })
+  .prefix('/api')
+  .middleware(['auth']) // ล็อกอินก่อนใช้งาน
