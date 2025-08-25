@@ -107,10 +107,74 @@ export default class StudentEnrollStatusesController {
     // Return whatever you need — e.g., full enrollments with relations
     const enrolls = await StudentEnroll.query()
       .whereIn('id', ids)
-      .preload('student') // adjust to your relations
+      .preload('student_training', (query) => query.preload('company'))
+      .preload('student', (query) => query.preload('program')) // adjust to your relations
       .preload('course_section')
       .preload('visitor_training', (query) => query.preload('visitor'))
 
     return enrolls
+  }
+  async getApprovalCountsByEnrollId({ params, response }: HttpContext) {
+    const enrollId = Number(params.id)
+
+    const row = await db
+      .from('student_enroll_statuses as ses')
+      .innerJoin('student_enrolls as se', 'se.id', 'ses.student_enroll_id')
+      .leftJoin('course_instructors as ci', (join) => {
+        join
+          .on('ci.instructor_id', 'ses.instructor_id')
+          .on('ci.course_section_id', 'se.course_section_id')
+      })
+      .leftJoin('course_committees as cc', (join) => {
+        join
+          .on('cc.instructor_id', 'ses.instructor_id')
+          .on('cc.course_section_id', 'se.course_section_id')
+      })
+      .where('ses.student_enroll_id', enrollId)
+      .groupBy('ses.student_enroll_id')
+      .select('ses.student_enroll_id')
+      // totals
+      .select(
+        db.raw('SUM(ci.instructor_id IS NOT NULL) AS total_instructors'),
+        db.raw('SUM(cc.instructor_id IS NOT NULL) AS total_committee')
+      )
+      // approvals
+      .select(
+        db.raw(
+          `SUM(ci.instructor_id IS NOT NULL AND ses.status = 'approve') AS approved_instructors`
+        ),
+        db.raw(`SUM(cc.instructor_id IS NOT NULL AND ses.status = 'approve') AS approved_committee`)
+      )
+      .first()
+
+    if (!row) {
+      return response.notFound({ message: 'No statuses found for this enrollment.' })
+    }
+
+    const totalInstructors = Number(row.total_instructors) || 0
+    const totalCommittee = Number(row.total_committee) || 0
+    const approvedInstructors = Number(row.approved_instructors) || 0
+    const approvedCommittee = Number(row.approved_committee) || 0
+    const requiredCommittee = Math.ceil(totalCommittee / 2)
+
+    const allInstructorsApproved = approvedInstructors === totalInstructors
+    const halfCommitteeApproved = approvedCommittee >= requiredCommittee
+    const passed = allInstructorsApproved && halfCommitteeApproved
+
+    return {
+      student_enroll_id: enrollId,
+      instructors: {
+        approved: approvedInstructors,
+        total: totalInstructors,
+        allApproved: allInstructorsApproved,
+      },
+      committee: {
+        approved: approvedCommittee,
+        total: totalCommittee,
+        requiredToPass: requiredCommittee,
+        halfOrMoreApproved: halfCommitteeApproved,
+      },
+      overall: { passed },
+    }
   }
 }

@@ -4,7 +4,7 @@ export const UNPROTECTED_PATH = {
 export const PROTECTED_PATH = {
   DASHBOARD: "/",
 
-  ADD_USER_XLSX: "/upload-excel",
+  ADD_USER_XLSX: "/users/bulk-excel",
   ADD_PERSON: "/add-person",
   SETTING: "/setting",
 
@@ -24,6 +24,7 @@ export const PROTECTED_PATH = {
   INSTRUCTOR_CHANGE_STATUS_PERSON: "/student/enrollment/statuses",
   INSTRUCTOR_CHANGE_STATUS_ALL: "/student/enrollment/statuses/all",
   STUDENT_ENROLLMENT_APPROVE: "/student/enrollment/aprrove",
+  //   STUDENT_ENROLLMENT_APPROVE_COUNT: "/student-enrolls/:id/approval-counts",
 
   ASSIGN_VISITOR: "/visitor-trainings/assign",
 

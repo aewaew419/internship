@@ -1,4 +1,11 @@
+import { useSearchParams } from "react-router-dom";
+import useViewModel from "./viewModel";
+import dayjs from "dayjs";
 export const Persona = () => {
+  const [searchParams] = useSearchParams();
+  const id = Number(searchParams.get("id"));
+  const { studentEnrollments } = useViewModel(id);
+
   return (
     <div>
       <h1 className="text-xl font-bold text-secondary-600 py-5 border-b border-secondary-600 my-5">
@@ -7,41 +14,47 @@ export const Persona = () => {
       <div className="grid grid-cols-2 font-medium">
         <div className="flex gap-2 my-2">
           <p className="text-secondary-600">ชื่อจริง-นามสกุล (Full-name)</p>
-          <p>: นายรักดี จิตดี</p>
+          <p>
+            : {studentEnrollments?.student.name}{" "}
+            {studentEnrollments?.student.surname}
+          </p>
         </div>
         <div className="flex gap-2 my-2">
           <p className="text-secondary-600">รหัสนักศึกษา (Student ID)</p>
-          <p>: 6400112233</p>
+          <p>: {studentEnrollments?.student.studentId}</p>
         </div>
         <div className="flex gap-2 my-2">
           <p className="text-secondary-600">คณะ (Faculty)</p>
-          <p>: วิศวะกรรม</p>
+          <p>: {studentEnrollments?.student.facultyId}</p>
         </div>
         <div className="flex gap-2 my-2">
           <p className="text-secondary-600">สาชาวิชา (Major)</p>
-          <p>: คอมพิวเตอร์</p>
+          <p>: {studentEnrollments?.student.programId}</p>
         </div>
         <div className="flex gap-2 my-2">
           <p className="text-secondary-600">เบอร์โทร (Tel.) </p>
-          <p>: 081000000</p>
+          <p>: {studentEnrollments?.student.phoneNumber}</p>
         </div>
         <div className="flex gap-2 my-2">
           <p className="text-secondary-600">อีเมล (Email) </p>
-          <p>: Rak@gmail.com</p>
+          <p>: {studentEnrollments?.student.email}</p>
         </div>
         <div className="flex gap-2 my-2">
           <p className="text-secondary-600">เกรดเฉลี่ย (GPAX) </p>
-          <p>: 3.85</p>
+          <p>: {studentEnrollments?.student.gpax}</p>
         </div>
         <div className="flex gap-2 my-2 col-start-1">
           <p className="text-secondary-600">ประเภทที่เลือก (Type)</p>
-          <p>: สหกิจศึกษา</p>
+          <p>: {studentEnrollments?.course_section.course.courseNameTh}</p>
         </div>
       </div>
     </div>
   );
 };
 export const CoopInformation = () => {
+  const [searchParams] = useSearchParams();
+  const id = Number(searchParams.get("id"));
+  const { studentEnrollments } = useViewModel(id);
   return (
     <div>
       <h1 className="text-xl font-bold text-secondary-600 py-5 border-b border-secondary-600 my-5">
@@ -50,51 +63,94 @@ export const CoopInformation = () => {
       <div className="grid grid-cols-2 font-medium">
         <div className="flex gap-2 my-2">
           <p className="text-secondary-600">ชื่อบริษัท (Company name) </p>
-          <p>: บริษัท ABC จำกัด</p>
+          <p>: {studentEnrollments?.student_training.company.companyNameTh}</p>
         </div>
         <div className="flex gap-2 my-2">
           <p className="text-secondary-600">
             เลขทะเบียนพาณิชย์ (Registration no.)
           </p>
-          <p> : 0105547002456</p>
+          <p>
+            :
+            {studentEnrollments?.student_training.company.companyRegisterNumber}
+          </p>
         </div>
         <div className="flex gap-2 my-2">
           <p className="text-secondary-600">แผนก (Department)</p>
-          <p>: IT</p>
+          <p>: {studentEnrollments?.student_training.department}</p>
         </div>
         <div className="flex gap-2 my-2">
           <p className="text-secondary-600">ตำแหน่ง (Position) </p>
-          <p>: IT</p>
+          <p>: {studentEnrollments?.student_training.position}</p>
         </div>
         <div className="flex gap-2 my-2">
           <p className="text-secondary-600">ระยะเวลา (Duration) </p>
-          <p>: 15 มิ.ย. 2568 – 15 ต.ค. 2568</p>
+          <p>
+            :{" "}
+            {studentEnrollments?.student_training.startDate
+              ? dayjs(studentEnrollments.student_training.startDate).format(
+                  "DD/MM/YYYY"
+                )
+              : "-"}{" "}
+            –{" "}
+            {studentEnrollments?.student_training.endDate
+              ? dayjs(studentEnrollments.student_training.endDate).format(
+                  "DD/MM/YYYY"
+                )
+              : "-"}
+          </p>
         </div>
         <div className="flex gap-2 my-2">
           <p className="text-secondary-600">อาจารย์นิเทศ (Academic advisor) </p>
-          <p>: อาจารย์ A</p>
+          <p>: {studentEnrollments?.visitor_training?.[0].visitor.name}</p>
         </div>
         <div className="flex gap-2 my-2">
           <p className="text-secondary-600">ชื่อผู้ติดต่อ (Coordinator) </p>
-          <p>: คุณ B</p>
+          <p>: {studentEnrollments?.student_training.coordinator}</p>
         </div>
         <div className="flex gap-2 my-2 col-start-1">
           <p className="text-secondary-600">
             เบอร์ผู้ติดต่อ (Coordinator tel.)
           </p>
-          <p>: 080-000-0000</p>
+          <p>: {studentEnrollments?.student_training.coordinatorPhoneNumber}</p>
         </div>
         <div className="flex gap-2 my-2 col-start-1">
           <p className="text-secondary-600">ชื่อหัวหน้า (Supervisor)</p>
-          <p>: คุณ C</p>
+          <p>: {studentEnrollments?.student_training.supervisor}</p>
         </div>
         <div className="flex gap-2 my-2 col-start-1">
           <p className="text-secondary-600">เบอรหัวหน้า (Supervisor tel.)</p>
-          <p>: 081-000-0000</p>
+          <p>: {studentEnrollments?.student_training.supervisorPhoneNumber}</p>
         </div>
         <div className="flex gap-2 my-2 col-start-1">
           <p className="text-secondary-600">ที่อยู่บริษัท (Address)</p>
-          <p>: 1/11 ต.สุเทพ อ.เมือง จ.เชียงใหม่</p>
+          <p>: {studentEnrollments?.student_training.company.companyAddress}</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+export const Approval = () => {
+  const [searchParams] = useSearchParams();
+  const id = Number(searchParams.get("id"));
+
+  const { count } = useViewModel(id);
+  return (
+    <div>
+      <h1 className="text-xl font-bold text-secondary-600 py-5 border-b border-secondary-600 my-5">
+        การรับรอง
+      </h1>
+      <div className="flex justify-between my-2">
+        <p className="text-lg font-bold text-secondary-600">อาจารย์ประจำวิชา</p>
+        <div>
+          <p className="text-xl font-bold">อนุมัติ</p>
+        </div>
+      </div>
+      <div className="flex justify-between my-2">
+        <p className="text-lg font-bold text-secondary-600">คณะกรรมการ</p>
+        <div>
+          <p className="text-xl font-bold">
+            {count?.committee.approved}/{count?.committee.total} อนุมัติ
+          </p>
         </div>
       </div>
     </div>

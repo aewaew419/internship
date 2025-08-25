@@ -17,7 +17,12 @@ export default class StudentEnrollmentsController {
           .preload('student_training', (query) => {
             query.preload('company')
           })
-          .preload('student')
+          .preload('visitor_training', (query) => {
+            query.preload('visitor').firstOrFail()
+          })
+          .preload('student', (query) => {
+            query.preload('faculty').preload('program')
+          })
           .preload('course_section', (query) => {
             query.preload('course').orderBy('year', 'desc')
           })

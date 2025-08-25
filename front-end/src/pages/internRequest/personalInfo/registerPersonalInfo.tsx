@@ -33,7 +33,7 @@ const RegisterPersonalInfo = () => {
               program_id: Number(values.programId),
               curriculum_id: Number(values.curriculumId),
               major_id: Number(values.majorId),
-              gpax: values.gpax,
+              gpax: Number(values.gpax),
               phone_number: values.phoneNumber,
               email: values.email,
               picture: "",
@@ -147,6 +147,7 @@ const RegisterPersonalInfo = () => {
                     label_th="เกรดเฉลี่ย"
                     label_en="GPAX"
                     placeholder="เกรดเฉลี่ย (GPAX)"
+                    type="number"
                     require
                   />
                 </div>

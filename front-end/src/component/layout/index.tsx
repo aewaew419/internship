@@ -117,7 +117,7 @@ export const Navbar = () => {
     //   ? AdminNav
     //   : role === "Student"
     //   ? StudentNav:
-    InstructorNav;
+    AdminNav;
   return (
     <nav className="bg-white fixed h-full">
       <div className="container">

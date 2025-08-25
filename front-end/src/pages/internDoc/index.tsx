@@ -4,49 +4,11 @@ import { FilterAlt, ReadMoreRounded } from "@mui/icons-material";
 import { PROTECTED_PATH } from "../../constant/path.route";
 import { Table } from "../../component/table";
 import { useNavigate } from "react-router-dom";
+import useViewModel from "./viewModel";
 const InternDoc = () => {
+  const { rows } = useViewModel();
   const navigate = useNavigate();
-  const data = [
-    {
-      firstName: "นาย A",
-      code: "64000000",
-      major: "สาขา",
-      company: "บริษัท A",
-      role: "ชื่อตำแหน่งงาน",
-      status: "อนุมัติ",
-      other: (
-        <button onClick={() => navigate(PROTECTED_PATH.INTERN_DOC_PERSON)}>
-          <ReadMoreRounded className="text-primary-600" />
-        </button>
-      ),
-    },
-    {
-      firstName: "นาย A",
-      code: "64000000",
-      major: "สาขา",
-      company: "บริษัท A",
-      role: "ชื่อตำแหน่งงาน",
-      status: "อนุมัติ",
-      other: (
-        <button onClick={() => navigate(PROTECTED_PATH.INTERN_DOC_PERSON)}>
-          <ReadMoreRounded className="text-primary-600" />
-        </button>
-      ),
-    },
-    {
-      firstName: "นาย A",
-      code: "64000000",
-      major: "สาขา",
-      company: "บริษัท A",
-      role: "ชื่อตำแหน่งงาน",
-      status: "อนุมัติ",
-      other: (
-        <button onClick={() => navigate(PROTECTED_PATH.INTERN_DOC_PERSON)}>
-          <ReadMoreRounded className="text-primary-600" />
-        </button>
-      ),
-    },
-  ];
+
   return (
     <Layout header={[{ path: "", name: "รายการขอฝึกงาน  / สหกิจศึกษา" }]}>
       <div className="bg-white p-4 mt-4 rounded-lg">
@@ -108,20 +70,30 @@ const InternDoc = () => {
               "สถานะ",
               "ข้อมูลเพิ่มเติม",
             ]}
-            data={data.map((item, index) => (
+            data={rows.map((item, index) => (
               <tr key={index} className="border-b border-x border-text-200">
-                <td className="ps-4 py-5">{item.firstName}</td>
-                <td>{item.code}</td>
-                <td>{item.major}</td>
-                <td>{item.company}</td>
-                <td>{item.role}</td>
+                <td className="ps-4 py-5">{item.student.name}</td>
+                <td>{item.student.studentId}</td>
+                <td>{item.student.program.programNameTh}</td>
+                <td>{item.student_training.company.companyNameTh}</td>
+                <td>{item.student_training.position}</td>
                 <td>
                   <div className="bg-[#BDCAFF] w-fit rounded-full px-2 py-1 flex gap-3">
-                    <p>{item.status} </p>
+                    <p>approve </p>
                     <div className="bg-[#5C6FBC] h-4 w-4 rounded-full my-auto"></div>
                   </div>
                 </td>
-                <td>{item.other}</td>
+                <td>
+                  <button
+                    onClick={() =>
+                      navigate(
+                        PROTECTED_PATH.INTERN_DOC_PERSON + `?id=${item.id}`
+                      )
+                    }
+                  >
+                    <ReadMoreRounded className="text-primary-600" />
+                  </button>
+                </td>
               </tr>
             ))}
           />

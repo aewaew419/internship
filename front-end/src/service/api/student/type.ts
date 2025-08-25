@@ -15,6 +15,20 @@ export type StudentInterface = {
   facultyId: string;
   majorId: string;
   campusId: string;
+  faculty: {
+    id: number;
+    campusId: number;
+    facultyNameEn: string;
+    facultyNameTh: string;
+  };
+  program: {
+    id: number;
+    facultyId: number;
+    programNameEn: string;
+    programNameTh: string;
+    createdAt: string;
+    updatedAt: string;
+  };
 };
 export type StudentDTO = {
   user_id: number;
@@ -73,6 +87,27 @@ export interface StudentEnrollInterface {
 
 export interface StudentEnrollRegisterInteface extends StudentEnrollInterface {
   student_training: StudentTrainingType;
+  visitor_training: [
+    {
+      id: number;
+      visitorInstructorId: number;
+      studentEnrollId: number;
+      createdAt: string;
+      updatedAt: string;
+      visitor: {
+        id: number;
+        userId: number;
+        staffId: string;
+        name: string;
+        middleName: string | null;
+        surname: string;
+        facultyId: number;
+        programId: number;
+        createdAt: string;
+        updatedAt: string;
+      };
+    }
+  ];
 }
 
 export type StudentTrainingType = {
@@ -94,7 +129,7 @@ export type StudentTrainingType = {
   createdAt: string;
   updatedAt: string;
   company: {
-    id: 1;
+    id: number;
     companyRegisterNumber: string;
     companyNameEn: string | null;
     companyNameTh: string;

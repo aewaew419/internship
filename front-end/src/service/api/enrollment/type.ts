@@ -49,6 +49,14 @@ export type EnrollApproveInterface = {
     programId: number | null;
     curriculumId: number | null;
     majorId: number | null;
+    program: {
+      id: number;
+      facultyId: number;
+      programNameEn: string;
+      programNameTh: string;
+      createdAt: string;
+      updatedAt: string;
+    };
   };
   course_section: {
     id: number;
@@ -58,5 +66,55 @@ export type EnrollApproveInterface = {
     semester: number;
     createdAt: string;
     updatedAt: string;
+  };
+  student_training: {
+    id: number;
+    studentEnrollId: number;
+    companyId: number;
+    startDate: string;
+    endDate: string;
+    documentLanguage: "th" | "en";
+    coordinator: string;
+    coordinatorPhoneNumber: string;
+    coordinatorEmail: string;
+    supervisor: string;
+    supervisorPhoneNumber: string;
+    supervisorEmail: string;
+    department: string;
+    position: string;
+    jobDescription: string;
+    createdAt: string;
+    updatedAt: string;
+    company: {
+      id: 1;
+      companyRegisterNumber: string;
+      companyNameEn: null;
+      companyNameTh: string;
+      companyAddress: string;
+      companyMap: string;
+      companyPhoneNumber: string;
+      companyEmail: string;
+      companyType: string;
+      createdAt: string;
+      updatedAt: string;
+    };
+  };
+};
+
+export type EnrollApproveCount = {
+  student_enroll_id: number;
+  instructors: {
+    approved: number;
+    total: number;
+    allApproved: boolean;
+  };
+  committee: {
+    approved: number;
+    total: number;
+    requiredToPass: number;
+    halfOrMoreApproved: boolean;
+  };
+  overall: {
+    passed: boolean;
   };
 };

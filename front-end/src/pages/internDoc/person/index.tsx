@@ -1,5 +1,6 @@
 import { Layout } from "../../../component/layout";
-import { Persona, CoopInformation } from "./section";
+import { Persona, CoopInformation, Approval } from "./section";
+
 const InternDocPerson = () => {
   return (
     <Layout
@@ -14,6 +15,7 @@ const InternDocPerson = () => {
         <div className="mt-5 mx-5">
           <Persona />
           <CoopInformation />
+          <Approval />
         </div>
       </div>
     </Layout>

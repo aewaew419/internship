@@ -29,6 +29,7 @@ export class StudentService extends RemoteA {
       entity
     );
     const { data } = response;
+
     return data;
   };
 

@@ -49,13 +49,18 @@ export default class StudentsController {
         'phone_number',
         'email',
         'picture',
-        'major_id',
         'program_id',
         'faculty_id',
         'campus_id',
         'curriculum_id',
       ])
-      student.merge(data)
+      const major = request.only(['major_id'])
+      if (major.major_id) {
+        student.merge({ ...data, major_id: major.major_id })
+      } else {
+        student.merge(data)
+      }
+
       await student.save()
       return { message: 'Student updated', data }
     } catch (error) {

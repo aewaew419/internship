@@ -3,6 +3,7 @@ import { StudentService } from "../../../service/api/student";
 import type {
   StudentInterface,
   StudentDTO,
+  StudentEnrollRegisterInteface,
 } from "../../../service/api/student/type";
 import { UniversityService } from "../../../service/api/university";
 import type {
@@ -31,7 +32,7 @@ const useViewModel = () => {
     facultyId: "",
     majorId: "",
     campusId: "",
-  });
+  } as StudentInterface);
   const [faculties, setFaculties] = useState<FaculyInterface[]>([]);
   const [programs, setPrograms] = useState<ProgramInterface[]>([]);
   const [curriculums, setCurriculums] = useState<CurriculumInterface[]>([]);

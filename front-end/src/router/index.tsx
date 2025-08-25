@@ -125,16 +125,16 @@ const RequireAuth = ({ role }: { role: string[] }) => {
   //       />
   //     );
   //   }
-  const isHasRole = role.find((data) => AuthRole.find((auth) => auth === data));
-  if (!isHasRole) {
-    return (
-      <Navigate
-        to={PROTECTED_PATH.DASHBOARD}
-        state={{ from: location }}
-        replace
-      />
-    );
-  }
+  //   const isHasRole = role.find((data) => AuthRole.find((auth) => auth === data));
+  //   if (!isHasRole) {
+  //     return (
+  //       <Navigate
+  //         to={PROTECTED_PATH.DASHBOARD}
+  //         state={{ from: location }}
+  //         replace
+  //       />
+  //     );
+  //   }
   return (
     <>
       <Outlet />

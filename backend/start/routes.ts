@@ -71,6 +71,8 @@ router
 
     router.resource('/majors', MajorsController).apiOnly()
 
+    router.post('/users/bulk-excel', [UserController, 'bulkCreateFromExcel'])
+
     router.get('/course/sections/search', [CourseSectionsController, 'courseYearSemester'])
     router.resource('/course/sections', CourseSectionsController).apiOnly()
 
@@ -82,6 +84,11 @@ router
       CourseCommitteesController,
       'destroy',
     ])
+    router.get('/student-enrolls/:id/approval-counts', [
+      StudentEnrollStatusesController,
+      'getApprovalCountsByEnrollId',
+    ])
+
     router.put('/student_enroll_status/:id', [
       InstructorCoursesController,
       'changeStatusStudentEnroll',
