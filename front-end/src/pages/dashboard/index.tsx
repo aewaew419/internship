@@ -1,6 +1,7 @@
 import { Layout } from "../../component/layout";
 import { PROTECTED_PATH } from "../../constant/path.route";
 import { DouhnutChart } from "../../component/chart";
+import { StudentProject } from "./section";
 
 const Dashboard = () => {
   const step = [
@@ -116,6 +117,17 @@ const Dashboard = () => {
               </div>
             </div>
           </div>
+          <div className="bg-white p-4 rounded-2xl my-4">
+            <p className="text-secondary-600 font-bold text-xl">
+              สถานะการยื่นขอฝึกงานของฉัน
+            </p>
+            <div className="text-primary-900 font-medium flex px-3 py-3 my-2 bg-primary-50 rounded">
+              <p>เอกสาร 6400224415</p>
+              <p className="mx-auto font-semibold">อยู่ระหว่างการพิจารณา</p>
+              <p>อาจารย์ประจำวิชา</p>
+            </div>
+          </div>
+          <StudentProject />
           <div className="bg-white p-4 rounded-2xl my-4">
             <p className="text-secondary-600 font-bold text-xl">
               จำนวนนักศึกษาที่ส่งเอกสารฝึกงาน

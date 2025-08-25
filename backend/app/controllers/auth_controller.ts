@@ -39,8 +39,8 @@ export default class AuthController {
         user,
       }
     } catch {
-      const user = await User.query().where('email', email.trim().toLowerCase()).first()
-      const isPasswordValid = await hash.verify(user.password, password)
+      // const user = await User.query().where('email', email.trim().toLowerCase()).first()
+      // const isPasswordValid = await hash.verify(user.password, password)
 
       return response.unauthorized({ message: 'Invalid credentials' })
     }

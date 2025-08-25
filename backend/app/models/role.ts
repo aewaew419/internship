@@ -1,7 +1,7 @@
-import { BaseModel, column, manyToMany } from '@adonisjs/lucid/orm'
-import Permission from './permission'
-import User from './user'
-import type { HasManyToMany } from '@adonisjs/lucid/types/relations'
+import { BaseModel, column, hasMany } from '@adonisjs/lucid/orm'
+// import Permission from './permission.js'
+import User from './user.js'
+import type { HasMany } from '@adonisjs/lucid/types/relations'
 
 export default class Role extends BaseModel {
   @column({ isPrimary: true })
@@ -10,11 +10,11 @@ export default class Role extends BaseModel {
   @column()
   declare name: string
 
-  @manyToMany(() => Permission, { pivotTable: 'role_permission' })
-  declare permissions: HasManyToMany<typeof Permission>
+  // @manyToMany(() => Permission, { pivotTable: 'role_permission' })
+  // declare permissions: ManyToMany<typeof Permission>
 
-  @manyToMany(() => User, {
-    pivotTable: 'user_role',
+  @hasMany(() => User, {
+    foreignKey: 'role_id',
   })
-  declare users: ManyToMany<typeof User>
+  declare users: HasMany<typeof User>
 }

@@ -1,4 +1,4 @@
-import { Layout } from "../../component/layout";
+import { Layout, PopupLayout } from "../../component/layout";
 import { PROTECTED_PATH } from "../../constant/path.route";
 import { Table } from "../../component/table";
 import { Checkbox, FormControl, TextField, Autocomplete } from "@mui/material";
@@ -7,33 +7,98 @@ import {
   AddRounded,
   EditNoteRounded,
   DeleteForeverRounded,
+  CancelRounded,
+  FileUploadRounded,
+  ReadMoreRounded,
 } from "@mui/icons-material";
+import { useState } from "react";
+import { Dropzone } from "../../component/input/dropzone";
+import useViewModel from "./viewModel";
+import { useNavigate } from "react-router-dom";
 
 const AddPerson = () => {
+  //   const { handleOnSubmitXLSX } = useViewModel();
+  const navigate = useNavigate();
   const data = [
     {
-      firstName: "John",
-      lastName: "Doe",
-      email: "john@example .com",
-      phone: "123-456-7890",
+      firstName: "นาย A",
+      code: "64000000",
+      major: "สาขา",
+      role: "นักศึกษา",
+      other: (
+        <button onClick={() => navigate(PROTECTED_PATH.UPLOAD_LIST_PERSON)}>
+          <ReadMoreRounded className="text-primary-600" />
+        </button>
+      ),
     },
     {
-      firstName: "Jane",
-      lastName: "Smith",
-      email: "jane @example.com",
-      phone: "987-654-3210",
+      firstName: "นาย A",
+      code: "64000000",
+      major: "สาขา",
+      role: "นักศึกษา",
+      other: (
+        <button onClick={() => navigate(PROTECTED_PATH.UPLOAD_LIST_PERSON)}>
+          <ReadMoreRounded className="text-primary-600" />
+        </button>
+      ),
     },
     {
-      firstName: "Alice",
-      lastName: "Johnson",
-      email: "alice@example",
-      phone: "555-555-5555",
+      firstName: "นาย A",
+      code: "64000000",
+      major: "สาขา",
+      role: "นักศึกษา",
+      other: (
+        <button onClick={() => navigate(PROTECTED_PATH.UPLOAD_LIST_PERSON)}>
+          <ReadMoreRounded className="text-primary-600" />
+        </button>
+      ),
     },
   ];
+  const [editUser, setEditUser] = useState<"" | "upload" | "edit" | "delete">(
+    ""
+  );
+  const [isUploadExcel, setIsUploadExcel] = useState(false);
   return (
     <Layout
       header={[{ path: PROTECTED_PATH.UPLOAD_LIST, name: "อัปโหลดรายชื่อ" }]}
     >
+      {editUser && (
+        <PopupLayout>
+          <div>
+            <div className="flex justify-between">
+              <p className="text-xl font-semibold my-auto text-secondary-600">
+                {editUser === "upload" && "อัปโหลดรายชื่อ"}
+                {editUser === "edit" && "แก้ไข"}
+                {editUser === "delete" && "ลบรายชื่อ"}
+              </p>
+              <div
+                onClick={() => {
+                  setEditUser("");
+                  setIsUploadExcel(false);
+                }}
+              >
+                <CancelRounded
+                  fontSize="large"
+                  className="text-primary-600 cursor-pointer"
+                />
+              </div>
+            </div>
+            <div className="w-fit mx-auto my-16">
+              {!isUploadExcel && (
+                <button
+                  className="primary-button bg-gradient font-bold text-2xl"
+                  onClick={() => setIsUploadExcel(true)}
+                >
+                  <FileUploadRounded fontSize="large" />
+                  อับโหลดExcel
+                </button>
+              )}
+            </div>
+
+            {editUser === "upload" && isUploadExcel && <AddUser />}
+          </div>
+        </PopupLayout>
+      )}
       <div className="bg-white p-4 mt-4 rounded-lg">
         <h1 className="text-xl font-bold text-secondary-600">ค้นหารายชื่อ</h1>
 
@@ -83,16 +148,25 @@ const AddPerson = () => {
               <p className="ms-5 text-xl text-black">รายชื่อ</p>
             </div>
             <div className="flex gap-4 text-white">
-              <button className="primary-button bg-gradient">
+              <button
+                className="primary-button bg-gradient w-48"
+                onClick={() => setEditUser("upload")}
+              >
                 <AddRounded fontSize="small" sx={{ my: "auto" }} />
                 <p className="my-auto">อับโหลดรายชื่อ</p>
               </button>
 
-              <button className="primary-button bg-gradient">
+              <button
+                className="primary-button bg-gradient w-48"
+                onClick={() => setEditUser("edit")}
+              >
                 <EditNoteRounded fontSize="small" sx={{ my: "auto" }} />
                 <p className="my-auto">แก้ไข</p>
               </button>
-              <button className="primary-button bg-gradient">
+              <button
+                className="primary-button bg-gradient w-48"
+                onClick={() => setEditUser("delete")}
+              >
                 <DeleteForeverRounded fontSize="small" sx={{ my: "auto" }} />
                 <p className="my-auto">ลบ</p>
               </button>
@@ -114,9 +188,11 @@ const AddPerson = () => {
                     <Checkbox />
                   </FormControl>
                 </td>
-                <td>{item.lastName}</td>
-                <td>{item.email}</td>
-                <td>{item.phone}</td>
+                <td>{item.firstName}</td>
+                <td>{item.code}</td>
+                <td>{item.major}</td>
+                <td>{item.role}</td>
+                <td>{item.other}</td>
               </tr>
             ))}
           />
@@ -126,3 +202,18 @@ const AddPerson = () => {
   );
 };
 export default AddPerson;
+
+const AddUser = () => {
+  const { xlsxFile, handleUploadXLSX, handleOnSubmitXLSX } = useViewModel();
+  return (
+    <div>
+      <Dropzone
+        file={xlsxFile}
+        handleUpload={(file) => handleUploadXLSX(file)}
+      />
+      <button onClick={() => handleOnSubmitXLSX()} type="button">
+        submit
+      </button>
+    </div>
+  );
+};
