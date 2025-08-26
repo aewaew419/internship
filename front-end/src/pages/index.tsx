@@ -17,6 +17,11 @@ import InstructorInternReq from "./instructor/internReq";
 import InstructorInternReqPerson from "./instructor/internReq/person";
 
 import AssignVisitor from "./instructor/assignVisitor";
+
+import VisitorSchedule from "./visitor/schedule";
+import VisitorSchedulePerson from "./visitor/schedule/person";
+import VisitorVisits from "./visitor/visits";
+import VisitorVisitsPersons from "./visitor/visits/person";
 export {
   Login,
   Dashboard,
@@ -35,4 +40,8 @@ export {
   InstructorInternReq,
   InstructorInternReqPerson,
   AssignVisitor,
+  VisitorSchedule,
+  VisitorSchedulePerson,
+  VisitorVisits,
+  VisitorVisitsPersons,
 };

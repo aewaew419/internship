@@ -18,7 +18,7 @@ export default class StudentEnrollmentsController {
             query.preload('company')
           })
           .preload('visitor_training', (query) => {
-            query.preload('visitor').firstOrFail()
+            query.preload('visitor')
           })
           .preload('student', (query) => {
             query.preload('faculty').preload('program')

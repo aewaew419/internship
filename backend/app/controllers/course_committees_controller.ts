@@ -16,30 +16,30 @@ export default class CourseCommitteesController {
   }
 
   async store({ request }: HttpContext) {
-    try {
-      const data = request.only(['instructors_id', 'course_section_id'])
-      const instructor = await Instructor.findOrFail(data.instructors_id)
-      const courseSection = await CourseSection.findOrFail(data.course_section_id)
+    // 👈 use instructor_id (singular) to match the pivot column
+    const { instructor_id, course_section_id } = request.only([
+      'instructor_id',
+      'course_section_id',
+    ])
 
-      if (!instructor || !courseSection) {
-        return { message: 'Instructor or course section not found' }
-      }
+    const instructor = await Instructor.findOrFail(instructor_id)
+    const courseSection = await CourseSection.findOrFail(course_section_id)
 
-      const exists = await courseSection
-        .related('course_committee')
-        .query()
-        .wherePivot('instructors_id', data.instructors_id)
-        .first()
-      if (exists) {
-        return { message: 'Instructor already in course committee' }
-      }
+    // Check if already attached (pivot column is instructor_id)
+    const exists = await courseSection
+      .related('course_committee')
+      .query()
+      .wherePivot('instructor_id', instructor.id)
+      .first()
 
-      await courseSection.related('course_committee').attach([data.instructors_id])
-
-      return { message: 'Instructor added to course committee' }
-    } catch (error) {
-      return error
+    if (exists) {
+      return { message: 'Instructor already in course committee' }
     }
+
+    // Attach by related model id
+    await courseSection.related('course_committee').attach([instructor.id])
+
+    return { message: 'Instructor added to course committee' }
   }
 
   async destroy({ params }: HttpContext) {

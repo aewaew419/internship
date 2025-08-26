@@ -184,6 +184,7 @@ const AutoCompleteField = ({
           setValue(newValue?.value);
         }}
         value={selectedOption}
+        disabled={disabled}
         renderInput={(params) => (
           <TextField
             {...params}
@@ -221,7 +222,7 @@ export const DatePickerField = ({
   const [field, meta] = useField(name);
 
   return (
-    <div className="my-2">
+    <div className="my-2 w-full">
       <div className="font-medium text-secondary-600">
         <h5 className="text-xl">{label_th}</h5>
         <p className="text-sm -mt-1.5">{label_en}</p>

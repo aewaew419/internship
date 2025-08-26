@@ -6,4 +6,10 @@ export default class VisitorsController {
     const visitors = await VisitorTraining.query().preload('studentEnroll')
     return visitors
   }
+  public async show({ params }: HttpContext) {
+    const visitor = await VisitorTraining.query()
+      .where('visitor_instructor_id', params.id)
+      .preload('studentEnroll')
+    return visitor
+  }
 }

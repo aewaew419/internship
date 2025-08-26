@@ -10,14 +10,99 @@ export type UserInterface = {
   expiresAt: string;
   user: {
     id: number;
+    roleId: number;
     fullName: string;
     email: string;
     createdAt: string;
     updatedAt: string;
+    students: {
+      id: number;
+      userId: number;
+      studentId: string;
+      name: string;
+      middleName: string | null;
+      surname: string;
+      gpax: number | null;
+      phoneNumber: string | null;
+      picture: null;
+      email: string | null;
+      campusId: number;
+      facultyId: number | null;
+      programId: number | null;
+      curriculumId: number | null;
+      majorId: number | null;
+    } | null;
+    instructors: {
+      id: number;
+      userId: number;
+      staffId: string;
+      name: string;
+      middleName: string | null;
+      surname: string;
+      facultyId: number;
+      programId: number;
+      createdAt: string;
+      updatedAt: string;
+    } | null;
   };
 };
 
 export type LoginDTO = {
   email: string;
   password: string;
+};
+export type UserListInterface = {
+  id: number;
+  roleId: number;
+  fullName: null;
+  email: string;
+  createdAt: string;
+  updatedAt: string;
+  instructors: {
+    id: number;
+    userId: number;
+    staffId: string;
+    name: string;
+    middleName: string | null;
+    surname: string;
+    facultyId: number;
+    programId: number;
+    createdAt: string;
+    updatedAt: string;
+  } | null;
+  students: {
+    id: number;
+    userId: number;
+    studentId: string;
+    name: string;
+    middleName: string | null;
+    surname: string;
+    gpax: number | null;
+    phoneNumber: string | null;
+    picture: null;
+    email: string | null;
+    campusId: number | null;
+    facultyId: number | null;
+    programId: number | null;
+    curriculumId: number | null;
+    majorId: number | null;
+  } | null;
+
+  role: {
+    id: number;
+    name: string;
+  };
+};
+
+export type InstructorInterface = {
+  id: number;
+  userId: number;
+  staffId: string;
+  name: string;
+  middleName: string | null;
+  surname: string;
+  facultyId: number | null;
+  programId: number | null;
+  createdAt: string;
+  updatedAt: string;
 };

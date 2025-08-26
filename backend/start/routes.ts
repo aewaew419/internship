@@ -53,8 +53,6 @@ router
 
     router.resource('/roles', RoleController).apiOnly()
 
-    router.resource('/users', UserController).apiOnly()
-
     router.resource('/students', StudentsController).apiOnly()
 
     router.resource('/instructors', InstructorsController).apiOnly()
@@ -71,7 +69,10 @@ router
 
     router.resource('/majors', MajorsController).apiOnly()
 
+    router.delete('/users/bulk', [UserController, 'bulkDestroy'])
+
     router.post('/users/bulk-excel', [UserController, 'bulkCreateFromExcel'])
+    router.resource('/users', UserController).apiOnly()
 
     router.get('/course/sections/search', [CourseSectionsController, 'courseYearSemester'])
     router.resource('/course/sections', CourseSectionsController).apiOnly()
@@ -120,6 +121,10 @@ router
     router.get('/visitors/last-visit/:id', [
       VisitorSchedulesController,
       'listStudentsWithLastVisit',
+    ])
+    router.get('/visitors/schedule_report/:id', [
+      VisitorSchedulesController,
+      'getVisitorScheduleByID',
     ])
     router.resource('/visitors/schedule', VisitorSchedulesController).apiOnly()
     router.resource('/visitors', VisitorsController).apiOnly()

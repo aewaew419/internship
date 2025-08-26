@@ -23,7 +23,7 @@ const RegisterPersonalInfo = () => {
           initialValues={initialValues}
           enableReinitialize
           onSubmit={(values) =>
-            handleOnSubmitStudentInformation(1, {
+            handleOnSubmitStudentInformation({
               name: values.name,
               middle_name: values.middleName,
               surname: values.surname,

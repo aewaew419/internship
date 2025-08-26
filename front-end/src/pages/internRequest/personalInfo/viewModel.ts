@@ -37,20 +37,17 @@ const useViewModel = () => {
   const [programs, setPrograms] = useState<ProgramInterface[]>([]);
   const [curriculums, setCurriculums] = useState<CurriculumInterface[]>([]);
 
-  const getStudentInformation = async (studentId: number) => {
+  const getStudentInformation = async () => {
     try {
-      const response = await studentService.reqGetStudentInformation(studentId);
+      const response = await studentService.reqGetStudentInformation();
       setStudentInfo(response);
     } catch (error) {
       console.error("Error fetching student information:", error);
     }
   };
-  const handleOnSubmitStudentInformation = async (
-    studentId: number,
-    entity: StudentDTO
-  ) => {
+  const handleOnSubmitStudentInformation = async (entity: StudentDTO) => {
     try {
-      await studentService.reqPutStudentInformation(studentId, entity);
+      await studentService.reqPutStudentInformation(entity);
       console.log("Student information updated successfully");
     } catch (error) {
       console.error("Error updating student information:", error);
@@ -82,7 +79,7 @@ const useViewModel = () => {
   };
 
   useEffect(() => {
-    getStudentInformation(1);
+    getStudentInformation();
     fetchFaculties();
   }, []);
   return {

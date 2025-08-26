@@ -18,7 +18,11 @@ export default class AuthController {
     const { email, password } = request.only(['email', 'password'])
 
     try {
-      const user = await User.query().where('email', email.trim().toLowerCase()).first()
+      const user = await User.query()
+        .where('email', email.trim().toLowerCase())
+        .preload('students')
+        .preload('instructors')
+        .firstOrFail()
 
       if (!user) {
         return response.unauthorized({ message: 'User not found' })

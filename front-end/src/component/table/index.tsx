@@ -1,5 +1,5 @@
 type tableProps = {
-  header: string[];
+  header: React.ReactNode[];
   data: React.ReactNode;
 };
 export const Table = (props: tableProps) => {

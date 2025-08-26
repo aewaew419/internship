@@ -5,6 +5,19 @@ export default class VisitorSchedulesController {
   async index({}) {
     return VisitorSchedule.all()
   }
+  async getVisitorScheduleByID({ params }: HttpContext) {
+    const schedule = await VisitorSchedule.findOrFail(params.id)
+    return schedule
+  }
+
+  async show({ params }: HttpContext) {
+    const schedule = await VisitorTraining.query()
+      .where('id', params.id)
+      .preload('schedules')
+      .preload('studentEnroll', (q) => q.preload('student'))
+      .firstOrFail()
+    return schedule
+  }
 
   async store({ request }: HttpContext) {
     try {

@@ -12,11 +12,24 @@ import {
   LocationCityRounded,
   RateReviewRounded,
 } from "@mui/icons-material";
+import { clearToken, useToken } from "../../utils/localStorage";
+import { UNPROTECTED_PATH } from "../../constant/path.route";
 export const Navbar = () => {
+  const token = useToken();
   const role: "Admin" | "Student" | "Instructor" | "Committee" | "Visitor" =
-    "Instructor";
+    token.user.roleId === 1
+      ? "Admin"
+      : token.user.roleId === 3
+      ? "Student"
+      : "Instructor";
   const navigate = useNavigate();
   const location = useLocation();
+  const navigateToLoginPage = async () => {
+    await clearToken().then(() =>
+      navigate(UNPROTECTED_PATH.LOGIN, { replace: true })
+    );
+    window.location.reload(); // full page refresh
+  };
   const StudentNav = [
     { name: "หน้าแรก", path: PROTECTED_PATH.DASHBOARD, icon: <Home /> },
     {
@@ -87,8 +100,13 @@ export const Navbar = () => {
       icon: <AssignmentInd />,
     },
     {
+      name: "นัดหมายนิเทศ",
+      path: PROTECTED_PATH.VISITOR_SCHEDULE,
+      icon: <AssignmentInd />,
+    },
+    {
       name: "รายงานผลการนิเทศ",
-      path: PROTECTED_PATH.COMPANY_EVALUAION,
+      path: PROTECTED_PATH.VISITOR_VISITS,
       icon: <LocationCityRounded />,
     },
     {
@@ -113,11 +131,11 @@ export const Navbar = () => {
     },
   ];
   const ItemNav =
-    // role === "Admin"
-    //   ? AdminNav
-    //   : role === "Student"
-    //   ? StudentNav:
-    AdminNav;
+    role === "Admin"
+      ? AdminNav
+      : role === "Student"
+      ? StudentNav
+      : InstructorNav;
   return (
     <nav className="bg-white fixed h-full">
       <div className="container">
@@ -143,7 +161,7 @@ export const Navbar = () => {
           </ul>
           <div className="mt-auto mx-5">
             <button
-              onClick={() => navigate("/login")}
+              onClick={() => navigateToLoginPage()}
               className="w-full hover:bg-gray-100 text-error flex gap-2 font-bold my-5 pb-2 pt-3 px-5 rounded-lg cursor-pointer transition-colors duration-300"
             >
               <LoginRounded sx={{ margin: "auto 0" }} />

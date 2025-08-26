@@ -16,6 +16,10 @@ import {
   InstructorInternReq,
   InstructorInternReqPerson,
   AssignVisitor,
+  VisitorSchedule,
+  VisitorSchedulePerson,
+  VisitorVisits,
+  VisitorVisitsPersons,
 } from "../pages";
 import {
   Route,
@@ -27,11 +31,16 @@ import {
 } from "react-router-dom";
 import { UNPROTECTED_PATH, PROTECTED_PATH } from "../constant/path.route";
 import RegisterProject from "../pages/project/regitser";
+
+import { useAuth } from "../auth/useAuth";
+
 const Router = () => {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path={UNPROTECTED_PATH.LOGIN} element={<Login />} />
+        <Route element={<UnRequireAuth />}>
+          <Route path={UNPROTECTED_PATH.LOGIN} element={<Login />} />
+        </Route>
         <Route
           element={
             <RequireAuth
@@ -85,6 +94,22 @@ const Router = () => {
             path={PROTECTED_PATH.ASSIGN_VISITOR}
             element={<AssignVisitor />}
           />
+          <Route
+            path={PROTECTED_PATH.VISITOR_SCHEDULE}
+            element={<VisitorSchedule />}
+          />
+          <Route
+            path={PROTECTED_PATH.VISITOR_SCHEDULE_PERSON}
+            element={<VisitorSchedulePerson />}
+          />
+          <Route
+            path={PROTECTED_PATH.VISITOR_VISITS}
+            element={<VisitorVisits />}
+          />
+          <Route
+            path={PROTECTED_PATH.VISITOR_VISITS_PERSON}
+            element={<VisitorVisitsPersons />}
+          />
         </Route>
 
         <Route element={<RequireAuth role={["student"]} />}>
@@ -113,18 +138,20 @@ export default Router;
 
 const RequireAuth = ({ role }: { role: string[] }) => {
   const location = useLocation();
+  const auth = useAuth();
+
   const AuthRole = ["instructor", "visitor", "committee"];
   //   ["student"];
 
-  //  if (!auth?.user) {
-  //     return (
-  //       <Navigate
-  //         to={UNPROTECTED_PATH.LOGIN}
-  //         state={{ from: location }}
-  //         replace
-  //       />
-  //     );
-  //   }
+  if (!auth?.user) {
+    return (
+      <Navigate
+        to={UNPROTECTED_PATH.LOGIN}
+        state={{ from: location }}
+        replace
+      />
+    );
+  }
   //   const isHasRole = role.find((data) => AuthRole.find((auth) => auth === data));
   //   if (!isHasRole) {
   //     return (
@@ -141,3 +168,23 @@ const RequireAuth = ({ role }: { role: string[] }) => {
     </>
   );
 };
+function UnRequireAuth() {
+  const auth = useAuth();
+  const location = useLocation();
+
+  if (auth?.user) {
+    return (
+      <Navigate
+        to={PROTECTED_PATH.DASHBOARD}
+        state={{ from: location }}
+        replace
+      />
+    );
+  }
+
+  return (
+    <>
+      <Outlet />
+    </>
+  );
+}

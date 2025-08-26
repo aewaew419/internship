@@ -6,9 +6,13 @@ import type {
   CourseInterface,
   CourseInstructor,
   CourseCommittee,
+  CourseInstructorDTO,
 } from "../../service/api/course/type";
+import { UserService } from "../../service/api/user";
+import { InstructorInterface } from "../../service/api/user/type";
 const useViewModel = () => {
   const courseService = new CourseService();
+  const userService = new UserService();
   const [courseSections, setCourseSections] = useState<
     CourseSectionInterface<CourseInterface>[]
   >([]);
@@ -17,6 +21,9 @@ const useViewModel = () => {
     []
   );
   const [courseCommittee, setCourseCommittee] = useState<CourseCommittee[]>([]);
+  const [instructorList, setInstructorList] = useState<InstructorInterface[]>(
+    []
+  );
 
   const fetchCourse = async () => {
     await courseService
@@ -33,6 +40,16 @@ const useViewModel = () => {
       .reqGetCourseSections()
       .then((response) => {
         setCourseSections(response);
+      })
+      .catch((error) => {
+        console.error("Error fetching course sections:", error);
+      });
+  };
+  const fetchInstructor = async () => {
+    await userService
+      .reqGetInstructor()
+      .then((response) => {
+        setInstructorList(response);
       })
       .catch((error) => {
         console.error("Error fetching course sections:", error);
@@ -78,20 +95,44 @@ const useViewModel = () => {
         console.error("Error deleting course section:", error);
       });
   };
+  const handleCreateCourseInstructor = async (entity: CourseInstructorDTO) => {
+    await courseService
+      .reqPostCourseInstructor(entity)
+      .then(() => {
+        fetchCourseInstructor();
+      })
+      .catch((error) => {
+        console.error("Error creating course section:", error);
+      });
+  };
+  const handleCreateCourseCommittee = async (entity: CourseInstructorDTO) => {
+    await courseService
+      .reqPostCourseCommittee(entity)
+      .then(() => {
+        fetchCourseCommittee();
+      })
+      .catch((error) => {
+        console.error("Error creating course section:", error);
+      });
+  };
 
   useEffect(() => {
     fetchCourseSection();
     fetchCourse();
     fetchCourseInstructor();
     fetchCourseCommittee();
+    fetchInstructor();
   }, []);
   return {
+    instructorList,
     course,
     courseSections,
     courseInstructor,
     courseCommittee,
     handleCreateCourseSection,
     handleDeletedCourseSection,
+    handleCreateCourseInstructor,
+    handleCreateCourseCommittee,
   };
 };
 

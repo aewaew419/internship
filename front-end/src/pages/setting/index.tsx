@@ -2,15 +2,23 @@ import { Layout } from "../../component/layout";
 import { Formik, Form } from "formik";
 import { AutoCompleteField, Field } from "../../component/input/field";
 import useViewModel from "./viewModel";
-import { CourseInterface, CourseDTO } from "../../service/api/course/type";
+import {
+  CourseInterface,
+  CourseInstructorDTO,
+  CourseSectionInterface,
+} from "../../service/api/course/type";
+import { InstructorInterface } from "../../service/api/user/type";
 const Setting = () => {
   const {
+    instructorList,
     course,
     courseSections,
     courseInstructor,
     courseCommittee,
     handleCreateCourseSection,
     handleDeletedCourseSection,
+    handleCreateCourseInstructor,
+    handleCreateCourseCommittee,
   } = useViewModel();
 
   return (
@@ -78,7 +86,11 @@ const Setting = () => {
               <h2 className="text-xl font-semibold mb-3">
                 Assign Instructor to Course
               </h2>
-              <AssignInstructorCourseSection />
+              <AssignInstructorCourseSection
+                instructor={instructorList || []}
+                courseSection={courseSections}
+                onCreate={handleCreateCourseInstructor}
+              />
               <div className="overflow-auto">
                 <table className="min-w-full text-sm">
                   <thead>
@@ -141,7 +153,11 @@ const Setting = () => {
               <h2 className="text-xl font-semibold mb-3">
                 Assign Committee to Course
               </h2>
-              <AssignCommitteeCourseSection />
+              <AssignCommitteeCourseSection
+                instructor={instructorList || []}
+                courseSection={courseSections}
+                onCreate={handleCreateCourseCommittee}
+              />
               <div className="overflow-auto">
                 <table className="min-w-full text-sm">
                   <thead>
@@ -265,22 +281,58 @@ const CreateCourseSectionForm = (props: CreateCourseSectionType) => {
   );
 };
 
-const AssignInstructorCourseSection = () => {
+type CreateCourseInstructorType = {
+  courseSection: CourseSectionInterface<CourseInterface>[];
+  instructor: InstructorInterface[] | [];
+  onCreate: (entity: CourseInstructorDTO) => Promise<void> | void;
+};
+const AssignInstructorCourseSection = (props: CreateCourseInstructorType) => {
+  const initialValues = {
+    instructor_id: "",
+    course_section_id: "",
+  };
   return (
     <div>
       <Formik
-        initialValues={{ course_id: "", semester: "", year: "" }}
-        onSubmit={(values) => console.log(values)}
+        initialValues={initialValues}
+        onSubmit={(values) =>
+          props.onCreate({
+            instructor_id: Number(values.instructor_id),
+            course_section_id: Number(values.course_section_id),
+          })
+        }
       >
         {({ handleSubmit }) => (
           <Form onSubmit={handleSubmit}>
             <div className="flex gap-5">
               <AutoCompleteField
                 name="instructor_id"
-                items={[]}
+                items={
+                  props.instructor?.map((instructor) => {
+                    return {
+                      label: instructor.name + " " + instructor.surname,
+                      value: instructor.id,
+                    };
+                  }) || []
+                }
                 label="อาจารย์ประจำวิชา"
               />
-              <AutoCompleteField name="course_id" items={[]} label="รายวิชา" />
+              <AutoCompleteField
+                name="course_section_id"
+                items={props.courseSection.map((course) => {
+                  return {
+                    label:
+                      course.course.courseNameTh +
+                      " (" +
+                      course.semester +
+                      "/" +
+                      course.year +
+                      ")",
+                    value: course.id,
+                  };
+                })}
+                label="รายวิชา"
+              />
 
               <button
                 type="submit"
@@ -295,22 +347,53 @@ const AssignInstructorCourseSection = () => {
     </div>
   );
 };
-const AssignCommitteeCourseSection = () => {
+const AssignCommitteeCourseSection = (props: CreateCourseInstructorType) => {
+  const initialValues = {
+    instructor_id: "",
+    course_section_id: "",
+  };
   return (
     <div>
       <Formik
-        initialValues={{ course_id: "", semester: "", year: "" }}
-        onSubmit={(values) => console.log(values)}
+        initialValues={initialValues}
+        onSubmit={(values) =>
+          props.onCreate({
+            instructor_id: Number(values.instructor_id),
+            course_section_id: Number(values.course_section_id),
+          })
+        }
       >
         {({ handleSubmit }) => (
           <Form onSubmit={handleSubmit}>
             <div className="flex gap-5">
               <AutoCompleteField
                 name="instructor_id"
-                items={[]}
+                items={
+                  props.instructor?.map((instructor) => {
+                    return {
+                      label: instructor.name + " " + instructor.surname,
+                      value: instructor.id,
+                    };
+                  }) || []
+                }
                 label="คณะกรรมการ"
               />
-              <AutoCompleteField name="course_id" items={[]} label="รายวิชา" />
+              <AutoCompleteField
+                name="course_section_id"
+                items={props.courseSection.map((course) => {
+                  return {
+                    label:
+                      course.course.courseNameTh +
+                      " (" +
+                      course.semester +
+                      "/" +
+                      course.year +
+                      ")",
+                    value: course.id,
+                  };
+                })}
+                label="รายวิชา"
+              />
 
               <button
                 type="submit"

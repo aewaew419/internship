@@ -5,15 +5,16 @@ import { StudentProject } from "./section";
 
 const Dashboard = () => {
   const step = [
-    { topic: "กรอกข้อมูลสหกิจศึกษา", date: "7 มิ.ย. 68 - 19 มิ.ย. 68" },
-    {
-      topic: "ยื่นเอกสาร ณ ห้องธุรการชั้น 4",
-      date: "7 มิ.ย. 68 - 19 มิ.ย. 68",
-    },
-    { topic: "ยื่นเอกสารให้กับทางบริษัท", date: "7 มิ.ย. 68 - 19 มิ.ย. 68" },
-    { topic: "สหกิจศึกษา", date: "7 มิ.ย. 68 - 19 มิ.ย. 68" },
-    { topic: "กรอกหัวข้อโปรเจค", date: "7 มิ.ย. 68 - 19 มิ.ย. 68" },
-    { topic: "อบรม", date: "7 มิ.ย. 68 - 19 มิ.ย. 68" },
+    { topic: "", date: "" },
+    // { topic: "กรอกข้อมูลสหกิจศึกษา", date: "7 มิ.ย. 68 - 19 มิ.ย. 68" },
+    // {
+    //   topic: "ยื่นเอกสาร ณ ห้องธุรการชั้น 4",
+    //   date: "7 มิ.ย. 68 - 19 มิ.ย. 68",
+    // },
+    // { topic: "ยื่นเอกสารให้กับทางบริษัท", date: "7 มิ.ย. 68 - 19 มิ.ย. 68" },
+    // { topic: "สหกิจศึกษา", date: "7 มิ.ย. 68 - 19 มิ.ย. 68" },
+    // { topic: "กรอกหัวข้อโปรเจค", date: "7 มิ.ย. 68 - 19 มิ.ย. 68" },
+    // { topic: "อบรม", date: "7 มิ.ย. 68 - 19 มิ.ย. 68" },
   ];
   return (
     <Layout header={[{ path: PROTECTED_PATH.DASHBOARD, name: "หน้าแรก" }]}>
@@ -204,7 +205,7 @@ const Dashboard = () => {
               ขั้นตอนการยื่นสหกิจศึกษา
             </p>
             <div className="mt-5 mb-3">
-              {step.map((data, index) => (
+              {step?.map((data, index) => (
                 <div key={index}>
                   <div className="flex gap-3">
                     <div className="relative">

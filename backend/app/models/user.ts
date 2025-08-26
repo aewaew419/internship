@@ -8,6 +8,7 @@ import { DbAccessTokensProvider } from '@adonisjs/auth/access_tokens'
 import Role from './role.js'
 import Instructor from './instructor.js'
 import Student from './student.js'
+import Staff from './staff.js'
 
 const AuthFinder = withAuthFinder(() => hash.use('bcrypt'), {
   uids: ['email'],
@@ -42,6 +43,9 @@ export default class User extends compose(BaseModel, AuthFinder) {
     foreignKey: 'user_id',
   })
   declare instructors: HasOne<typeof Instructor>
+
+  @hasOne(() => Staff, { foreignKey: 'user_id' })
+  declare staff: HasOne<typeof Staff>
 
   @hasOne(() => Student, {
     foreignKey: 'user_id',

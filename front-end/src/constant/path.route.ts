@@ -26,4 +26,10 @@ export const PROTECTED_PATH = {
 
   EVALUTAE_COMPANY: "/evaluate_company",
   SETTING_PASSWORD: "/setting/password",
+
+  VISITOR_SCHEDULE: "/visitor/schedule",
+  VISITOR_SCHEDULE_PERSON: "/visitor/schedule/person",
+
+  VISITOR_VISITS: "/visitor/visits",
+  VISITOR_VISITS_PERSON: "/visitor/visits/person",
 };

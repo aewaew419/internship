@@ -1,7 +1,12 @@
+// app/models/staff.ts
 import { DateTime } from 'luxon'
-import { BaseModel, column } from '@adonisjs/lucid/orm'
+import { BaseModel, column, belongsTo } from '@adonisjs/lucid/orm'
+import type { BelongsTo } from '@adonisjs/lucid/types/relations'
+import User from './user.js'
 
 export default class Staff extends BaseModel {
+  public static table = 'staffs' // <-- match your migration
+
   @column({ isPrimary: true })
   declare id: number
 
@@ -10,6 +15,9 @@ export default class Staff extends BaseModel {
 
   @column()
   declare staff_id: string
+
+  @belongsTo(() => User, { foreignKey: 'user_id' })
+  declare user: BelongsTo<typeof User>
 
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime

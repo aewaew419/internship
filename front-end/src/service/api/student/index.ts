@@ -8,24 +8,24 @@ import type {
   StudentEnrollRegisterInteface,
 } from "./type";
 import type { AxiosResponse } from "axios";
+import { useToken } from "../../../utils/localStorage";
 
 export class StudentService extends RemoteA {
-  reqGetStudentInformation = async (
-    student_id: number
-  ): Promise<StudentInterface> => {
+  token = useToken();
+  student_id = this.token.user.students?.id;
+  reqGetStudentInformation = async (): Promise<StudentInterface> => {
     const response = await this.getAxiosInstance().get(
-      PROTECTED_PATH.STUDENT_INFORMATION + `?id=${student_id}`
+      PROTECTED_PATH.STUDENT_INFORMATION + `?id=${this.student_id}`
     );
     const { data } = response;
     return data;
   };
 
   reqPutStudentInformation = async (
-    student_id: number,
     entity: StudentDTO
   ): Promise<AxiosResponse> => {
     const response = await this.getAxiosInstance().put(
-      PROTECTED_PATH.STUDENT_INFORMATION + `/${student_id}`,
+      PROTECTED_PATH.STUDENT_INFORMATION + `/${this.student_id}`,
       entity
     );
     const { data } = response;
@@ -36,7 +36,7 @@ export class StudentService extends RemoteA {
   reqGetStudentEnrollment = async (): Promise<StudentEnrollInterface[]> => {
     const response = await this.getAxiosInstance().get(
       // student id
-      PROTECTED_PATH.STUDENT_ENROLLMENT + `/${1}`
+      PROTECTED_PATH.STUDENT_ENROLLMENT + `/${this.student_id}`
     );
     const { data } = response;
     return data;
@@ -55,7 +55,7 @@ export class StudentService extends RemoteA {
   ): Promise<AxiosResponse> => {
     const response = await this.getAxiosInstance().post(
       PROTECTED_PATH.STUDENT_ENROLLMENT,
-      entity
+      { ...entity, student_id: this.student_id }
     );
     const { data } = response;
     return data;
