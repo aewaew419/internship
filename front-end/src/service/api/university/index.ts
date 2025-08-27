@@ -7,7 +7,6 @@ import type {
   CurriculumInterface,
   MajorInterface,
 } from "./type";
-import type { AxiosResponse } from "axios";
 
 export class UniversityService extends RemoteA {
   reqGetCampus = async (): Promise<CampusInterface[]> => {

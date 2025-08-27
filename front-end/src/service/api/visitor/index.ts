@@ -4,6 +4,8 @@ import type {
   VisitorInterface,
   VisitorScheduleDTO,
   VisitorScheduleReportInterface,
+  VisitorEvaluateStudentDTO,
+  VisitorEvaluateStudentInterface,
 } from "./type";
 import type { AxiosResponse } from "axios";
 import { useToken } from "../../../utils/localStorage";
@@ -57,6 +59,49 @@ export class VisitorService extends RemoteA {
       PROTECTED_PATH.VISITOR_VISITOR_SCHEDULE_REPORT + `/${schedule_id}`
     );
 
+    const { data } = response;
+    return data;
+  };
+  reqGetVisitorEvaluateStudent = async (
+    id: number
+  ): Promise<VisitorEvaluateStudentInterface[]> => {
+    const response = await this.getAxiosInstance().get(
+      PROTECTED_PATH.VISITOR_EVALUATE_STUDENT + `/${id}`
+    );
+
+    const { data } = response;
+    return data;
+  };
+  reqGetVisitorEvaluateCompany = async (
+    id: number
+  ): Promise<VisitorEvaluateStudentInterface[]> => {
+    const response = await this.getAxiosInstance().get(
+      PROTECTED_PATH.VISITOR_EVALUATE_COMPANY + `/${id}`
+    );
+
+    const { data } = response;
+    return data;
+  };
+
+  reqPutVisitorEvaluateStudent = async (
+    id: number,
+    entity: VisitorEvaluateStudentDTO
+  ): Promise<AxiosResponse> => {
+    const response = await this.getAxiosInstance().put(
+      PROTECTED_PATH.VISITOR_EVALUATE_STUDENT + `/${id}`,
+      entity
+    );
+    const { data } = response;
+    return data;
+  };
+  reqPutVisitorEvaluateCompany = async (
+    id: number,
+    entity: VisitorEvaluateStudentDTO
+  ): Promise<AxiosResponse> => {
+    const response = await this.getAxiosInstance().put(
+      PROTECTED_PATH.VISITOR_EVALUATE_COMPANY + `/${id}`,
+      entity
+    );
     const { data } = response;
     return data;
   };

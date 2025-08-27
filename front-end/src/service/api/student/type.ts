@@ -1,4 +1,4 @@
-import { CourseSectionInterface, CourseInterface } from "../course/type";
+import type { CourseSectionInterface, CourseInterface } from "../course/type";
 export type StudentInterface = {
   id: number;
   userId: number;
@@ -81,6 +81,23 @@ export interface StudentEnrollInterface {
   grade: string | null;
   createdAt: string;
   updatedAt: string;
+  student_training: {
+    id: number;
+    studentEnrollId: number;
+    company: {
+      id: number;
+      companyRegisterNumber: string;
+      companyNameEn: string | null;
+      companyNameTh: string;
+      companyAddress: string;
+      companyMap: string;
+      companyPhoneNumber: string;
+      companyEmail: string;
+      companyType: string;
+      createdAt: string;
+      updatedAt: string;
+    };
+  };
   student: StudentInterface;
   course_section: CourseSectionInterface<CourseInterface>;
 }
@@ -141,4 +158,39 @@ export type StudentTrainingType = {
     createdAt: string;
     updatedAt: string;
   };
+};
+
+export type StudentEvaluateCompanyInterface = {
+  id: number;
+  studentTrainingId: number;
+  score: number | null;
+  questions: string;
+  comment: string | null;
+  createdAt: string;
+  updatedAt: string;
+  student_training: {
+    id: number;
+    studentEnrollId: number;
+    companyId: number;
+    startDate: string;
+    endDate: string;
+    documentLanguage: "th" | "en";
+    coordinator: string;
+    coordinatorPhoneNumber: string;
+    coordinatorEmail: string;
+    supervisor: string;
+    supervisorPhoneNumber: string;
+    supervisorEmail: string;
+    department: string;
+    position: string;
+    jobDescription: string;
+    createdAt: string;
+    updatedAt: string;
+  };
+};
+
+export type StudentEvaluateCompanyDTO = {
+  ids: number[];
+  scores: number[];
+  comment: string;
 };

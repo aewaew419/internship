@@ -6,7 +6,7 @@ import { PROTECTED_PATH } from "../../../constant/path.route";
 const InstructorInternReq = () => {
   const {
     rows,
-    loading,
+    // loading,
     selected,
     selectedCount,
     allSelected,
@@ -15,7 +15,6 @@ const InstructorInternReq = () => {
     toggleAll,
     clearSelection,
     bulkApprove,
-    studentEnrollmentsStatus,
   } = useViewModel();
   const navigate = useNavigate();
 
@@ -29,7 +28,7 @@ const InstructorInternReq = () => {
           <button
             type="button"
             className="px-3 py-1 rounded-lg bg-green-600 text-white disabled:opacity-40"
-            disabled={selectedCount === 0 || loading}
+            disabled={selectedCount === 0}
             onClick={bulkApprove}
           >
             อนุมัติที่เลือก
@@ -106,7 +105,7 @@ const InstructorInternReq = () => {
               </tr>
             ))}
 
-            {rows.length === 0 && !loading && (
+            {rows.length === 0 && (
               <tr>
                 <td colSpan={5} className="p-6 text-center text-gray-500">
                   ไม่มีข้อมูล

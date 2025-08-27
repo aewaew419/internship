@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { StudentService } from "../../service/api/student";
-import { StudentEnrollInterface } from "../../service/api/student/type";
+import { StudentService } from "../../../service/api/student";
+import type { StudentEnrollInterface } from "../../../service/api/student/type";
 const useViewModel = () => {
   const studentService = new StudentService();
   const [studentEnrollments, setStudentEnrollments] = useState<

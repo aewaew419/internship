@@ -2,14 +2,14 @@
 import { BaseAxios } from "./base.axios";
 
 // Add this declaration to extend ImportMeta for Vite env variables
-interface ImportMetaEnv {
-  readonly VITE_APP_API_V1: string;
-  // add other env variables here if needed
-}
+// interface ImportMetaEnv {
+//   readonly VITE_APP_API_V1: string;
+//   // add other env variables here if needed
+// }
 
-interface ImportMeta {
-  readonly env: ImportMetaEnv;
-}
+// interface ImportMeta {
+//   readonly env: ImportMetaEnv;
+// }
 
 export class RemoteA extends BaseAxios {
   constructor() {

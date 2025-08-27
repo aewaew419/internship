@@ -6,7 +6,7 @@ import { AutoCompleteField, Field } from "../../../../component/input/field";
 import { Dropzone } from "../../../../component/input/dropzone";
 import { useEffect, useState } from "react";
 
-import {
+import type {
   VisitorScheduleReportInterface,
   VisitorScheduleDTO,
 } from "../../../../service/api/visitor/type";

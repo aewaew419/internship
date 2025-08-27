@@ -22,7 +22,6 @@ type RadioOption = {
   label: string;
   value: any;
 };
-
 type RadioFieldProps = {
   name: string;
   label: string;
@@ -50,7 +49,7 @@ export const RadioField = ({
       <RadioGroup
         row={row}
         name={field.name}
-        value={field.value}
+        value={field.value || 0}
         onChange={(e) => {
           helpers.setValue(e.target.value);
         }}

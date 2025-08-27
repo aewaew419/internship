@@ -1,8 +1,8 @@
 import { Layout } from "../../component/layout";
 import { PROTECTED_PATH } from "../../constant/path.route";
 import { Table } from "../../component/table";
-import { Checkbox, FormControl, TextField, Autocomplete } from "@mui/material";
-import { FilterAlt, ReadMoreRounded, PrintRounded } from "@mui/icons-material";
+import { TextField, Autocomplete } from "@mui/material";
+import { FilterAlt, ReadMoreRounded } from "@mui/icons-material";
 
 import { useNavigate } from "react-router-dom";
 const SupervisorReport = () => {

@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { UserInterface } from "../service/api/user/type";
+import type { UserInterface } from "../service/api/user/type";
 export const clearToken = async () => {
   return localStorage.removeItem("user_account");
 };

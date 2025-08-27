@@ -1,4 +1,4 @@
-import { Layout, PopupLayout } from "../../component/layout";
+import { Layout } from "../../component/layout";
 import { PROTECTED_PATH } from "../../constant/path.route";
 import { Table } from "../../component/table";
 import { Checkbox, FormControl, TextField, Autocomplete } from "@mui/material";

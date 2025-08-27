@@ -1,4 +1,7 @@
-import { StudentEnrollInterface, StudentTrainingType } from "../student/type";
+import type {
+  StudentEnrollInterface,
+  StudentTrainingType,
+} from "../student/type";
 export type InstructorStudentEnrollStatusInterface = {
   id: number;
   studentEnrollId: number;

@@ -18,7 +18,13 @@ export default class StudentEnroll extends BaseModel {
   declare course_section_id: number
 
   @column()
-  declare grade: number
+  declare grade: string
+
+  @column()
+  declare attend_training: string
+
+  @column()
+  declare company_score: number
 
   @belongsTo(() => Student, {
     foreignKey: 'student_id',

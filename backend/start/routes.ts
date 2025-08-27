@@ -28,9 +28,14 @@ import InstructorCoursesController from '#controllers/instructor_courses_control
 import CourseCommitteesController from '#controllers/course_committees_controller'
 import StudentEnrollmentsController from '#controllers/student_enrollments_controller'
 import StudentEnrollStatusesController from '#controllers/student_enroll_statuses_controller'
+import InstructorGradesController from '#controllers/instructor_grades_controller'
 
 import VisitorsController from '#controllers/visitors_controller'
 import VisitorSchedulesController from '#controllers/visitor_schedules_controller'
+
+import VisitorEvaluateStudentsController from '#controllers/visitor_evaluate_students_controller'
+import VisitorEvaluateCompaniesController from '#controllers/visitor_evaluate_companies_controller'
+import StudentEvaluateCompaniesController from '#controllers/student_evaluate_companies_controller'
 
 import LetterController from '#controllers/letters_controller'
 
@@ -70,6 +75,21 @@ router
     router.resource('/majors', MajorsController).apiOnly()
 
     router.delete('/users/bulk', [UserController, 'bulkDestroy'])
+
+    router.put('/instructor/enrolls/grade/bulk', [InstructorGradesController, 'bulkUpdateGrade'])
+    router.put('/instructor/enrolls/attend-train/bulk', [
+      InstructorGradesController,
+      'bulkUpdateAttendTraining',
+    ])
+    router.put('/instructor/enrolls/grade', [InstructorGradesController, 'updateGrade'])
+    router.put('/instructor/enrolls/attend-train', [
+      InstructorGradesController,
+      'updateAttendTraining',
+    ])
+
+    router.resource('/visitor/evaluate/company', VisitorEvaluateCompaniesController).apiOnly()
+    router.resource('/visitor/evaluate/student', VisitorEvaluateStudentsController).apiOnly()
+    router.resource('/student/evaluate/company', StudentEvaluateCompaniesController).apiOnly()
 
     router.post('/users/bulk-excel', [UserController, 'bulkCreateFromExcel'])
     router.resource('/users', UserController).apiOnly()

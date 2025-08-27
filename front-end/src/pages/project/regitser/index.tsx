@@ -2,7 +2,7 @@ import { Layout } from "../../../component/layout";
 import { Formik, Form } from "formik";
 import {
   Field,
-  AutoCompleteField,
+  // AutoCompleteField,
   RadioField,
 } from "../../../component/input/field";
 const RegisterProject = () => {

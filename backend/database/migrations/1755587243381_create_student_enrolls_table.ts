@@ -14,7 +14,9 @@ export default class extends BaseSchema {
         .references('course_sections.id')
         .onDelete('CASCADE')
 
-      table.integer('grade')
+      table.string('grade')
+      table.string('attend_training')
+      table.integer('company_score')
 
       table.timestamps(true)
     })

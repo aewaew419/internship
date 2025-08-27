@@ -26,6 +26,8 @@ export const PROTECTED_PATH = {
   INSTRUCTOR_CHANGE_STATUS_PERSON: "/student/enrollment/statuses",
   INSTRUCTOR_CHANGE_STATUS_ALL: "/student/enrollment/statuses/all",
   STUDENT_ENROLLMENT_APPROVE: "/student/enrollment/aprrove",
+  INSTRUCTOR_ATTEND_GRADE: "/instructor/enrolls/grade",
+  INSTRUCTOR_ATTEND_TRAINING: "/instructor/enrolls/attend-train",
   //   STUDENT_ENROLLMENT_APPROVE_COUNT: "/student-enrolls/:id/approval-counts",
 
   ASSIGN_VISITOR: "/visitor-trainings/assign",
@@ -39,4 +41,8 @@ export const PROTECTED_PATH = {
   VISITOR_VISITOR_SCHEDULE_LIST: "/visitors/schedule",
   VISITOR_ASSIGN_SCHEDULE: "/visitors/schedule",
   VISITOR_VISITOR_SCHEDULE_REPORT: "/visitors/schedule_report",
+
+  VISITOR_EVALUATE_STUDENT: "/visitor/evaluate/student",
+  VISITOR_EVALUATE_COMPANY: "/visitor/evaluate/company",
+  STUDENT_EVALUATE_COMPANY: "/student/evaluate/company",
 };

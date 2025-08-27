@@ -6,6 +6,8 @@ import type {
   StudentEnrollDTO,
   StudentEnrollInterface,
   StudentEnrollRegisterInteface,
+  StudentEvaluateCompanyDTO,
+  StudentEvaluateCompanyInterface,
 } from "./type";
 import type { AxiosResponse } from "axios";
 import { useToken } from "../../../utils/localStorage";
@@ -66,6 +68,28 @@ export class StudentService extends RemoteA {
   ): Promise<AxiosResponse> => {
     const response = await this.getAxiosInstance().put(
       PROTECTED_PATH.STUDENT_ENROLLMENT + `/${id}`,
+      entity
+    );
+    const { data } = response;
+    return data;
+  };
+
+  getStudentEvaluateCompany = async (
+    id: number
+  ): Promise<StudentEvaluateCompanyInterface[]> => {
+    const response = await this.getAxiosInstance().get(
+      PROTECTED_PATH.STUDENT_EVALUATE_COMPANY + `/${id}`
+    );
+    const { data } = response;
+    return data;
+  };
+
+  putStudentEvaluateCompany = async (
+    id: number,
+    entity: StudentEvaluateCompanyDTO
+  ): Promise<AxiosResponse> => {
+    const response = await this.getAxiosInstance().put(
+      PROTECTED_PATH.STUDENT_EVALUATE_COMPANY + `/${id}`,
       entity
     );
     const { data } = response;

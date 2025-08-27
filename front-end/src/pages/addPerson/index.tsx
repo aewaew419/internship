@@ -42,14 +42,14 @@ const AddPerson = () => {
     if (selectAllRef.current) selectAllRef.current.indeterminate = someSelected;
   }, []);
 
-  const roleName = (roleId?: number) =>
-    roleId === 1
-      ? "Staff"
-      : roleId === 2
-      ? "Instructor"
-      : roleId === 3
-      ? "Student"
-      : "-";
+  //   const roleName = (roleId?: number) =>
+  //     roleId === 1
+  //       ? "Staff"
+  //       : roleId === 2
+  //       ? "Instructor"
+  //       : roleId === 3
+  //       ? "Student"
+  //       : "-";
   return (
     <Layout
       header={[{ path: PROTECTED_PATH.UPLOAD_LIST, name: "อัปโหลดรายชื่อ" }]}

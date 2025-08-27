@@ -20,6 +20,15 @@ import {
   VisitorSchedulePerson,
   VisitorVisits,
   VisitorVisitsPersons,
+  Evaluate,
+  VisitorEvaluateCompany,
+  VisitorEvaluateCompanyPerson,
+  VisitorEvaluateStudent,
+  VisitorEvaluateStudentPerson,
+  StudentEvaluateCompany,
+  StudentEvaluateCompanyPerCompany,
+  AttendTraining,
+  AssignGrade,
 } from "../pages";
 import {
   Route,
@@ -110,6 +119,31 @@ const Router = () => {
             path={PROTECTED_PATH.VISITOR_VISITS_PERSON}
             element={<VisitorVisitsPersons />}
           />
+          <Route
+            path={PROTECTED_PATH.VISITOR_EVALUATE}
+            element={<Evaluate />}
+          />
+          <Route
+            path={PROTECTED_PATH.VISITOR_EVALUATE_COMPANY}
+            element={<VisitorEvaluateCompany />}
+          />
+          <Route
+            path={PROTECTED_PATH.VISITOR_EVALUATE_COMPANY_PERSON}
+            element={<VisitorEvaluateCompanyPerson />}
+          />
+          <Route
+            path={PROTECTED_PATH.VISITOR_EVALUATE_STUDENT}
+            element={<VisitorEvaluateStudent />}
+          />
+          <Route
+            path={PROTECTED_PATH.VISITOR_EVALUATE_STUDENT_PERSON}
+            element={<VisitorEvaluateStudentPerson />}
+          />
+          <Route
+            path={PROTECTED_PATH.ATTEND_TRAINING}
+            element={<AttendTraining />}
+          />
+          <Route path={PROTECTED_PATH.ASSIGN_GRADE} element={<AssignGrade />} />
         </Route>
 
         <Route element={<RequireAuth role={["student"]} />}>
@@ -129,6 +163,14 @@ const Router = () => {
             path={PROTECTED_PATH.REGISTER_PROJECT}
             element={<RegisterProject />}
           />
+          <Route
+            path={PROTECTED_PATH.EVALUTAE_COMPANY}
+            element={<StudentEvaluateCompany />}
+          />
+          <Route
+            path={PROTECTED_PATH.COMPANY_EVALUAION_PER_COMPANY}
+            element={<StudentEvaluateCompanyPerCompany />}
+          />
         </Route>
       </Routes>
     </BrowserRouter>
@@ -139,8 +181,9 @@ export default Router;
 const RequireAuth = ({ role }: { role: string[] }) => {
   const location = useLocation();
   const auth = useAuth();
+  console.log(role);
 
-  const AuthRole = ["instructor", "visitor", "committee"];
+  //   const AuthRole = ["instructor", "visitor", "committee"];
   //   ["student"];
 
   if (!auth?.user) {
@@ -152,16 +195,16 @@ const RequireAuth = ({ role }: { role: string[] }) => {
       />
     );
   }
-  //   const isHasRole = role.find((data) => AuthRole.find((auth) => auth === data));
-  //   if (!isHasRole) {
-  //     return (
-  //       <Navigate
-  //         to={PROTECTED_PATH.DASHBOARD}
-  //         state={{ from: location }}
-  //         replace
-  //       />
-  //     );
-  //   }
+  // const isHasRole = role.find((data) => AuthRole.find((auth) => auth === data));
+  // if (!isHasRole) {
+  //   return (
+  //     <Navigate
+  //       to={PROTECTED_PATH.DASHBOARD}
+  //       state={{ from: location }}
+  //       replace
+  //     />
+  //   );
+  // }
   return (
     <>
       <Outlet />

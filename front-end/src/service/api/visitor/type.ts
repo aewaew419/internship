@@ -58,3 +58,26 @@ export type VisitorScheduleReportInterface = {
   createdAt: string;
   updatedAt: string;
 };
+
+export type VisitorEvaluateStudentDTO = {
+  ids: number[];
+  scores: number[];
+  comment: string;
+};
+
+export type VisitorEvaluateStudentInterface = {
+  id: number;
+  visitorTrainingId: number;
+  score: number;
+  questions: string;
+  comment: string;
+  createdAt: string;
+  updatedAt: string;
+  training: {
+    id: number;
+    visitorInstructorId: number;
+    studentEnrollId: number;
+    createdAt: string;
+    updatedAt: string;
+  };
+};

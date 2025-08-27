@@ -11,6 +11,7 @@ import {
   DescriptionRounded,
   LocationCityRounded,
   RateReviewRounded,
+  PeopleRounded,
 } from "@mui/icons-material";
 import { clearToken, useToken } from "../../utils/localStorage";
 import { UNPROTECTED_PATH } from "../../constant/path.route";
@@ -116,9 +117,15 @@ export const Navbar = () => {
     },
     {
       name: "บันทึกเกรด",
-      path: PROTECTED_PATH.COMPANY_EVALUAION,
+      path: PROTECTED_PATH.ASSIGN_GRADE,
       icon: <RateReviewRounded />,
     },
+    {
+      name: "ประเมิน",
+      path: PROTECTED_PATH.VISITOR_EVALUATE,
+      icon: <RateReviewRounded />,
+    },
+
     // {
     //   name: "ยกเลิกสหกิจศึกษา / ฝึกงาน",
     //   path: PROTECTED_PATH.COMPANY_EVALUAION,
@@ -126,8 +133,8 @@ export const Navbar = () => {
     // },
     {
       name: "การเข้าอบรม",
-      path: PROTECTED_PATH.COMPANY_EVALUAION,
-      icon: <Home />,
+      path: PROTECTED_PATH.ATTEND_TRAINING,
+      icon: <PeopleRounded />,
     },
   ];
   const ItemNav =

@@ -1,12 +1,12 @@
-import { Layout } from "../../../component/layout";
+import { Layout } from "../../../../component/layout";
 import { Formik, Form } from "formik";
 import {
   Field,
   AutoCompleteField,
   RadioField,
   DatePickerField,
-} from "../../../component/input/field";
-import { Dropzone } from "../../../component/input/dropzone";
+} from "../../../../component/input/field";
+import { Dropzone } from "../../../../component/input/dropzone";
 import useViewModel from "./viewModel";
 import { useEffect } from "react";
 import dayjs from "dayjs";

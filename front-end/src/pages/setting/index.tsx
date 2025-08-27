@@ -2,12 +2,12 @@ import { Layout } from "../../component/layout";
 import { Formik, Form } from "formik";
 import { AutoCompleteField, Field } from "../../component/input/field";
 import useViewModel from "./viewModel";
-import {
+import type {
   CourseInterface,
   CourseInstructorDTO,
   CourseSectionInterface,
 } from "../../service/api/course/type";
-import { InstructorInterface } from "../../service/api/user/type";
+import type { InstructorInterface } from "../../service/api/user/type";
 const Setting = () => {
   const {
     instructorList,

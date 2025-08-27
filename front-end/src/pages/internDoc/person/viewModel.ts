@@ -1,8 +1,8 @@
 import { StudentService } from "../../../service/api/student";
 import { EnrollmentService } from "../../../service/api/enrollment";
 import { useState, useEffect } from "react";
-import { StudentEnrollRegisterInteface } from "../../../service/api/student/type";
-import { EnrollApproveCount } from "../../../service/api/enrollment/type";
+import type { StudentEnrollRegisterInteface } from "../../../service/api/student/type";
+import type { EnrollApproveCount } from "../../../service/api/enrollment/type";
 const useViewModel = (id: number) => {
   const studentService = new StudentService();
   const enrollmentService = new EnrollmentService();

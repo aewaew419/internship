@@ -1,18 +1,15 @@
 import { useState, useEffect } from "react";
-import { StudentService } from "../../../service/api/student";
+import { StudentService } from "../../../../service/api/student";
 import type {
   StudentInterface,
   StudentDTO,
-  StudentEnrollRegisterInteface,
-} from "../../../service/api/student/type";
-import { UniversityService } from "../../../service/api/university";
+} from "../../../../service/api/student/type";
+import { UniversityService } from "../../../../service/api/university";
 import type {
-  CampusInterface,
   FaculyInterface,
   ProgramInterface,
   CurriculumInterface,
-  MajorInterface,
-} from "../../../service/api/university/type";
+} from "../../../../service/api/university/type";
 const useViewModel = () => {
   const studentService = new StudentService();
   const universityService = new UniversityService();
@@ -61,7 +58,7 @@ const useViewModel = () => {
       console.error("Error fetching faculties:", error);
     }
   };
-  const fetchPrograms = async (id: number) => {
+  const fetchPrograms = async () => {
     try {
       const response = await universityService.reqGetPrograms();
       setPrograms(response);
@@ -69,7 +66,7 @@ const useViewModel = () => {
       console.error("Error fetching programs:", error);
     }
   };
-  const fetchCurriculums = async (id: number) => {
+  const fetchCurriculums = async () => {
     try {
       const response = await universityService.reqGetCurriculums();
       setCurriculums(response);

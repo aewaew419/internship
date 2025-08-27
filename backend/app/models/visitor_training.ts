@@ -4,6 +4,8 @@ import type { BelongsTo, HasMany } from '@adonisjs/lucid/types/relations'
 import StudentEnroll from '#models/student_enroll'
 import Instructor from '#models/instructor'
 import VisitorSchedule from '#models/visitor_schedule'
+import VisitorEvaluateCompany from './visitor_evaluate_company.js'
+import VisitorEvaluateStudent from './visitor_evaluate_student.js'
 
 export default class VisitorTraining extends BaseModel {
   public static table = 'visitor_trainings'
@@ -38,4 +40,14 @@ export default class VisitorTraining extends BaseModel {
     foreignKey: 'visitor_training_id',
   })
   declare schedules: HasMany<typeof VisitorSchedule>
+
+  @hasMany(() => VisitorEvaluateCompany, {
+    foreignKey: 'student_training_id',
+  })
+  declare evaluateCompany: HasMany<typeof VisitorEvaluateCompany>
+
+  @hasMany(() => VisitorEvaluateStudent, {
+    foreignKey: 'student_training_id',
+  })
+  declare evaluateStudent: HasMany<typeof VisitorEvaluateStudent>
 }

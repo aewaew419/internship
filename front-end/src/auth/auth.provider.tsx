@@ -1,5 +1,5 @@
 import { createContext, useState } from "react";
-import { UserInterface } from "../service/api/user/type";
+import type { UserInterface } from "../service/api/user/type";
 interface AuthContextType {
   user: UserInterface | null;
   setCredential: (user: UserInterface) => void;

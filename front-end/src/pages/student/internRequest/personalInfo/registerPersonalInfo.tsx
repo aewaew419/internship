@@ -1,7 +1,7 @@
-import { Layout } from "../../../component/layout";
-import { Field, AutoCompleteField } from "../../../component/input/field";
+import { Layout } from "../../../../component/layout";
+import { Field, AutoCompleteField } from "../../../../component/input/field";
 import { Formik, Form } from "formik";
-import { Dropzone } from "../../../component/input/dropzone";
+import { Dropzone } from "../../../../component/input/dropzone";
 import useViewModel from "./viewModel";
 import { useEffect } from "react";
 const RegisterPersonalInfo = () => {
@@ -43,10 +43,10 @@ const RegisterPersonalInfo = () => {
         >
           {({ handleSubmit, setFieldValue, values }) => {
             useEffect(() => {
-              fetchPrograms(Number(values.programId));
+              fetchPrograms();
             }, [values.programId]);
             useEffect(() => {
-              fetchCurriculums(Number(values.curriculumId));
+              fetchCurriculums();
             }, [values.curriculumId]);
             return (
               <Form onSubmit={handleSubmit}>

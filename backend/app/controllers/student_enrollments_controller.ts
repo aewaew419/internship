@@ -6,6 +6,7 @@ import StudentEnroll from '#models/student_enroll'
 import StudentTraining from '#models/student_training'
 import Company from '#models/company'
 import StudentEnrollStatus from '#models/student_enroll_status'
+import StudentEvaluateCompany from '#models/student_evaluate_company'
 
 export default class StudentEnrollmentsController {
   async index({ request }: HttpContext) {
@@ -45,6 +46,7 @@ export default class StudentEnrollmentsController {
         .preload('course_section', (query) => {
           query.preload('course').orderBy('year', 'desc')
         })
+        .preload('student_training', (query) => query.preload('company'))
     } catch (error) {
       return error
     }
@@ -89,11 +91,24 @@ export default class StudentEnrollmentsController {
         'job_description',
       ])
 
-      await StudentTraining.create({
+      const studentTraining = await StudentTraining.create({
         ...trainingData,
         student_enroll_id: studentEnrollId,
         company_id: companyId,
       })
+      const DEFAULT_STUDENT_EVAL_QUESTIONS = [
+        'ความเหมาะสมของลักษณะงานกับสาขาวิชาที่เรียน',
+        'ความเป็นมิตรและให้ความร่วมมือของพนักงาน',
+        'สภาพแวดล้อมในการทำงาน (ความสะอาด ปลอดภัย)',
+        'ความชัดเจนในการมอบหมายงาน',
+        'โอกาสในการเรียนรู้และพัฒนาทักษะระหว่างการฝึกงาน',
+      ]
+      await StudentEvaluateCompany.createMany(
+        DEFAULT_STUDENT_EVAL_QUESTIONS.map((q) => ({
+          student_training_id: studentTraining.id,
+          questions: q,
+        }))
+      )
       const courseInstructors = await CourseSection.query()
         .where('id', data.course_section_id)
         .preload('course_instructors', (query) => {

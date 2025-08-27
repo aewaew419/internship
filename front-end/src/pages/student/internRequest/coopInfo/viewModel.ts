@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
-import { CourseService } from "../../../service/api/course";
-import { StudentService } from "../../../service/api/student";
-import type { StudentEnrollDTO } from "../../../service/api/student/type";
+import { CourseService } from "../../../../service/api/course";
+import { StudentService } from "../../../../service/api/student";
+import type { StudentEnrollDTO } from "../../../../service/api/student/type";
 import type {
   CourseYearInterface,
   CourseSemesterInterface,
   CourseSectionInterface,
   CourseInterface,
-} from "../../../service/api/course/type";
+} from "../../../../service/api/course/type";
 
 const useViewModel = (id: number) => {
   const courseService = new CourseService();

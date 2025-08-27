@@ -1,5 +1,5 @@
-import { Layout } from "../../component/layout";
-import { PROTECTED_PATH } from "../../constant/path.route";
+import { Layout } from "../../../component/layout";
+import { PROTECTED_PATH } from "../../../constant/path.route";
 import { useNavigate } from "react-router-dom";
 import useViewModel from "./viewModel";
 import { EditRounded, AddRounded } from "@mui/icons-material";

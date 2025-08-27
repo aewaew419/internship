@@ -5,7 +5,24 @@ import StudentEnrollStatus from '#models/student_enroll_status'
 import VisitorTraining from '#models/visitor_training'
 import StudentEnroll from '#models/student_enroll'
 import db from '@adonisjs/lucid/services/db'
-
+import VisitorEvaluateCompany from '#models/visitor_evaluate_company'
+import VisitorEvaluateStudent from '#models/visitor_evaluate_student'
+const DEFAULT_VISITOR_STUDENT_EVAL_QUESTIONS = [
+  'ความรู้ความสามารถทางวิชาการ',
+  'ความตั้งใจและรับผิดชอบในงาน',
+  'มนุษยสัมพันธ์และการทำงานร่วมกับผู้อื่น',
+  'การตรงต่อเวลาและวินัยในการทำงาน',
+  'ความคิดริเริ่มสร้างสรรค์',
+  'ความเหมาะสมของบุคลิกภาพในการทำงาน',
+  'ความเหมาะสมของบุคลิกภาพในการทำงาน',
+]
+const DEFAULT_VISITOR_COMPANY_EVAL_QUESTIONS = [
+  'ความเหมาะสมของลักษณะงานกับสาขาวิชาที่เรียน',
+  'ความเป็นมิตรและให้ความร่วมมือของพนักงาน',
+  'สภาพแวดล้อมในการทำงาน (ความสะอาด ปลอดภัย)',
+  'ความชัดเจนในการมอบหมายงาน',
+  'โอกาสในการเรียนรู้และพัฒนาทักษะระหว่างการฝึกงาน',
+]
 export default class InstructorCoursesController {
   public async index({ request }: HttpContext) {
     try {
@@ -119,11 +136,25 @@ export default class InstructorCoursesController {
         visitor_instructor_id: visitor_instructor_id,
       })
 
+      await VisitorEvaluateCompany.createMany(
+        DEFAULT_VISITOR_COMPANY_EVAL_QUESTIONS.map((question) => ({
+          visitor_training_id: training.id,
+          questions: question,
+        }))
+      )
+      await VisitorEvaluateStudent.createMany(
+        DEFAULT_VISITOR_STUDENT_EVAL_QUESTIONS.map((question) => ({
+          visitor_training_id: training.id,
+          questions: question,
+        }))
+      )
+
       return { message: 'Visitor assigned', visitorTraining: training }
     } catch (error) {
       return error
     }
   }
+
   public async store({ request }: HttpContext) {
     try {
       const data = request.only(['instructor_id', 'course_section_id'])
@@ -212,13 +243,33 @@ export default class InstructorCoursesController {
 
     const trx = await db.transaction()
     try {
-      await VisitorTraining.createMany(
+      const trainings = await VisitorTraining.createMany(
         toCreate.map((id: number) => ({
           student_enroll_id: id,
           visitor_instructor_id,
         })),
         { client: trx }
       )
+      const companyRows = trainings.flatMap((t) =>
+        DEFAULT_VISITOR_COMPANY_EVAL_QUESTIONS.map((q) => ({
+          visitor_training_id: t.id,
+          questions: q,
+        }))
+      )
+      if (companyRows.length) {
+        await VisitorEvaluateCompany.createMany(companyRows, { client: trx })
+      }
+
+      // 3) seed default Student evaluations (N questions per training)
+      const studentRows = trainings.flatMap((t) =>
+        DEFAULT_VISITOR_STUDENT_EVAL_QUESTIONS.map((q) => ({
+          visitor_training_id: t.id,
+          questions: q,
+        }))
+      )
+      if (studentRows.length) {
+        await VisitorEvaluateStudent.createMany(studentRows, { client: trx })
+      }
       await trx.commit()
       return {
         message: 'Visitor assigned to selected students',

@@ -1,8 +1,8 @@
 import { useCallback, useState, useEffect, useMemo, useRef } from "react";
 import { InstructorService } from "../../../service/api/instructor";
-import { InstructorStudentEnrollStatusInterface } from "../../../service/api/instructor/type";
+import type { InstructorStudentEnrollStatusInterface } from "../../../service/api/instructor/type";
 import { EnrollmentService } from "../../../service/api/enrollment";
-import { EnrollStatusDTO } from "../../../service/api/enrollment/type";
+// import { EnrollStatusDTO } from "../../../service/api/enrollment/type";
 
 type StatusType = "approve" | "denied" | "pending";
 
@@ -18,7 +18,7 @@ const useViewModel = () => {
     useState<InstructorStudentEnrollStatusInterface[]>();
 
   const [rows, setRows] = useState<Row[]>([]);
-  const [loading, setLoading] = useState(false);
+  //   const [loading, setLoading] = useState(false);
 
   // selection state
   const [selected, setSelected] = useState<Set<number>>(new Set());
@@ -87,7 +87,7 @@ const useViewModel = () => {
   }, []);
   return {
     rows,
-    loading,
+    // loading,
     // selection
     selected,
     selectedCount: selected.size,

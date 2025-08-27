@@ -66,23 +66,6 @@ export default class VisitorSchedulesController {
       .preload('studentEnroll', (q) => q.preload('student')) // -> student_enroll.student
       .preload('schedules', (q) => q.orderBy('visit_no', 'desc')) // latest first
 
-    // shape the response
-    // const data = trainings.map((t) => {
-    //   const latest = t.schedules[0] // because we sorted desc
-    //   return {
-    //     visitor_training_id: t.id,
-    //     student_enroll_id: t.student_enroll_id,
-    //     student: {
-    //       // adjust these to your real Student fields
-    //       id: t.studentEnroll?.student?.id,
-    //       studentId: t.studentEnroll?.student?.studentId,
-    //       name: t.studentEnroll?.student?.name,
-    //     },
-    //     last_visit_no: latest?.visit_no ?? 0,
-    //     last_visit_at: latest?.visit_at ?? null,
-    //   }
-    // })
-
     return trainings
   }
 }

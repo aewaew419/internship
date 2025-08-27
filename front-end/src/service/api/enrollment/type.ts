@@ -12,6 +12,8 @@ export type EnrollApproveInterface = {
   studentId: number;
   courseSectionId: number;
   grade: string | null;
+  attendTraining: string | null;
+  companyScore: string | null;
   createdAt: string;
   updatedAt: string;
   visitor_training: {

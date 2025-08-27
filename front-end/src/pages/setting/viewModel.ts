@@ -9,7 +9,7 @@ import type {
   CourseInstructorDTO,
 } from "../../service/api/course/type";
 import { UserService } from "../../service/api/user";
-import { InstructorInterface } from "../../service/api/user/type";
+import type { InstructorInterface } from "../../service/api/user/type";
 const useViewModel = () => {
   const courseService = new CourseService();
   const userService = new UserService();

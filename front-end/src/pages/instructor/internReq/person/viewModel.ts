@@ -1,7 +1,7 @@
 import { EnrollmentService } from "../../../../service/api/enrollment";
-import { EnrollStatusDTO } from "../../../../service/api/enrollment/type";
+import type { EnrollStatusDTO } from "../../../../service/api/enrollment/type";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 const useViewModel = () => {
   const enrollmentService = new EnrollmentService();
@@ -18,6 +18,10 @@ const useViewModel = () => {
       throw error;
     }
   };
-  return { initialValues, handleOnSubmitStudentEnrollmentStatus };
+  return {
+    initialValues,
+    handleOnSubmitStudentEnrollmentStatus,
+    setInitialValues,
+  };
 };
 export default useViewModel;
