@@ -4,7 +4,7 @@ type tableProps = {
 };
 export const Table = (props: tableProps) => {
   return (
-    <table className="w-full rounded-2xl">
+    <table className="w-full rounded-2xl bg-white">
       <thead className="bg-primary-600 text-white rounded-2xl">
         <tr>
           {props.header.map((data, index) => (

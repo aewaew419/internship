@@ -9,10 +9,9 @@ export default class StudentEvaluateCompaniesController {
   }
 
   public async show({ params }: HttpContext) {
-    const visitorEvaluateStudent = await StudentEvaluateCompany.query().preload(
-      'student_training',
-      (query) => query.where('id', params.id)
-    )
+    const visitorEvaluateStudent = await StudentEvaluateCompany.query()
+      .preload('student_training')
+      .where('student_training_id', params.id)
     return visitorEvaluateStudent
   }
 

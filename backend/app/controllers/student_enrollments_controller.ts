@@ -103,12 +103,19 @@ export default class StudentEnrollmentsController {
         'ความชัดเจนในการมอบหมายงาน',
         'โอกาสในการเรียนรู้และพัฒนาทักษะระหว่างการฝึกงาน',
       ]
-      await StudentEvaluateCompany.createMany(
-        DEFAULT_STUDENT_EVAL_QUESTIONS.map((q) => ({
-          student_training_id: studentTraining.id,
-          questions: q,
-        }))
+      const existing = await StudentEvaluateCompany.query().where(
+        'student_training_id',
+        studentTraining.id
       )
+
+      if (existing.length === 0) {
+        await StudentEvaluateCompany.createMany(
+          DEFAULT_STUDENT_EVAL_QUESTIONS.map((q) => ({
+            student_training_id: studentTraining.id,
+            questions: q,
+          }))
+        )
+      }
       const courseInstructors = await CourseSection.query()
         .where('id', data.course_section_id)
         .preload('course_instructors', (query) => {
@@ -147,7 +154,7 @@ export default class StudentEnrollmentsController {
           query.preload('company')
         })
         .firstOrFail()
-      const data = request.only(['student_id', 'course_section_id'])
+      //   const data = request.only(['student_id', 'course_section_id'])
 
       const companyData = request.only([
         'company_register_number',
@@ -199,7 +206,7 @@ export default class StudentEnrollmentsController {
         })
       }
 
-      enrollment.merge(data)
+      //   enrollment.merge(data)
       await enrollment.save()
       return { message: 'Student enrollment updated' }
     } catch (error) {

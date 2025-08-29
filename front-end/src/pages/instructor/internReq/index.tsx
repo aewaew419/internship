@@ -20,7 +20,7 @@ const InstructorInternReq = () => {
 
   return (
     <Layout header={[{ path: "", name: "รายการขอฝึกงาน  / สหกิจศึกษา" }]}>
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-4 mt-5">
         <div className="text-sm text-gray-500">
           เลือกไว้ {selectedCount} รายการ
         </div>
@@ -45,7 +45,7 @@ const InstructorInternReq = () => {
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-2xl shadow">
+      <div className="overflow-x-auto rounded-2xl shadow bg-white">
         <table className="min-w-full text-sm">
           <thead className="bg-gray-100">
             <tr>
@@ -95,7 +95,7 @@ const InstructorInternReq = () => {
                     onClick={() =>
                       navigate(
                         PROTECTED_PATH.INSTRUCTOR_INTERN_REQUEST_PERSON +
-                          `?id=${row.id}`
+                          `?id=${row.id}&enroll_id=${row.student_enroll.id}`
                       )
                     }
                   >

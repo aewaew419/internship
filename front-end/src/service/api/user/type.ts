@@ -45,6 +45,14 @@ export type UserInterface = {
       updatedAt: string;
     } | null;
   };
+  roles: {
+    student: boolean;
+    instructor: boolean;
+    committee: boolean;
+    visitor: boolean;
+    courseInstructor: boolean;
+    list: string[];
+  };
 };
 
 export type LoginDTO = {

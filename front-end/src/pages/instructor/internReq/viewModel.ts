@@ -9,7 +9,7 @@ type StatusType = "approve" | "denied" | "pending";
 type Row = {
   id: number;
   status: StatusType;
-  student_enroll: { student: { name: string; studentId: string } };
+  student_enroll: { id: number; student: { name: string; studentId: string } };
 };
 const useViewModel = () => {
   const instructorService = new InstructorService();
@@ -35,6 +35,7 @@ const useViewModel = () => {
             id: item.id,
             status: item.status,
             student_enroll: {
+              id: item.studentEnrollId,
               student: {
                 name: item.student_enroll.student.name,
                 studentId: item.student_enroll.student.studentId,

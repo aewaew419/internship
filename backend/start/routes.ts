@@ -7,7 +7,8 @@
 |
 */
 import router from '@adonisjs/core/services/router'
-const AuthController = () => import('#controllers/auth_controller')
+// const AuthController = () => import('#controllers/auth_controller')
+import AuthController from '#controllers/auth_controller'
 
 // import UserController from '#controllers/users_controller'
 import ExcelController from '#controllers/excel_controller'
@@ -37,6 +38,8 @@ import VisitorEvaluateStudentsController from '#controllers/visitor_evaluate_stu
 import VisitorEvaluateCompaniesController from '#controllers/visitor_evaluate_companies_controller'
 import StudentEvaluateCompaniesController from '#controllers/student_evaluate_companies_controller'
 
+import ReportsController from '#controllers/reports_controller'
+
 import LetterController from '#controllers/letters_controller'
 
 router.post('/register', [AuthController, 'register'])
@@ -53,7 +56,7 @@ router
         hello: 'world',
       }
     })
-
+    router.get('/reports', [ReportsController, 'index'])
     router.post('/login', [AuthController, 'login'])
 
     router.resource('/roles', RoleController).apiOnly()

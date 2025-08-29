@@ -211,7 +211,7 @@ const AddPerson = () => {
                           />
                         </FormControl>
                       </td>
-                      <td>{u.fullName || "-"}</td>
+                      <td>{u.students?.name || u.instructors?.name || "-"}</td>
                       <td>{u.email}</td>
                       <td>
                         {/* if you have role_id in the row, map it here */}

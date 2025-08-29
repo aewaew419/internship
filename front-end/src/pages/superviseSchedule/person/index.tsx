@@ -1,5 +1,5 @@
 import { Layout } from "../../../component/layout";
-import { Persona, CoopInformation } from "../../../component/information";
+// import { Persona, CoopInformation } from "../../../component/information";
 const SuperviseSchedulePerson = () => {
   return (
     <Layout
@@ -12,8 +12,8 @@ const SuperviseSchedulePerson = () => {
           เอกสารขอฝึกงาน / สหกิจศึกษา
         </h1>
         <div className="mt-5 mx-5">
-          <Persona />
-          <CoopInformation />
+          {/* <Persona />
+          <CoopInformation /> */}
         </div>
       </div>
     </Layout>

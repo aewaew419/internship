@@ -2,24 +2,26 @@ import { Layout } from "../../component/layout";
 import { PROTECTED_PATH } from "../../constant/path.route";
 import { DouhnutChart } from "../../component/chart";
 import { StudentProject } from "./section";
+import { useToken } from "../../utils/localStorage";
 
 const Dashboard = () => {
-  const step = [
-    { topic: "", date: "" },
-    // { topic: "กรอกข้อมูลสหกิจศึกษา", date: "7 มิ.ย. 68 - 19 มิ.ย. 68" },
-    // {
-    //   topic: "ยื่นเอกสาร ณ ห้องธุรการชั้น 4",
-    //   date: "7 มิ.ย. 68 - 19 มิ.ย. 68",
-    // },
-    // { topic: "ยื่นเอกสารให้กับทางบริษัท", date: "7 มิ.ย. 68 - 19 มิ.ย. 68" },
-    // { topic: "สหกิจศึกษา", date: "7 มิ.ย. 68 - 19 มิ.ย. 68" },
-    // { topic: "กรอกหัวข้อโปรเจค", date: "7 มิ.ย. 68 - 19 มิ.ย. 68" },
-    // { topic: "อบรม", date: "7 มิ.ย. 68 - 19 มิ.ย. 68" },
-  ];
+  const token = useToken();
+  //   const step = [
+  // { topic: "", date: "" },
+  // { topic: "กรอกข้อมูลสหกิจศึกษา", date: "7 มิ.ย. 68 - 19 มิ.ย. 68" },
+  // {
+  //   topic: "ยื่นเอกสาร ณ ห้องธุรการชั้น 4",
+  //   date: "7 มิ.ย. 68 - 19 มิ.ย. 68",
+  // },
+  // { topic: "ยื่นเอกสารให้กับทางบริษัท", date: "7 มิ.ย. 68 - 19 มิ.ย. 68" },
+  // { topic: "สหกิจศึกษา", date: "7 มิ.ย. 68 - 19 มิ.ย. 68" },
+  // { topic: "กรอกหัวข้อโปรเจค", date: "7 มิ.ย. 68 - 19 มิ.ย. 68" },
+  // { topic: "อบรม", date: "7 มิ.ย. 68 - 19 มิ.ย. 68" },
+  //   ];
   return (
     <Layout header={[{ path: PROTECTED_PATH.DASHBOARD, name: "หน้าแรก" }]}>
       <div className="grid grid-cols-4 gap-4">
-        <div className="col-span-3">
+        <div className="col-span-4">
           <div className="bg-white p-4 rounded-2xl my-4">
             <p className="text-secondary-600 font-bold text-xl">
               กำหนดการใกล้ถึง
@@ -118,17 +120,19 @@ const Dashboard = () => {
               </div>
             </div>
           </div>
-          <div className="bg-white p-4 rounded-2xl my-4">
-            <p className="text-secondary-600 font-bold text-xl">
-              สถานะการยื่นขอฝึกงานของฉัน
-            </p>
-            <div className="text-primary-900 font-medium flex px-3 py-3 my-2 bg-primary-50 rounded">
-              <p>เอกสาร 6400224415</p>
-              <p className="mx-auto font-semibold">อยู่ระหว่างการพิจารณา</p>
-              <p>อาจารย์ประจำวิชา</p>
+          {token.roles.student && (
+            <div className="bg-white p-4 rounded-2xl my-4">
+              <p className="text-secondary-600 font-bold text-xl">
+                สถานะการยื่นขอฝึกงานของฉัน
+              </p>
+              <div className="text-primary-900 font-medium flex px-3 py-3 my-2 bg-primary-50 rounded">
+                <p>เอกสาร 6400224415</p>
+                <p className="mx-auto font-semibold">อยู่ระหว่างการพิจารณา</p>
+                <p>อาจารย์ประจำวิชา</p>
+              </div>
             </div>
-          </div>
-          <StudentProject />
+          )}
+          {token.roles.student && <StudentProject />}
           <div className="bg-white p-4 rounded-2xl my-4">
             <p className="text-secondary-600 font-bold text-xl">
               จำนวนนักศึกษาที่ส่งเอกสารฝึกงาน
@@ -199,7 +203,7 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
-        <div>
+        {/* <div>
           <div className="bg-white p-4 rounded-2xl my-4">
             <p className="text-secondary-600 font-bold text-xl">
               ขั้นตอนการยื่นสหกิจศึกษา
@@ -232,7 +236,7 @@ const Dashboard = () => {
               ))}
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
     </Layout>
   );

@@ -1,9 +1,9 @@
 import { Layout } from "../../../component/layout";
 import useViewModel from "./viewModel";
-import { PROTECTED_PATH } from "../../../constant/path.route";
-import { useNavigate } from "react-router-dom";
+// import { PROTECTED_PATH } from "../../../constant/path.route";
+// import { useNavigate } from "react-router-dom";
 const AttendTraining = () => {
-  const navigate = useNavigate();
+  //   const navigate = useNavigate();
   const {
     rows,
     selected,
@@ -18,7 +18,7 @@ const AttendTraining = () => {
   } = useViewModel();
   return (
     <Layout header={[{ path: "", name: "รายการขอฝึกงาน  / สหกิจศึกษา" }]}>
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-4 mt-5">
         <div className="text-sm text-gray-500">
           เลือกไว้ {selectedCount} รายการ
         </div>
@@ -42,7 +42,7 @@ const AttendTraining = () => {
           </button>
         </div>
       </div>
-      <div className="overflow-x-auto rounded-2xl shadow">
+      <div className="overflow-x-auto rounded-2xl shadow bg-white">
         <table className="min-w-full text-sm">
           <thead className="bg-gray-100">
             <tr>
@@ -93,11 +93,11 @@ const AttendTraining = () => {
                 <td className="p-3 text-right">
                   <button
                     className="px-3 py-1 rounded-lg bg-blue-600 text-white"
-                    onClick={() =>
-                      navigate(
-                        PROTECTED_PATH.ATTEND_TRAINING_PERSON + `?id=${row.id}`
-                      )
-                    }
+                    // onClick={() =>
+                    //   navigate(
+                    //     PROTECTED_PATH.ATTEND_TRAINING_PERSON + `?id=${row.id}`
+                    //   )
+                    // }
                   >
                     รายละเอียด
                   </button>
