@@ -141,9 +141,13 @@ export default class StudentEnrollStatusesController {
       // approvals
       .select(
         db.raw(
-          `SUM(ci.instructor_id IS NOT NULL AND ses.status = 'approve') AS approved_instructors`
+          "SUM(ci.instructor_id IS NOT NULL AND ses.status = 'approve') AS approved_instructors"
         ),
-        db.raw(`SUM(cc.instructor_id IS NOT NULL AND ses.status = 'approve') AS approved_committee`)
+        db.raw("SUM(cc.instructor_id IS NOT NULL AND ses.status = 'approve') AS approved_committee")
+      )
+      // rejections (exclude NULL/pending)
+      .select(
+        db.raw("SUM(cc.instructor_id IS NOT NULL AND ses.status = 'reject') AS rejected_committee")
       )
       .first()
 
@@ -155,7 +159,10 @@ export default class StudentEnrollStatusesController {
     const totalCommittee = Number(row.total_committee) || 0
     const approvedInstructors = Number(row.approved_instructors) || 0
     const approvedCommittee = Number(row.approved_committee) || 0
+    const rejectedCommittee = Number(row.rejected_committee) || 0 // ← only 'reject'
+
     const requiredCommittee = Math.ceil(totalCommittee / 2)
+    const neededToPass = Math.max(requiredCommittee - approvedCommittee, 0)
 
     const allInstructorsApproved = approvedInstructors === totalInstructors
     const halfCommitteeApproved = approvedCommittee >= requiredCommittee
@@ -170,9 +177,11 @@ export default class StudentEnrollStatusesController {
       },
       committee: {
         approved: approvedCommittee,
+        rejected: rejectedCommittee, // ← only rejects counted
         total: totalCommittee,
         requiredToPass: requiredCommittee,
         halfOrMoreApproved: halfCommitteeApproved,
+        neededToPass,
       },
       overall: { passed },
     }

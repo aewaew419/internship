@@ -25,12 +25,17 @@ export default class CourseSectionsController {
           .where('year', year)
           .where('semester', semester)
           .preload('course')
+          .orderBy('year', 'desc')
       }
 
       if (year) {
-        return CourseSection.query().where('year', year).distinct('semester').select('semester')
+        return CourseSection.query()
+          .where('year', year)
+          .distinct('semester')
+          .select('semester')
+          .orderBy('year', 'desc')
       }
-      return CourseSection.query().distinct('year').select('year')
+      return CourseSection.query().distinct('year').select('year').orderBy('year', 'desc')
     } catch (error) {
       return error
     }

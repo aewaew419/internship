@@ -104,10 +104,12 @@ const RegisterCoopInfo = () => {
                       placeholder="ปีการศึกษา (Year)"
                       disabled={id ? true : false}
                       require
-                      items={courseYears.map((item) => ({
-                        value: String(item.year),
-                        label: String(item.year),
-                      }))}
+                      items={[
+                        {
+                          value: String(courseYears?.[0]?.year) || "",
+                          label: String(courseYears?.[0]?.year) || "",
+                        },
+                      ]}
                     />
                   </div>
                   <div>

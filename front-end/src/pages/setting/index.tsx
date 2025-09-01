@@ -1,6 +1,10 @@
 import { Layout } from "../../component/layout";
 import { Formik, Form } from "formik";
-import { AutoCompleteField, Field } from "../../component/input/field";
+import {
+  AutoCompleteField,
+  Field,
+  DatePickerField,
+} from "../../component/input/field";
 import useViewModel from "./viewModel";
 import type {
   CourseInterface,
@@ -24,14 +28,10 @@ const Setting = () => {
   return (
     <Layout header={[{ path: "/setting", name: "ตั้งค่า" }]}>
       <div className="setting">
-        <h1 className="text-2xl font-bold">Settings</h1>
-        <p>Manage your settings here.</p>
         <div className="grid gap-5 my-5">
           <section className="grid gap-6">
             <div className="rounded-2xl border p-5 shadow-sm bg-white">
-              <h2 className="text-xl font-semibold mb-3">
-                Create Course Section
-              </h2>
+              <h2 className="text-xl font-semibold mb-3">สร้างรายวิชา</h2>
               <CreateCourseSectionForm
                 courses={course}
                 onCreate={handleCreateCourseSection}
@@ -62,7 +62,7 @@ const Setting = () => {
                         <tr key={s.id} className="border-b hover:bg-gray-50">
                           <td className="py-2 pr-3">{s.id}</td>
                           <td className="py-2 pr-3">{s.course.courseNameTh}</td>
-                          <td className="py-2 pr-3">{s.year}</td>
+                          <td className="py-2 pr-3">{s.year + 543}</td>
                           <td className="py-2 pr-3">{s.semester}</td>
                           <td>
                             <button
@@ -84,7 +84,7 @@ const Setting = () => {
           <section className="grid gap-6">
             <div className="rounded-2xl border p-5 shadow-sm bg-white">
               <h2 className="text-xl font-semibold mb-3">
-                Assign Instructor to Course
+                กำหนดอาจารย์ประจำวิชา
               </h2>
               <AssignInstructorCourseSection
                 instructor={instructorList || []}
@@ -125,7 +125,7 @@ const Setting = () => {
                             <td className="py-2 pr-3">
                               {s.course.courseNameTh}
                             </td>
-                            <td className="py-2 pr-3">{s.year}</td>
+                            <td className="py-2 pr-3">{s.year + 543}</td>
                             <td className="py-2 pr-3">{s.semester}</td>
                             <td className="py-2 pr-3">
                               {s.course_instructors.map((i) => i.name)}
@@ -150,9 +150,7 @@ const Setting = () => {
           </section>
           <section className="grid gap-6">
             <div className="rounded-2xl border p-5 shadow-sm bg-white">
-              <h2 className="text-xl font-semibold mb-3">
-                Assign Committee to Course
-              </h2>
+              <h2 className="text-xl font-semibold mb-3">กำหนดคณะกรรมการ</h2>
               <AssignCommitteeCourseSection
                 instructor={instructorList || []}
                 courseSection={courseSections}
@@ -198,7 +196,7 @@ const Setting = () => {
                               <td className="py-2 pr-3">
                                 {s.course.courseNameTh}
                               </td>
-                              <td className="py-2 pr-3">{s.year}</td>
+                              <td className="py-2 pr-3">{s.year + 543}</td>
                               <td className="py-2 pr-3">{s.semester}</td>
                               <td className="py-2 pr-3">{ci.name}</td>
                               <td>
@@ -265,7 +263,12 @@ const CreateCourseSectionForm = (props: CreateCourseSectionType) => {
                 })}
                 label="รายวิชา"
               />
-              <Field name="year" label="ปีการศึกษา" />
+              <DatePickerField
+                name="year"
+                label="ปีการศึกษา"
+                views={["year"]}
+                format="YYYY"
+              />
               <Field name="semester" label="เทอม" />
               <button
                 type="submit"
@@ -326,7 +329,7 @@ const AssignInstructorCourseSection = (props: CreateCourseInstructorType) => {
                       " (" +
                       course.semester +
                       "/" +
-                      course.year +
+                      (Number(course.year) + 543) +
                       ")",
                     value: course.id,
                   };
@@ -387,7 +390,7 @@ const AssignCommitteeCourseSection = (props: CreateCourseInstructorType) => {
                       " (" +
                       course.semester +
                       "/" +
-                      course.year +
+                      (Number(course.year) + 543) +
                       ")",
                     value: course.id,
                   };

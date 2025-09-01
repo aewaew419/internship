@@ -141,10 +141,17 @@ export const Approval = ({ id }: { id: number }) => {
       </div>
       <div className="flex justify-between my-2">
         <p className="text-lg font-bold text-secondary-600">คณะกรรมการ</p>
-        <div>
-          <p className="text-xl font-bold">
-            {count?.committee.approved}/{count?.committee.total} อนุมัติ
-          </p>
+        <div className="text-right">
+          <div>
+            <p className="text-xl font-bold">
+              {count?.committee.approved}/{count?.committee.total} อนุมัติ
+            </p>
+          </div>
+          <div>
+            <p className="text-xl font-bold">
+              {count?.committee?.rejected}/{count?.committee?.total} ไม่อนุมัติ
+            </p>
+          </div>
         </div>
       </div>
     </div>

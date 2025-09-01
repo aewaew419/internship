@@ -120,7 +120,7 @@ const Dashboard = () => {
               </div>
             </div>
           </div>
-          {token.roles.student && (
+          {token?.roles?.student && (
             <div className="bg-white p-4 rounded-2xl my-4">
               <p className="text-secondary-600 font-bold text-xl">
                 สถานะการยื่นขอฝึกงานของฉัน
@@ -132,7 +132,7 @@ const Dashboard = () => {
               </div>
             </div>
           )}
-          {token.roles.student && <StudentProject />}
+          {token?.roles?.student && <StudentProject />}
           <div className="bg-white p-4 rounded-2xl my-4">
             <p className="text-secondary-600 font-bold text-xl">
               จำนวนนักศึกษาที่ส่งเอกสารฝึกงาน

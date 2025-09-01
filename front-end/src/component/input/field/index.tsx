@@ -15,6 +15,7 @@ import {
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import AdapterDayjsBE from "./adapter";
+import type { DateView } from "@mui/x-date-pickers/models";
 
 import dayjs, { Dayjs } from "dayjs";
 import "dayjs/locale/th";
@@ -204,18 +205,22 @@ const AutoCompleteField = ({
 };
 
 type DatePickerFieldProps = {
-  label_th: string;
-  label_en: string;
+  label_th?: string;
+  label_en?: string;
+  label?: string;
   name: string;
   placeholder?: string;
   format?: string;
+  views?: readonly DateView[];
 };
 export const DatePickerField = ({
   label_en,
   label_th,
   name,
+  label,
   placeholder,
   format = "DD/MM/YYYY",
+  views,
 }: DatePickerFieldProps) => {
   const { setFieldValue } = useFormikContext<any>();
   const [field, meta] = useField(name);
@@ -229,6 +234,8 @@ export const DatePickerField = ({
       <LocalizationProvider dateAdapter={AdapterDayjsBE} adapterLocale="th">
         <DatePicker
           format={format}
+          views={views}
+          label={label}
           value={field.value ? dayjs(field.value) : null}
           onChange={(date: Dayjs | null) => {
             setFieldValue(name, date ? date.toISOString() : "");

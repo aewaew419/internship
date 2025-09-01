@@ -112,6 +112,7 @@ export type EnrollApproveCount = {
   };
   committee: {
     approved: number;
+    rejected: number;
     total: number;
     requiredToPass: number;
     halfOrMoreApproved: boolean;
