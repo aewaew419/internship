@@ -1,5 +1,6 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import Student from '#models/student'
+import app from '@adonisjs/core/services/app'
 
 export default class StudentsController {
   async index({ request }: HttpContext) {
@@ -48,13 +49,35 @@ export default class StudentsController {
         'gpax',
         'phone_number',
         'email',
-        'picture',
         'program_id',
         'faculty_id',
         'campus_id',
         'curriculum_id',
       ])
-      const major = request.only(['major_id'])
+      const major = request.input('major_id')
+
+      const picture = request.file('picture', {
+        size: '2mb',
+        extnames: ['jpg', 'png', 'jpeg'],
+      })
+      if (picture) {
+        // keep file name predictable
+        const fileName = `${data.student_id || student.student_id}.${picture.extname}`
+
+        // save into public/uploads/students
+        await picture.move(app.makePath('public/uploads/students'), {
+          name: fileName,
+          overwrite: true,
+        })
+
+        // store the public URL path
+        console.log(`/uploads/students/${fileName}`)
+
+        student.merge({ picture: `/uploads/students/${fileName}` })
+        await student.save()
+        return { message: 'Student updated', fileName }
+      }
+
       if (major.major_id) {
         student.merge({ ...data, major_id: major.major_id })
       } else {

@@ -46,7 +46,7 @@ export default class Student extends BaseModel {
   declare picture: string
 
   @column()
-  declare major_id: number
+  declare major_id: number | null
 
   @belongsTo(() => Major, {
     foreignKey: 'major_id',
@@ -54,7 +54,7 @@ export default class Student extends BaseModel {
   declare major: BelongsTo<typeof Major>
 
   @column()
-  declare program_id: number
+  declare program_id: number | null
 
   @belongsTo(() => Program, {
     foreignKey: 'program_id',
@@ -62,7 +62,7 @@ export default class Student extends BaseModel {
   declare program: BelongsTo<typeof Program>
 
   @column()
-  declare curriculum_id: number
+  declare curriculum_id: number | null
 
   @belongsTo(() => Curriculum, {
     foreignKey: 'curriculum_id',
@@ -70,7 +70,7 @@ export default class Student extends BaseModel {
   declare curriculum: BelongsTo<typeof Curriculum>
 
   @column()
-  declare faculty_id: number
+  declare faculty_id: number | null
 
   @belongsTo(() => Faculty, {
     foreignKey: 'faculty_id',

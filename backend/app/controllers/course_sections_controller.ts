@@ -32,8 +32,7 @@ export default class CourseSectionsController {
         return CourseSection.query()
           .where('year', year)
           .distinct('semester')
-          .select('semester')
-          .orderBy('year', 'desc')
+          .orderBy('semester', 'desc')
       }
       return CourseSection.query().distinct('year').select('year').orderBy('year', 'desc')
     } catch (error) {

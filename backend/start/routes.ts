@@ -124,9 +124,15 @@ router
     router.post('/course/assign-visitor', [InstructorCoursesController, 'assignVisitorForStudent'])
 
     router.resource('/courses', CoursesController).apiOnly()
+
+    router.put('/student/enrollments/picture/:id', [StudentEnrollmentsController, 'updatePicture'])
     router.resource('/student/enrollments', StudentEnrollmentsController).apiOnly()
     // router.get('/student/enrollments/:id', [StudentEnrollmentsController, 'show'])
 
+    router.get('/student/enrollment/statuses/instructor/person/:enroll_status_id', [
+      StudentEnrollStatusesController,
+      'getStatusByInstructorEnrollId',
+    ])
     router.get('/student/enrollment/statuses/instructor/:instructor_id', [
       StudentEnrollStatusesController,
       'getByInstructorId',
@@ -164,7 +170,11 @@ router
       'deleteVisitorForStudent',
     ])
 
-    router.get('/letters', [LetterController, 'generateLetter'])
+    router.post('/letters/request-coop/th/:id', [LetterController, 'requestCoopTH'])
+    router.post('/letters/request-coop/en/:id', [LetterController, 'requestCoopEN'])
+
+    router.post('/letters/refer-letter/th/:id', [LetterController, 'requestReferLetterTH'])
+    router.post('/letters/refer-letter/en/:id', [LetterController, 'requestReferLetterEN'])
   })
   .prefix('/api/v1')
 // .middleware(['auth']) // ล็อกอินก่อนใช้งาน

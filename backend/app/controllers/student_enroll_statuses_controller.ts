@@ -63,6 +63,13 @@ export default class StudentEnrollStatusesController {
       )
     return studentEnrollStatuses
   }
+  public async getStatusByInstructorEnrollId({ params }: HttpContext) {
+    const enroll_status_id = params.enroll_status_id
+    const studentEnrollStatuses = await StudentEnrollStatus.query()
+      .where('id', enroll_status_id)
+      .firstOrFail()
+    return studentEnrollStatuses
+  }
   public async getStudentEnrollApprove({}: HttpContext) {
     const agg = await db
       .from('student_enroll_statuses as ses')

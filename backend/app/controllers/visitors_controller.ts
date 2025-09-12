@@ -3,7 +3,9 @@ import VisitorTraining from '#models/visitor_training'
 
 export default class VisitorsController {
   public async index({}: HttpContext) {
-    const visitors = await VisitorTraining.query().preload('studentEnroll')
+    const visitors = await VisitorTraining.query()
+      .preload('studentEnroll', (q) => q.preload('student'))
+      .preload('visitor')
     return visitors
   }
   public async show({ params }: HttpContext) {

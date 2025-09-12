@@ -5,8 +5,12 @@ import CourseSection from '#models/course_section'
 import StudentEnroll from '#models/student_enroll'
 import StudentTraining from '#models/student_training'
 import Company from '#models/company'
+import CompanyPicture from '#models/company_picture'
 import StudentEnrollStatus from '#models/student_enroll_status'
 import StudentEvaluateCompany from '#models/student_evaluate_company'
+
+import app from '@adonisjs/core/services/app'
+import fs from 'fs/promises'
 
 export default class StudentEnrollmentsController {
   async index({ request }: HttpContext) {
@@ -16,7 +20,7 @@ export default class StudentEnrollmentsController {
         return StudentEnroll.query()
           .where('id', id)
           .preload('student_training', (query) => {
-            query.preload('company')
+            query.preload('company', (q) => q.preload('company_picture'))
           })
           .preload('visitor_training', (query) => {
             query.preload('visitor')
@@ -46,7 +50,9 @@ export default class StudentEnrollmentsController {
         .preload('course_section', (query) => {
           query.preload('course').orderBy('year', 'desc')
         })
-        .preload('student_training', (query) => query.preload('company'))
+        .preload('student_training', (query) =>
+          query.preload('company', (q) => q.preload('company_picture'))
+        )
     } catch (error) {
       return error
     }
@@ -73,6 +79,10 @@ export default class StudentEnrollmentsController {
         'company_type',
       ])
       const company = await Company.create(companyData)
+      await CompanyPicture.createMany([
+        { company_id: company.id, picture: null },
+        { company_id: company.id, picture: null },
+      ])
 
       const studentEnrollId = studentEnroll.id
       const companyId = company.id
@@ -140,7 +150,7 @@ export default class StudentEnrollmentsController {
           status: 'pending',
         }))
       )
-      return { message: 'Student enrollment created' }
+      return { message: 'Student enrollment created', id: studentEnroll.id }
     } catch (error) {
       return error
     }
@@ -214,6 +224,49 @@ export default class StudentEnrollmentsController {
     }
   }
 
+  public async updatePicture({ request, params, response }: HttpContext) {
+    const enrollment = await StudentEnroll.query()
+      .where('id', params.id)
+      .preload('student')
+      .preload('student_training', (q) => q.preload('company', (c) => c.preload('company_picture')))
+      .firstOrFail()
+
+    // exactly one file must be sent
+    const pic1 = request.file('picture_1', { size: '2mb', extnames: ['jpg', 'png', 'jpeg'] })
+    const pic2 = request.file('picture_2', { size: '2mb', extnames: ['jpg', 'png', 'jpeg'] })
+
+    if (!pic1 && !pic2) return response.badRequest({ message: 'No file provided' })
+    if (pic1 && pic2) return response.badRequest({ message: 'Send only one file per request' })
+
+    const slot: 1 | 2 = pic1 ? 1 : 2
+    const file = pic1 ?? pic2!
+    const dir = app.makePath('public/uploads/companies')
+    await fs.mkdir(dir, { recursive: true })
+
+    const fileName = `${enrollment.student.student_id}_pic${slot}.${file.extname}`
+    await file.move(dir, { name: fileName, overwrite: true })
+
+    const company = enrollment.student_training.company
+    // current rows (ordered by id so index 0=first slot, 1=second slot)
+    const rows = [...company.company_picture].sort((a, b) => a.id - b.id)
+
+    // Update only the requested slot
+    const webPath = `/uploads/companies/${fileName}`
+    const existingRow = rows[slot - 1]
+    if (existingRow) {
+      existingRow.merge({ picture: webPath })
+      await existingRow.save()
+    } else {
+      // create the Nth row if it doesn't exist yet
+      await company.related('company_picture').create({ picture: webPath })
+    }
+
+    return {
+      message: 'Updated',
+      slot,
+      url: `/${webPath}`,
+    }
+  }
   async destroy({ params }: HttpContext) {
     try {
       const enrollment = await StudentEnroll.findOrFail(params.id)

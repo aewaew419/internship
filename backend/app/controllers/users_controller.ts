@@ -144,6 +144,10 @@ export default class UserController {
                 name: String(row.name),
                 middle_name: String(row.middle_name || ''),
                 surname: String(row.surname),
+                major_id: Number(row.major_id) || null,
+                program_id: Number(row.program_id) || null,
+                curriculum_id: Number(row.curriculum_id) || null,
+                faculty_id: Number(row.faculty_id) || null,
               },
               { client: trx }
             )
@@ -161,8 +165,8 @@ export default class UserController {
                 name: String(row.name),
                 middle_name: String(row.middle_name || ''),
                 surname: String(row.surname),
-                // faculty_id: Number(row.faculty_id),
-                // program_id: Number(row.program_id),
+                faculty_id: Number(row.faculty_id),
+                program_id: Number(row.program_id),
               },
               { client: trx }
             )
