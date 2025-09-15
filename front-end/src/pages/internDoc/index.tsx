@@ -73,10 +73,10 @@ const InternDoc = () => {
             data={rows.map((item, index) => (
               <tr key={index} className="border-b border-x border-text-200">
                 <td className="ps-4 py-5">{item.student.name}</td>
-                <td>{item.student.studentId}</td>
-                <td>{item.student.program.programNameTh}</td>
-                <td>{item.student_training.company.companyNameTh}</td>
-                <td>{item.student_training.position}</td>
+                <td>{item.student?.studentId}</td>
+                <td>{item.student.program?.programNameTh}</td>
+                <td>{item.student_training?.company?.companyNameTh}</td>
+                <td>{item.student_training?.position}</td>
                 <td>
                   <div className="bg-[#BDCAFF] w-fit rounded-full px-2 py-1 flex gap-3">
                     <p>approve </p>

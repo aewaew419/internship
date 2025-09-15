@@ -17,6 +17,7 @@ export const PROTECTED_PATH = {
   INSTRUCTOR_INTERN_REQUEST: "/instructor/intern_request",
   INSTRUCTOR_INTERN_REQUEST_PERSON: "/instructor/intern_request/person",
   ASSIGN_VISITOR: "/instructor/assign_visitor",
+  ASSIGN_VISITOR_PERSON: "/instructor/assign_visitor/person",
 
   INTERN_REQUEST: "/intern_request",
   REGISTER_PERSONAL_INFO: "/intern_request/register_personal_info",

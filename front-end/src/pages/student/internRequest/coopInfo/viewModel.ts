@@ -8,8 +8,12 @@ import type {
   CourseSectionInterface,
   CourseInterface,
 } from "../../../../service/api/course/type";
+import Swal from "sweetalert2";
+import { useNavigate } from "react-router-dom";
+import { PROTECTED_PATH } from "../../../../constant/path.route";
 
 const useViewModel = (id: number) => {
+  const navigate = useNavigate();
   const courseService = new CourseService();
   const studentService = new StudentService();
 
@@ -35,7 +39,8 @@ const useViewModel = (id: number) => {
     company_email: "",
     company_phone_number: "",
     company_type: "",
-
+    picture_1: "",
+    picture_2: "",
     start_date: "",
     end_date: "",
     coordinator: "",
@@ -57,7 +62,7 @@ const useViewModel = (id: number) => {
 
         student_id: data.studentId,
         course_section_id: data.courseSectionId,
-        document_language: data.student_training.documentLanguage,
+        document_language: data.student_training?.documentLanguage,
 
         company_register_number:
           data.student_training.company.companyRegisterNumber,
@@ -68,6 +73,10 @@ const useViewModel = (id: number) => {
         company_email: data.student_training.company.companyEmail,
         company_phone_number: data.student_training.company.companyPhoneNumber,
         company_type: data.student_training.company.companyType,
+        picture_1:
+          data.student_training.company?.company_picture?.[0]?.picture || "",
+        picture_2:
+          data.student_training.company?.company_picture?.[1]?.picture || "",
 
         start_date: data.student_training.startDate,
         end_date: data.student_training.endDate,
@@ -89,17 +98,55 @@ const useViewModel = (id: number) => {
   const handleOnSubmitStudentEnrollment = async (entity: StudentEnrollDTO) => {
     try {
       if (id) {
-        const response = await studentService.reqPutStudentEnrollment(
-          id,
+        await studentService.reqPutStudentEnrollment(id, entity);
+
+        const formdata_1 = new FormData();
+        if (entity.picture_1 instanceof File) {
+          formdata_1.append("picture_1", entity.picture_1);
+          await studentService.putStudentEnrollmentPicture(id, formdata_1);
+        }
+        const formdata_2 = new FormData();
+        if (entity.picture_2 instanceof File) {
+          formdata_2.append("picture_2", entity.picture_2);
+          await studentService.putStudentEnrollmentPicture(id, formdata_2);
+        }
+      } else {
+        const studentEnroll = await studentService.reqPostStudentEnrollment(
           entity
         );
-        return response;
-      } else {
-        const response = await studentService.reqPostStudentEnrollment(entity);
-        return response;
+
+        const formdata_1 = new FormData();
+        if (entity.picture_1 instanceof File) {
+          formdata_1.append("picture_1", entity.picture_1);
+          await studentService.putStudentEnrollmentPicture(
+            studentEnroll?.id || 0,
+            formdata_1
+          );
+        }
+        const formdata_2 = new FormData();
+        if (entity.picture_2 instanceof File) {
+          formdata_2.append("picture_2", entity.picture_2);
+          await studentService.putStudentEnrollmentPicture(
+            studentEnroll?.id || 0,
+            formdata_2
+          );
+        }
       }
+      Swal.fire({
+        title: "บันทึกข้อมูลสำเร็จ",
+        icon: "success",
+        confirmButtonText: "ปิด",
+        confirmButtonColor: "#966033",
+      });
+      navigate(PROTECTED_PATH.INTERN_REQUEST);
     } catch (error) {
       console.error("Error submitting student enrollment:", error);
+      Swal.fire({
+        title: "บันทึกข้อมูลไม่สำเร็จ",
+        icon: "error",
+        confirmButtonText: "ปิด",
+        confirmButtonColor: "#966033",
+      });
       throw error;
     }
   };

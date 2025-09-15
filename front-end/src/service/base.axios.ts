@@ -51,7 +51,7 @@ export class BaseAxios {
   }
 
   private getToken() {
-    return getUserFromStorage()?.token ?? null;
+    return getUserFromStorage()?.access_token ?? null;
   }
 }
 export function getUserFromStorage(): any {

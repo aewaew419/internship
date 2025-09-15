@@ -1,11 +1,15 @@
 import { Layout } from "../../component/layout";
 import { PROTECTED_PATH } from "../../constant/path.route";
 import { DouhnutChart } from "../../component/chart";
-import { StudentProject } from "./section";
-import { useToken } from "../../utils/localStorage";
+// import { StudentProject } from "./section";
+// import { useToken } from "../../utils/localStorage";
+import useViewModel from "./viewModel";
 
 const Dashboard = () => {
-  const token = useToken();
+  const { fetchUserData } = useViewModel();
+
+  // const token = useToken();
+  fetchUserData();
   //   const step = [
   // { topic: "", date: "" },
   // { topic: "กรอกข้อมูลสหกิจศึกษา", date: "7 มิ.ย. 68 - 19 มิ.ย. 68" },
@@ -120,7 +124,7 @@ const Dashboard = () => {
               </div>
             </div>
           </div>
-          {token?.roles?.student && (
+          {/* {token?.roles.find((role) => role === "student") && (
             <div className="bg-white p-4 rounded-2xl my-4">
               <p className="text-secondary-600 font-bold text-xl">
                 สถานะการยื่นขอฝึกงานของฉัน
@@ -132,7 +136,9 @@ const Dashboard = () => {
               </div>
             </div>
           )}
-          {token?.roles?.student && <StudentProject />}
+          {token?.roles.find((role) => role === "student") && (
+            <StudentProject />
+          )} */}
           <div className="bg-white p-4 rounded-2xl my-4">
             <p className="text-secondary-600 font-bold text-xl">
               จำนวนนักศึกษาที่ส่งเอกสารฝึกงาน

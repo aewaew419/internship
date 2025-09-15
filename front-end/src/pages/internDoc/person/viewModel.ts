@@ -10,6 +10,35 @@ const useViewModel = (id: number) => {
     useState<StudentEnrollRegisterInteface>();
   const [count, setCount] = useState<EnrollApproveCount>();
 
+  const handleDownloadPDF = async (entity: {
+    docNo: string;
+    issueDate: string;
+    prefix?: string;
+  }) => {
+    // Open a blank tab immediately (prevents popup blockers)
+    const newTab = window.open("", "_blank");
+
+    try {
+      const res = await studentService.postStudentCoopReqLetter(
+        id,
+        studentEnrollments?.student_training.documentLanguage || "th",
+        entity
+      );
+      const { path } = res;
+      // CASE 1: API already gives you a URL (string or { url })
+      const newTabPath = `${import.meta.env.VITE_APP_API_V1}/public/${path}`;
+
+      if (newTab) newTab.location.href = newTabPath as string;
+      else window.open(newTabPath as string, "_blank", "noopener,noreferrer");
+      return;
+    } catch (err) {
+      if (newTab) {
+        newTab.document.write("<p>Failed to open letter.</p>");
+      }
+      console.error(err);
+    }
+  };
+
   useEffect(() => {
     studentService
       .reqGetStudentEnrollmentById(id)
@@ -28,6 +57,6 @@ const useViewModel = (id: number) => {
         console.error("Error fetching student enrollments:", error);
       });
   }, []);
-  return { studentEnrollments, count };
+  return { studentEnrollments, count, handleDownloadPDF };
 };
 export default useViewModel;

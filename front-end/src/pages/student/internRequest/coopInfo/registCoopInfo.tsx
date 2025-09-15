@@ -52,6 +52,8 @@ const RegisterCoopInfo = () => {
               company_email: values.company_email,
               company_phone_number: values.company_phone_number,
               company_type: values.company_type,
+              picture_1: values.picture_1,
+              picture_2: values.picture_2,
 
               start_date: dayjs(values.start_date).format(
                 "YYYY-MM-DD HH:mm:ss"
@@ -107,7 +109,7 @@ const RegisterCoopInfo = () => {
                       items={[
                         {
                           value: String(courseYears?.[0]?.year) || "",
-                          label: String(courseYears?.[0]?.year) || "",
+                          label: String(courseYears?.[0]?.year + 543) || "",
                         },
                       ]}
                     />
@@ -173,11 +175,15 @@ const RegisterCoopInfo = () => {
                     placeholder="เบอร์โทรศัพท์ (Phone number)"
                     require
                   />
-                  <Field
+                  <AutoCompleteField
                     name="company_type"
                     label_th="ประเภทกิจการ"
                     label_en="Type of business"
                     placeholder="ประเภทกิจการ (Type of business)"
+                    items={BusinessType.map((data) => ({
+                      label: data,
+                      value: data,
+                    }))}
                     require
                   />
                   <Field
@@ -226,17 +232,13 @@ const RegisterCoopInfo = () => {
                 </div>
                 <div className="grid grid-cols-2 gap-5">
                   <Dropzone
-                    file={""}
-                    handleUpload={(file) =>
-                      setFieldValue("company_image_1", file)
-                    }
+                    file={values.picture_1}
+                    handleUpload={(file) => setFieldValue("picture_1", file)}
                     preview
                   />
                   <Dropzone
-                    file={""}
-                    handleUpload={(file) =>
-                      setFieldValue("company_image_2", file)
-                    }
+                    file={values.picture_2}
+                    handleUpload={(file) => setFieldValue("picture_2", file)}
                     preview
                   />
                 </div>
@@ -329,3 +331,14 @@ const RegisterCoopInfo = () => {
   );
 };
 export default RegisterCoopInfo;
+
+const BusinessType = [
+  "กิจการเจ้าของคนเดียว",
+  "ห้างหุ้นส่วนสามัญ",
+  "ห้างหุ้นส่วนจำกัด",
+  "บริษัทจำกัด",
+  "บริษัทมหาชนจำกัด",
+  "องค์กรธุรกิจจัดตั้งหรือจดทะเบียนภายใต้กฎหมายเฉพาะ",
+  "สำนักงานสาขา",
+  "สำนักงานผู้แทน และสำนักงานภูมิภาค",
+];

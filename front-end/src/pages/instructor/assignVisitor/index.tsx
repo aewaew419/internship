@@ -1,7 +1,10 @@
 import { Layout } from "../../../component/layout";
+import { useNavigate } from "react-router-dom";
 import useViewModel from "./viewModel";
+import { PROTECTED_PATH } from "../../../constant/path.route";
 
 const AssignVisitor = () => {
+  const navigate = useNavigate();
   const {
     rows,
     loading,
@@ -116,7 +119,16 @@ const AssignVisitor = () => {
                   {row?.visitor_training?.[0]?.visitor.name || "-"}
                 </td>
                 <td className="p-3">
-                  <button>ดูข้อมูล</button>
+                  <button
+                    onClick={() =>
+                      navigate(
+                        PROTECTED_PATH.ASSIGN_VISITOR_PERSON +
+                          `?id=${0}&enroll_id=${row.id}`
+                      )
+                    }
+                  >
+                    ดูข้อมูล
+                  </button>
                 </td>
               </tr>
             ))}

@@ -10,7 +10,11 @@ import type {
   ProgramInterface,
   CurriculumInterface,
 } from "../../../../service/api/university/type";
+import Swal from "sweetalert2";
+import { useNavigate } from "react-router-dom";
+import { PROTECTED_PATH } from "../../../../constant/path.route";
 const useViewModel = () => {
+  const navigate = useNavigate();
   const studentService = new StudentService();
   const universityService = new UniversityService();
   const [initialValues, setStudentInfo] = useState<StudentInterface>({
@@ -44,10 +48,28 @@ const useViewModel = () => {
   };
   const handleOnSubmitStudentInformation = async (entity: StudentDTO) => {
     try {
-      await studentService.reqPutStudentInformation(entity);
-      console.log("Student information updated successfully");
+      await studentService.reqPutStudentInformation(entity as StudentDTO);
+
+      const formData = new FormData();
+      if (entity?.picture) {
+        formData.append("picture", entity.picture);
+        await studentService.reqPutStudentInformation(formData as FormData);
+      }
+      Swal.fire({
+        title: "บันทึกข้อมูลสำเร็จ",
+        icon: "success",
+        confirmButtonText: "ปิด",
+        confirmButtonColor: "#966033",
+      });
+      navigate(PROTECTED_PATH.INTERN_REQUEST);
     } catch (error) {
       console.error("Error updating student information:", error);
+      Swal.fire({
+        title: "บันทึกข้อมูลไม่สำเร็จ",
+        icon: "error",
+        confirmButtonText: "ปิด",
+        confirmButtonColor: "#966033",
+      });
     }
   };
   const fetchFaculties = async () => {

@@ -1,8 +1,8 @@
 import { Layout } from "../../component/layout";
 import { PROTECTED_PATH } from "../../constant/path.route";
 import { Table } from "../../component/table";
-import { Checkbox, FormControl, TextField, Autocomplete } from "@mui/material";
-import { FilterAlt, ReadMoreRounded, PrintRounded } from "@mui/icons-material";
+import { TextField, Autocomplete } from "@mui/material";
+import { FilterAlt, ReadMoreRounded } from "@mui/icons-material";
 
 import { useNavigate } from "react-router-dom";
 const SupervisorSchedule = () => {
@@ -98,7 +98,7 @@ const SupervisorSchedule = () => {
             <div>
               <p className="ms-5 text-xl text-black">รายชื่อ</p>
             </div>
-            <div className="flex gap-4 text-white">
+            {/* <div className="flex gap-4 text-white">
               <button
                 className="primary-button bg-gradient w-48"
                 // onClick={() => setEditUser("upload")}
@@ -106,7 +106,7 @@ const SupervisorSchedule = () => {
                 <PrintRounded fontSize="small" sx={{ my: "auto" }} />
                 <p className="my-auto">ออกเอกสาร</p>
               </button>
-            </div>
+            </div> */}
           </div>
           <Table
             header={[
@@ -121,9 +121,9 @@ const SupervisorSchedule = () => {
             data={data.map((item, index) => (
               <tr key={index} className="border-b border-x border-text-200">
                 <td className="ps-5 py-3 flex">
-                  <FormControl component="fieldset" variant="standard">
+                  {/* <FormControl component="fieldset" variant="standard">
                     <Checkbox />
-                  </FormControl>
+                  </FormControl> */}
                   <p className="my-auto">{item.firstName}</p>
                 </td>
 

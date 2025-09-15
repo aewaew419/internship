@@ -17,6 +17,7 @@ import InstructorInternReq from "./instructor/internReq";
 import InstructorInternReqPerson from "./instructor/internReq/person";
 
 import AssignVisitor from "./instructor/assignVisitor";
+import AssignVisitorPerson from "./instructor/assignVisitor/person";
 
 import VisitorSchedule from "./visitor/schedule";
 import VisitorSchedulePerson from "./visitor/schedule/person";
@@ -66,4 +67,5 @@ export {
   StudentEvaluateCompanyPerCompany,
   AttendTraining,
   AssignGrade,
+  AssignVisitorPerson,
 };

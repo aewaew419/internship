@@ -39,7 +39,7 @@ export type StudentDTO = {
   gpax: number;
   phone_number: string;
   email: string;
-  picture: "";
+  picture: File | string | null;
   major_id: number;
   program_id: number;
   curriculum_id: number;
@@ -60,6 +60,9 @@ export type StudentEnrollDTO = {
   company_email: string;
   company_phone_number: string;
   company_type: string;
+
+  picture_1: string | File;
+  picture_2: string | File;
 
   start_date: Date | string;
   end_date: Date | string;
@@ -96,6 +99,13 @@ export interface StudentEnrollInterface {
       companyType: string;
       createdAt: string;
       updatedAt: string;
+      company_picture: {
+        id: number;
+        companyId: number;
+        picture: string | null;
+        createdAt: string;
+        updatedAt: string;
+      }[];
     };
   };
   student: StudentInterface;
@@ -157,6 +167,13 @@ export type StudentTrainingType = {
     companyType: string;
     createdAt: string;
     updatedAt: string;
+    company_picture: {
+      id: number;
+      companyId: number;
+      picture: string | null;
+      createdAt: string;
+      updatedAt: string;
+    }[];
   };
 };
 

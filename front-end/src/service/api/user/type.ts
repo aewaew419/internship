@@ -2,6 +2,7 @@ export type UserInterface = {
   token: {
     type: string;
     name: string;
+
     token: string;
     abilities: ["*"];
     lastUsedAt: string;
@@ -53,6 +54,15 @@ export type UserInterface = {
     courseInstructor: boolean;
     list: string[];
   };
+  token_type: "Bearer";
+  access_token: string;
+  abilities: ["*"];
+  device_name: string;
+  // "user": {
+  //     "id": 1,
+  //     "name": "Atip Nomsiri",
+  //     "email": "dbixxy@gmail.com"
+  // }
 };
 
 export type LoginDTO = {

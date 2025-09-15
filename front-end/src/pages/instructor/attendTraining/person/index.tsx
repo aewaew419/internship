@@ -1,6 +1,6 @@
 import { Layout } from "../../../../component/layout";
 import { Formik, Form } from "formik";
-import { RadioField, Field } from "../../../../component/input/field";
+import { RadioField } from "../../../../component/input/field";
 import useViewModel from "./viewModel";
 import { useSearchParams } from "react-router-dom";
 import {
@@ -15,7 +15,7 @@ const InstructorInternReqPerson = () => {
   const id = Number(searchParams.get("id"));
   const enroll_id = Number(searchParams.get("enroll_id"));
   const { initialValues, handleOnSubmitStudentEnrollmentStatus } =
-    useViewModel(id);
+    useViewModel();
   return (
     <Layout header={[{ path: "", name: "รายการขอฝึกงาน  / สหกิจศึกษา" }]}>
       <div className="bg-white rounded-2xl px-5 pb-4">
@@ -26,7 +26,6 @@ const InstructorInternReqPerson = () => {
         </div>
         <Formik
           initialValues={initialValues}
-          enableReinitialize
           onSubmit={(values) =>
             handleOnSubmitStudentEnrollmentStatus({
               ids: [id],
@@ -34,19 +33,16 @@ const InstructorInternReqPerson = () => {
                 | "approve"
                 | "pending"
                 | "denied",
-              remarks: values.remarks,
+              remarks: "",
             })
           }
         >
-          {({ handleSubmit, values }) => (
+          {({ handleSubmit }) => (
             <Form onSubmit={handleSubmit}>
               <p className="font-bold text-2xl my-5 text-secondary-600">
                 {token.roles.committee
                   ? "คณะกรรมการรับรอง"
                   : "อาจารย์ประจำวิชารับรอง"}
-                {/* {token.roles.find((role) => role === "committee")
-                  ? "คณะกรรมการรับรอง"
-                  : "อาจารย์ประจำวิชารับรอง"} */}
               </p>
               <div className="my-5">
                 <RadioField
@@ -57,9 +53,6 @@ const InstructorInternReqPerson = () => {
                     { value: "denied", label: "ไม่อนุมัติ" },
                   ]}
                 />
-                {values.student_enroll_status === "denied" && (
-                  <Field name="remarks" label="เหตุผล" require />
-                )}
               </div>
               <button type="submit" className="secondary-button">
                 บันทึก

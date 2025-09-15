@@ -121,3 +121,12 @@ export type EnrollApproveCount = {
     passed: boolean;
   };
 };
+export type EnrollStatus = {
+  id: number;
+  studentEnrollId: number;
+  instructorId: number;
+  status: "approve" | "denied" | "pending";
+  remarks: string | null;
+  createdAt: string;
+  updatedAt: string;
+};

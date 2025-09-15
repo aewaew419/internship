@@ -2,21 +2,19 @@ import { Person } from "@mui/icons-material";
 import FormControl from "@mui/material/FormControl";
 import OutlinedInput from "@mui/material/OutlinedInput";
 
+import { Formik, Form } from "formik";
+import { Field } from "../../component/input/field";
+// import LoginSchema from "./validation";
+
 import { useState } from "react";
 import useViewModel from "./viewModel";
 // import { Formik, Form } from "formik";
 const Login = () => {
-  const { Login } = useViewModel();
+  const { err, Login } = useViewModel();
+  // const { LoginFormValidationSchema } = LoginSchema();
   const [forgotPassword, setForgotPassword] = useState(false);
   const handleForgotPassword = (state: boolean) => {
     setForgotPassword(state);
-  };
-  const handleSubmit = (e: any) => {
-    e.preventDefault();
-    const email = e.target.username.value;
-    const password = e.target.password.value;
-
-    Login({ email, password });
   };
 
   return (
@@ -24,61 +22,68 @@ const Login = () => {
       {forgotPassword && (
         <ForgotPasswordForm handleClose={handleForgotPassword} />
       )}
-      <div className="bg-white w-full h-fit py-6">
+      {/* <div className="bg-white w-full h-fit py-6">
         <img src="/logo.png" alt="Logo" className="h-20" />
+      </div> */}
+      <div className="absolute left-1/2 top-1/2 transform -translate-1/2">
+        <Formik
+          initialValues={{ email: "", password: "" }}
+          // validationSchema={LoginFormValidationSchema}
+          onSubmit={(values, { resetForm }) => {
+            Login(values);
+            resetForm();
+          }}
+        >
+          {({ handleSubmit }) => {
+            return (
+              <Form onSubmit={handleSubmit}>
+                <div className="w-96 bg-white rounded-2xl px-8 py-10 text-black shadow-xl border border-gray-300">
+                  <div className="my-3">
+                    <div className="w-fit mb-5 mx-auto">
+                      <img src="/logo.png" alt="Logo" className="h-20" />
+                    </div>
+                    <h1 className="text-xl mb-2 text-center font-semibold text-text-900">
+                      เข้าสู่ระบบ
+                    </h1>
+                    <p className="text-center text-text-800">
+                      ระบบจัดการข้อมูลสหกิจและนักศึกษาฝึกงาน
+                    </p>
+                  </div>
+                  <div className="grid gap-3 my-4 mx-auto">
+                    {err && (
+                      <p className="-mb-3 text-end text-xs text-red-600">
+                        อีเมลหรือรหัสผ่านไม่ถูกต้อง
+                      </p>
+                    )}
+                    <Field name="email" label="email" placeholder="email" />
+                    <Field
+                      name="password"
+                      label="password"
+                      placeholder="password"
+                      type="password"
+                    />
+
+                    <button
+                      className="bg-gradient text-white font-medium px-16 py-2 rounded w-full hover:opacity-90 transition-colors duration-200"
+                      type="submit"
+                    >
+                      เข้าสู่ระบบ
+                    </button>
+
+                    <button
+                      className="text-sm text-text-700 hover:text-text-900 text-end"
+                      type="button"
+                      onClick={() => handleForgotPassword(true)}
+                    >
+                      ลืมรหัสผ่าน
+                    </button>
+                  </div>
+                </div>
+              </Form>
+            );
+          }}
+        </Formik>
       </div>
-
-      <div>
-        <h1 className="text-center text-4xl mt-10 gradient-text">
-          ระบบจัดการข้อมูลสหกิจและนักศึกษาฝึกงาน
-        </h1>
-      </div>
-
-      <div className="w-fit mx-auto my-10 bg-[#BEBEBE] rounded-full p-4">
-        <Person sx={{ fontSize: "10.75rem" }} />
-      </div>
-
-      <form onSubmit={handleSubmit}>
-        <div>
-          <div className="w-fit mx-auto bg-white border-4 border-[#7C7C7C]/40 rounded-lg p-5 text-black">
-            <div className="flex gap-3">
-              <p className="text-2xl my-auto">USERNAME : </p>
-              <FormControl
-                sx={{ width: "25ch", zIndex: forgotPassword ? -1 : 0 }}
-                variant="outlined"
-              >
-                <OutlinedInput size="small" name="username" />
-              </FormControl>
-            </div>
-            <div className="flex gap-3 mt-5">
-              <p className="text-2xl my-auto">PASSWORD :</p>
-              <FormControl
-                sx={{ width: "25ch", zIndex: forgotPassword ? -1 : 0 }}
-                variant="outlined"
-              >
-                <OutlinedInput size="small" name="password" type="password" />
-              </FormControl>
-            </div>
-          </div>
-          <div className="w-fit mx-auto">
-            <button
-              className="bg-gradient text-white px-16 py-2 text-2xl rounded my-5"
-              type="submit"
-            >
-              LOG IN
-            </button>
-          </div>
-
-          <div className="w-fit mx-auto">
-            <p
-              className="underline font-medium text-2xl"
-              onClick={() => handleForgotPassword(true)}
-            >
-              ลืมรหัสผ่าน
-            </p>
-          </div>
-        </div>
-      </form>
     </div>
   );
 };
@@ -90,7 +95,7 @@ const ForgotPasswordForm = ({
   handleClose: (state: boolean) => void;
 }) => {
   return (
-    <div className="fixed top-0 left-0 w-full h-full bg-black/50">
+    <div className="absolute top-0 left-0 w-full h-full bg-black/50 z-10">
       <div className="fixed top-1/2 left-1/2 transform -translate-1/2 w-fit mx-auto bg-white p-3 rounded-lg shadow-lg">
         <div
           onClick={() => handleClose(false)}

@@ -29,6 +29,7 @@ import {
   StudentEvaluateCompanyPerCompany,
   AttendTraining,
   AssignGrade,
+  AssignVisitorPerson,
 } from "../pages";
 import {
   Route,
@@ -102,6 +103,10 @@ const Router = () => {
           <Route
             path={PROTECTED_PATH.ASSIGN_VISITOR}
             element={<AssignVisitor />}
+          />
+          <Route
+            path={PROTECTED_PATH.ASSIGN_VISITOR_PERSON}
+            element={<AssignVisitorPerson />}
           />
           <Route
             path={PROTECTED_PATH.VISITOR_SCHEDULE}

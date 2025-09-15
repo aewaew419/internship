@@ -5,6 +5,7 @@ import type {
   EnrollApproveInterface,
   AssignVisitorDTO,
   EnrollApproveCount,
+  EnrollStatus,
 } from "./type";
 import type { AxiosResponse } from "axios";
 
@@ -23,6 +24,13 @@ export class EnrollmentService extends RemoteA {
   ): Promise<EnrollApproveCount> => {
     const response = await this.getAxiosInstance().get(
       "/student-enrolls/" + id + "/approval-counts"
+    );
+    const { data } = response;
+    return data;
+  };
+  reqGetStudentEnrollStatusById = async (id: number): Promise<EnrollStatus> => {
+    const response = await this.getAxiosInstance().get(
+      PROTECTED_PATH.INSTRUCTOR_STATUS_PERSON + `/${id}`
     );
     const { data } = response;
     return data;

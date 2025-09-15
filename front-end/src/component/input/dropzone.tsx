@@ -54,15 +54,23 @@ export const Dropzone = (props: dropZoneType) => {
       <input {...getInputProps()} />
       {fileName ? (
         <p className="text-primary-600 font-medium">
-          {props.preview
-            ? previewUrl && (
-                <img
-                  src={previewUrl}
-                  alt="Preview"
-                  className="w-auto h-90 object-cover mx-auto rounded-lg shadow my-6"
-                />
-              )
-            : fileName}
+          {props.preview ? (
+            previewUrl ? (
+              <img
+                src={previewUrl}
+                alt="Preview"
+                className="w-auto h-90 object-cover mx-auto rounded-lg shadow my-6"
+              />
+            ) : (
+              <img
+                src={import.meta.env.VITE_APP_API_V1 + fileName}
+                alt="Preview"
+                className="w-auto h-90 object-cover mx-auto rounded-lg shadow my-6"
+              />
+            )
+          ) : (
+            fileName
+          )}
         </p>
       ) : isDragActive ? (
         <p className="text-primary-600">
@@ -77,7 +85,10 @@ export const Dropzone = (props: dropZoneType) => {
           <p className="text-primary-300">
             {props.preview ? "Picture" : "Excel file"} up to 10 MB
           </p>
-          <button className="mt-10 border border-primary-600 rounded-lg px-5 py-2 font-semibold text-lg">
+          <button
+            type="button"
+            className="mt-10 border border-primary-600 rounded-lg px-5 py-2 font-semibold text-lg"
+          >
             Browse File
           </button>
         </div>

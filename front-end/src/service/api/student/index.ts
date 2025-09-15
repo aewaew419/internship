@@ -24,7 +24,7 @@ export class StudentService extends RemoteA {
   };
 
   reqPutStudentInformation = async (
-    entity: StudentDTO
+    entity: StudentDTO | FormData
   ): Promise<AxiosResponse> => {
     const response = await this.getAxiosInstance().put(
       PROTECTED_PATH.STUDENT_INFORMATION + `/${this.student_id}`,
@@ -52,9 +52,7 @@ export class StudentService extends RemoteA {
     const { data } = response;
     return data;
   };
-  reqPostStudentEnrollment = async (
-    entity: StudentEnrollDTO
-  ): Promise<AxiosResponse> => {
+  reqPostStudentEnrollment = async (entity: StudentEnrollDTO): Promise<any> => {
     const response = await this.getAxiosInstance().post(
       PROTECTED_PATH.STUDENT_ENROLLMENT,
       { ...entity, student_id: this.student_id }
@@ -68,6 +66,17 @@ export class StudentService extends RemoteA {
   ): Promise<AxiosResponse> => {
     const response = await this.getAxiosInstance().put(
       PROTECTED_PATH.STUDENT_ENROLLMENT + `/${id}`,
+      entity
+    );
+    const { data } = response;
+    return data;
+  };
+  putStudentEnrollmentPicture = async (
+    id: number,
+    entity: FormData
+  ): Promise<AxiosResponse> => {
+    const response = await this.getAxiosInstance().put(
+      PROTECTED_PATH.STUDENT_ENROLLMENT_PICTURE + `/${id}`,
       entity
     );
     const { data } = response;
@@ -90,6 +99,28 @@ export class StudentService extends RemoteA {
   ): Promise<AxiosResponse> => {
     const response = await this.getAxiosInstance().put(
       PROTECTED_PATH.STUDENT_EVALUATE_COMPANY + `/${id}`,
+      entity
+    );
+    const { data } = response;
+    return data;
+  };
+
+  postStudentCoopReqLetter = async (
+    id: number,
+    lang: "en" | "th",
+    entity: {
+      docNo: string;
+      issueDate: string;
+      prefix?: string;
+    }
+  ): Promise<{
+    url: string;
+    path: string;
+    filename: string;
+    size: number;
+  }> => {
+    const response = await this.getAxiosInstance().post(
+      PROTECTED_PATH.STUDENT_COOP_REQ_LETTER + `/${lang}/${id}`,
       entity
     );
     const { data } = response;

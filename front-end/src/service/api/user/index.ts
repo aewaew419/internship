@@ -17,6 +17,13 @@ export class UserService extends RemoteA {
     const { data } = response;
     return data;
   };
+  reqGetUserService = async (): Promise<any> => {
+    const response = await this.getAxiosInstance().get(
+      PROTECTED_PATH.USER_DATA
+    );
+    const { data } = response;
+    return data;
+  };
   reqPostAddUserByXLSX = async (entity: FormData): Promise<AxiosResponse> => {
     const response = await this.getAxiosInstance().post(
       PROTECTED_PATH.ADD_USER_XLSX,

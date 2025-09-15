@@ -36,7 +36,7 @@ const RegisterPersonalInfo = () => {
               gpax: Number(values.gpax),
               phone_number: values.phoneNumber,
               email: values.email,
-              picture: "",
+              picture: values.picture,
               user_id: initialValues.userId,
             })
           }

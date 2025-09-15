@@ -53,7 +53,7 @@ export const CoopInformation = ({ id }: { id: number }) => {
   return (
     <div>
       <h1 className="text-xl font-bold text-secondary-600 py-5 border-b border-secondary-600 my-5">
-        ข้อมูลส่วนตัว
+        ข้อมูลสถานประกอบการ
       </h1>
       <div className="grid grid-cols-2 font-medium">
         <div className="flex gap-2 my-2">
@@ -83,14 +83,26 @@ export const CoopInformation = ({ id }: { id: number }) => {
             :{" "}
             {studentEnrollments?.student_training.startDate
               ? dayjs(studentEnrollments.student_training.startDate).format(
-                  "DD/MM/YYYY"
-                )
+                  "DD/MM/"
+                ) +
+                (Number(
+                  dayjs(studentEnrollments.student_training.endDate).format(
+                    "YYYY"
+                  )
+                ) +
+                  543)
               : "-"}{" "}
             –{" "}
             {studentEnrollments?.student_training.endDate
               ? dayjs(studentEnrollments.student_training.endDate).format(
-                  "DD/MM/YYYY"
-                )
+                  "DD/MM/"
+                ) +
+                (Number(
+                  dayjs(studentEnrollments.student_training.endDate).format(
+                    "YYYY"
+                  )
+                ) +
+                  543)
               : "-"}
           </p>
         </div>

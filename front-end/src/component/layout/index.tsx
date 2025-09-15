@@ -29,7 +29,7 @@ export const Navbar = () => {
     {
       name: "ยื่นขอสหกิจศึกษา / ฝึกงาน",
       path: PROTECTED_PATH.INTERN_REQUEST,
-      icon: <Home />,
+      icon: <AssignmentInd />,
     },
     // {
     //   name: "รายละเอียดโปรเจกต์",
@@ -134,7 +134,10 @@ export const Navbar = () => {
     },
   ];
   return (
-    <nav className="bg-white fixed h-full">
+    <nav
+      className="bg-white fixed h-screen overflow-y-scroll"
+      style={{ scrollbarColor: "#c6c8d1 #e3e5e9", scrollbarWidth: "thin" }}
+    >
       <div className="container">
         <div className="py-5 mx-5 border-b-2 border-text-200">
           <img src="/logo.png" alt="img" className="h-16" />
