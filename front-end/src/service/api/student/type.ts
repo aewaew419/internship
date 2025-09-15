@@ -211,3 +211,17 @@ export type StudentEvaluateCompanyDTO = {
   scores: number[];
   comment: string;
 };
+
+// New interfaces for evaluation status feature
+export interface EvaluationStatusResponse {
+  hasEvaluated: boolean;
+  evaluationDate?: string;
+  companyName: string;
+}
+
+export interface SubmissionResponse {
+  success: boolean;
+  message: string;
+  redirectUrl: string;
+  evaluationId: number;
+}

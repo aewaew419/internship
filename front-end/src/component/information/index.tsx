@@ -169,3 +169,6 @@ export const Approval = ({ id }: { id: number }) => {
     </div>
   );
 };
+
+// Export the new EvaluationStatus component
+export { EvaluationStatus } from './EvaluationStatus';

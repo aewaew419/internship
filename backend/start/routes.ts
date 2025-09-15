@@ -92,6 +92,13 @@ router
 
     router.resource('/visitor/evaluate/company', VisitorEvaluateCompaniesController).apiOnly()
     router.resource('/visitor/evaluate/student', VisitorEvaluateStudentsController).apiOnly()
+    
+    // Custom route for checking evaluation status
+    router.get('/student/evaluate/company/:studentTrainingId/status', [
+      StudentEvaluateCompaniesController,
+      'checkEvaluationStatus'
+    ])
+    
     router.resource('/student/evaluate/company', StudentEvaluateCompaniesController).apiOnly()
 
     router.post('/users/bulk-excel', [UserController, 'bulkCreateFromExcel'])
