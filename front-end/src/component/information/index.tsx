@@ -172,3 +172,6 @@ export const Approval = ({ id }: { id: number }) => {
 
 // Export the new EvaluationStatus component
 export { EvaluationStatus } from './EvaluationStatus';
+
+// Export the new DataStalenessIndicator components
+export { DataStalenessIndicator, CompactDataStalenessIndicator } from './DataStalenessIndicator';

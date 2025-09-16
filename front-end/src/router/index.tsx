@@ -48,6 +48,9 @@ const Router = () => {
   return (
     <BrowserRouter>
       <Routes>
+        {/* Root path redirect */}
+        <Route path="/" element={<RootRedirect />} />
+        
         <Route element={<UnRequireAuth />}>
           <Route path={UNPROTECTED_PATH.LOGIN} element={<Login />} />
         </Route>
@@ -235,4 +238,14 @@ function UnRequireAuth() {
       <Outlet />
     </>
   );
+}
+
+function RootRedirect() {
+  const auth = useAuth();
+  
+  if (auth?.user) {
+    return <Navigate to={PROTECTED_PATH.DASHBOARD} replace />;
+  }
+  
+  return <Navigate to={UNPROTECTED_PATH.LOGIN} replace />;
 }
