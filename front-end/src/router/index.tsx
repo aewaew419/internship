@@ -29,7 +29,9 @@ import {
   StudentEvaluateCompanyPerCompany,
   AttendTraining,
   AssignGrade,
+  InstructorAssignGradePerPerson,
   AssignVisitorPerson,
+  InstructorAttendTrainingPerson,
 } from "../pages";
 import {
   Route,
@@ -148,7 +150,16 @@ const Router = () => {
             path={PROTECTED_PATH.ATTEND_TRAINING}
             element={<AttendTraining />}
           />
+          <Route
+            path={PROTECTED_PATH.ATTEND_TRAINING_PERSON}
+            element={<InstructorAttendTrainingPerson />}
+          />
+
           <Route path={PROTECTED_PATH.ASSIGN_GRADE} element={<AssignGrade />} />
+          <Route
+            path={PROTECTED_PATH.ASSIGN_GRADE_PERSON}
+            element={<InstructorAssignGradePerPerson />}
+          />
         </Route>
 
         <Route element={<RequireAuth role={["student"]} />}>

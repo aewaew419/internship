@@ -4,6 +4,7 @@ import { Formik, Form } from "formik";
 import { Dropzone } from "../../../../component/input/dropzone";
 import useViewModel from "./viewModel";
 import { useEffect } from "react";
+import RegisterPersonalSchema from "./validation";
 const RegisterPersonalInfo = () => {
   const {
     initialValues,
@@ -16,11 +17,14 @@ const RegisterPersonalInfo = () => {
     handleOnSubmitStudentInformation,
   } = useViewModel();
 
+  const { RegisterPersonalValidationSchema } = RegisterPersonalSchema();
+
   return (
     <Layout header={[{ path: "", name: "ยื่นขอสหกิจศึกษา > ลงทะเบียนข้อมูล" }]}>
       <div className="bg-white p-4 rounded-2xl my-4">
         <Formik
           initialValues={initialValues}
+          validationSchema={RegisterPersonalValidationSchema}
           enableReinitialize
           onSubmit={(values) =>
             handleOnSubmitStudentInformation({

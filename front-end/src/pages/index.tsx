@@ -34,7 +34,9 @@ import StudentEvaluateCompanyPerCompany from "./student/evaluate/company";
 import StudentEvaluateCompany from "./student/evaluate";
 
 import AttendTraining from "./instructor/attendTraining";
+import InstructorAttendTrainingPerson from "./instructor/attendTraining/person";
 import AssignGrade from "./instructor/assignGrade";
+import InstructorAssignGradePerPerson from "./instructor/assignGrade/person";
 
 export {
   Login,
@@ -67,5 +69,7 @@ export {
   StudentEvaluateCompanyPerCompany,
   AttendTraining,
   AssignGrade,
+  InstructorAssignGradePerPerson,
   AssignVisitorPerson,
+  InstructorAttendTrainingPerson,
 };

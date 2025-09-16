@@ -5,6 +5,10 @@ export default class InstructorGradesController {
   public async index({}: HttpContext) {
     return await StudentEnroll.all()
   }
+  public async getStudentGrade({ params }: HttpContext) {
+    return await StudentEnroll.query().where('id', params.id).firstOrFail()
+  }
+
   public async updateGrade({ request, params }: HttpContext) {
     const studentEnroll = await StudentEnroll.findOrFail(params.id)
     const data = request.only(['grade'])

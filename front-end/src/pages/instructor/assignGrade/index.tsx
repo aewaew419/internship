@@ -1,9 +1,9 @@
 import { Layout } from "../../../component/layout";
 import useViewModel from "./viewModel";
-// import { PROTECTED_PATH } from "../../../constant/path.route";
-// import { useNavigate } from "react-router-dom";
+import { PROTECTED_PATH } from "../../../constant/path.route";
+import { useNavigate } from "react-router-dom";
 const AssignGrade = () => {
-  //   const navigate = useNavigate();
+  const navigate = useNavigate();
   const {
     rows,
     selected,
@@ -93,11 +93,11 @@ const AssignGrade = () => {
                 <td className="p-3 text-right">
                   <button
                     className="px-3 py-1 rounded-lg bg-blue-600 text-white"
-                    // onClick={() =>
-                    //   navigate(
-                    //     PROTECTED_PATH.ASSIGN_GRADE_PERSON + `?id=${row.id}`
-                    //   )
-                    // }
+                    onClick={() =>
+                      navigate(
+                        PROTECTED_PATH.ASSIGN_GRADE_PERSON + `?id=${row.id}`
+                      )
+                    }
                   >
                     รายละเอียด
                   </button>

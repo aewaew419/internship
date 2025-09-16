@@ -82,6 +82,7 @@ export interface StudentEnrollInterface {
   studentId: number;
   courseSectionId: number;
   grade: string | null;
+  attendTraining: string | null;
   createdAt: string;
   updatedAt: string;
   student_training: {

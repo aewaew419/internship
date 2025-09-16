@@ -11,8 +11,10 @@ import useViewModel from "./viewModel";
 import { useEffect } from "react";
 import dayjs from "dayjs";
 import { useSearchParams } from "react-router-dom";
+import RegisterCoopSchema from "./validation";
 const RegisterCoopInfo = () => {
   const [searchParams] = useSearchParams();
+  const { RegisterCoopValidationSchema } = RegisterCoopSchema();
   const id = Number(searchParams.get("id"));
 
   const {
@@ -38,6 +40,7 @@ const RegisterCoopInfo = () => {
         <Formik
           initialValues={initialValues}
           enableReinitialize
+          validationSchema={RegisterCoopValidationSchema}
           onSubmit={(values) =>
             handleOnSubmitStudentEnrollment({
               student_id: 1,

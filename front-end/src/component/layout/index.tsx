@@ -15,15 +15,18 @@ import {
 } from "@mui/icons-material";
 import { clearToken, useToken } from "../../utils/localStorage";
 import { UNPROTECTED_PATH } from "../../constant/path.route";
+import { useState } from "react";
 export const Navbar = () => {
   const token = useToken();
   const role = token.roles;
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
   const navigateToLoginPage = async () => {
+    setLoading(true);
     await clearToken().then(() =>
       navigate(UNPROTECTED_PATH.LOGIN, { replace: true })
     );
-    window.location.reload(); // full page refresh
+    window.location.reload();
   };
   const StudentNav = [
     {
@@ -138,6 +141,7 @@ export const Navbar = () => {
       className="bg-white fixed h-screen overflow-y-scroll"
       style={{ scrollbarColor: "#c6c8d1 #e3e5e9", scrollbarWidth: "thin" }}
     >
+      {loading && <></>}
       <div className="container">
         <div className="py-5 mx-5 border-b-2 border-text-200">
           <img src="/logo.png" alt="img" className="h-16" />
