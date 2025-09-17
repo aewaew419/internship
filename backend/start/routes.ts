@@ -30,6 +30,7 @@ import CourseCommitteesController from '#controllers/course_committees_controlle
 import StudentEnrollmentsController from '#controllers/student_enrollments_controller'
 import StudentEnrollStatusesController from '#controllers/student_enroll_statuses_controller'
 import InstructorGradesController from '#controllers/instructor_grades_controller'
+import InternshipApprovalController from '#controllers/internship_approval_controller'
 
 import VisitorsController from '#controllers/visitors_controller'
 import VisitorSchedulesController from '#controllers/visitor_schedules_controller'
@@ -182,6 +183,13 @@ router
 
     router.post('/letters/refer-letter/th/:id', [LetterController, 'requestReferLetterTH'])
     router.post('/letters/refer-letter/en/:id', [LetterController, 'requestReferLetterEN'])
+
+    // Internship Approval API endpoints
+    router.get('/internship/approval/:studentEnrollId', [InternshipApprovalController, 'getApprovalStatus'])
+    router.post('/internship/approval/:studentEnrollId/advisor', [InternshipApprovalController, 'advisorApproval'])
+    router.post('/internship/approval/:studentEnrollId/committee-vote', [InternshipApprovalController, 'committeeMemberVote'])
+    router.put('/internship/approval/:studentEnrollId/status', [InternshipApprovalController, 'updateApprovalStatus'])
+    router.get('/internship/approval/:studentEnrollId/committee-voting', [InternshipApprovalController, 'getCommitteeVotingData'])
   })
   .prefix('/api/v1')
 // .middleware(['auth']) // ล็อกอินก่อนใช้งาน

@@ -1,5 +1,6 @@
 import useViewModel from "./viewModel";
 import dayjs from "dayjs";
+import { ApprovalStatusDisplay } from "./ApprovalStatusDisplay";
 export const Persona = ({ id }: { id: number }) => {
   const { studentEnrollments } = useViewModel(id);
 
@@ -143,6 +144,19 @@ export const Approval = ({ id }: { id: number }) => {
       <h1 className="text-xl font-bold text-secondary-600 py-5 border-b border-secondary-600 my-5">
         การรับรอง
       </h1>
+      
+      {/* New Approval Status Display */}
+      <div className="mb-6">
+        <p className="text-lg font-bold text-secondary-600 mb-3">สถานะการอนุมัติ</p>
+        <ApprovalStatusDisplay 
+          studentEnrollId={id}
+          showTimestamp={true}
+          showRefreshButton={true}
+          compact={false}
+        />
+      </div>
+
+      {/* Legacy approval display for backward compatibility */}
       <div className="flex justify-between my-2">
         <p className="text-lg font-bold text-secondary-600">อาจารย์ประจำวิชา</p>
         <div>
@@ -175,3 +189,9 @@ export { EvaluationStatus } from './EvaluationStatus';
 
 // Export the new DataStalenessIndicator components
 export { DataStalenessIndicator, CompactDataStalenessIndicator } from './DataStalenessIndicator';
+
+// Export the ApprovalStatusDisplay component
+export { ApprovalStatusDisplay } from './ApprovalStatusDisplay';
+
+// Export the CompactApprovalStatus component
+export { CompactApprovalStatus } from './CompactApprovalStatus';

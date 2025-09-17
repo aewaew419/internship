@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import useSuperviseScheduleViewModel from "./viewModel";
 import { ErrorBoundary, FallbackUI, TableSkeleton } from "../../component/error";
 import { DataStalenessIndicator } from "../../component/information/DataStalenessIndicator";
+import { CompactApprovalStatus } from "../../component/information/CompactApprovalStatus";
 const SupervisorSchedule = () => {
   const navigate = useNavigate();
   const {
@@ -249,6 +250,7 @@ const SupervisorSchedule = () => {
                 "ชื่อบริษัท",
                 "ผู้ติดต่อ",
                 "อาจารย์นิเทศ",
+                "สถานะอนุมัติ",
                 "นัดหมาย",
                 "ข้อมูลเพิ่มเติม",
               ]}
@@ -265,6 +267,12 @@ const SupervisorSchedule = () => {
                   <td>{visitor.companyName}</td>
                   <td>{visitor.contactName}</td>
                   <td>{visitor.supervisorName}</td>
+                  <td>
+                    <CompactApprovalStatus 
+                      studentEnrollId={visitor.studentEnrollId || visitor.id}
+                      size="small"
+                    />
+                  </td>
                   <td>
                     <div className="bg-[#BDCAFF] w-fit rounded-full px-2 py-1 flex gap-3">
                       <p>
