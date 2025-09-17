@@ -2,10 +2,9 @@ import { DateTime } from 'luxon'
 import { BaseModel, column, belongsTo } from '@adonisjs/lucid/orm'
 import type { BelongsTo } from '@adonisjs/lucid/types/relations'
 import VisitorSchedule from '#models/visitor_schedule'
-import Instructor from '#models/instructor'
 
 export default class VisitsPicture extends BaseModel {
-  public static table = 'visitor_schedule_photos'
+  public static table = 'visits_pictures'
 
   @column({ isPrimary: true })
   declare id: number
@@ -29,10 +28,6 @@ export default class VisitsPicture extends BaseModel {
   @belongsTo(() => VisitorSchedule, {
     foreignKey: 'visitorScheduleId',
   })
+  @column()
   declare schedule: BelongsTo<typeof VisitorSchedule>
-
-  @belongsTo(() => Instructor, {
-    foreignKey: 'uploadedByInstructorId',
-  })
-  declare uploadedBy: BelongsTo<typeof Instructor>
 }

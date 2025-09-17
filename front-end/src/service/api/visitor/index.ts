@@ -52,6 +52,17 @@ export class VisitorService extends RemoteA {
     const { data } = response;
     return data;
   };
+  reqPutVisitorSchedulePicture = async (
+    id: number,
+    entity: FormData
+  ): Promise<AxiosResponse> => {
+    const response = await this.getAxiosInstance().put(
+      PROTECTED_PATH.VISITOR_ASSIGN_SCHEDULE_PICTURE + `/${id}`,
+      entity
+    );
+    const { data } = response;
+    return data;
+  };
   reqGetVisitorScheduleReport = async (
     schedule_id: number
   ): Promise<VisitorScheduleReportInterface> => {

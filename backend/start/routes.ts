@@ -155,6 +155,7 @@ router
       VisitorSchedulesController,
       'getVisitorScheduleByID',
     ])
+    router.put('/visitors/schedule/picture/:id', [VisitorSchedulesController, 'upsertPhotos'])
     router.resource('/visitors/schedule', VisitorSchedulesController).apiOnly()
     router.resource('/visitors', VisitorsController).apiOnly()
     router.post('/visitor-trainings/assign-bulk', [

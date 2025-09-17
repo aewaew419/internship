@@ -44,6 +44,7 @@ export const PROTECTED_PATH = {
   VISITOR_VISITOR_TRAINING_LIST: "/visitors/last-visit",
   VISITOR_VISITOR_SCHEDULE_LIST: "/visitors/schedule",
   VISITOR_ASSIGN_SCHEDULE: "/visitors/schedule",
+  VISITOR_ASSIGN_SCHEDULE_PICTURE: "/visitors/schedule/picture",
   VISITOR_VISITOR_SCHEDULE_REPORT: "/visitors/schedule_report",
 
   VISITOR_EVALUATE_STUDENT: "/visitor/evaluate/student",

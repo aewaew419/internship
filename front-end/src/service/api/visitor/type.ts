@@ -38,6 +38,16 @@ export type VisitorInterface = {
         comment: string;
         createdAt: string;
         updatedAt: string;
+        photos:
+          | {
+              id: number;
+              visitorScheduleId: number;
+              photoNo: number;
+              fileUrl: string;
+              createdAt: string;
+              updatedAt: string;
+            }[]
+          | [];
       }[]
     | [];
 };
@@ -55,6 +65,16 @@ export type VisitorScheduleReportInterface = {
   visitNo: number;
   visitAt: string;
   comment: string | null;
+  photos:
+    | {
+        id: number;
+        visitorScheduleId: number;
+        photoNo: number;
+        fileUrl: string;
+        createdAt: string;
+        updatedAt: string;
+      }[]
+    | [];
   createdAt: string;
   updatedAt: string;
 };

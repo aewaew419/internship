@@ -26,7 +26,7 @@ const useViewModel = (id: number) => {
       );
       const { path } = res;
       // CASE 1: API already gives you a URL (string or { url })
-      const newTabPath = `${import.meta.env.VITE_APP_API_V1}/public/${path}`;
+      const newTabPath = `${import.meta.env.VITE_APP_API_V1}${path}`;
 
       if (newTab) newTab.location.href = newTabPath as string;
       else window.open(newTabPath as string, "_blank", "noopener,noreferrer");

@@ -63,9 +63,19 @@ const VisitorVisitsPersons = () => {
           <div className="my-5">
             {!edit && visitor_schedule_report && (
               <div>
-                <div>
+                <div className="flex gap-5 flex-wrap justify-center">
+                  {visitor_schedule_report?.photos?.map((photo) => (
+                    <img
+                      src={
+                        import.meta.env.VITE_APP_API_V1 + "/" + photo.fileUrl
+                      }
+                      className="h-80"
+                    />
+                  ))}
+                </div>
+                <div className="ms-10">
                   <p>ความคิดเห็น</p>
-                  <p>{visitor_schedule_report.comment}</p>
+                  <p>{visitor_schedule_report.comment || "-"}</p>
                 </div>
               </div>
             )}
@@ -77,19 +87,23 @@ const VisitorVisitsPersons = () => {
                 data={visitor_schedule_report}
                 initialValues={report_initialValues}
                 handleClose={() => setEdit(false)}
-                handleSubmit={(values) => handleSubmit(values)}
+                handleSubmit={(values, picture) =>
+                  handleSubmit(values, picture)
+                }
               />
             )}
           </div>
           <div>
             {!edit && visitor_schedule_report && (
-              <button
-                className="secondary-button"
-                type="button"
-                onClick={() => setEdit(true)}
-              >
-                แก้ไข
-              </button>
+              <div className="ms-auto w-fit mr-10">
+                <button
+                  className="secondary-button"
+                  type="button"
+                  onClick={() => setEdit(true)}
+                >
+                  แก้ไข
+                </button>
+              </div>
             )}
           </div>
         </div>
@@ -102,54 +116,88 @@ export default VisitorVisitsPersons;
 type ReportFormType = {
   data: VisitorScheduleReportInterface;
   initialValues: {
-    picture: string;
+    picture: { slot: number; value: File | string | null }[];
     comment: string;
   };
-  handleSubmit: (values: VisitorScheduleDTO) => void;
+  handleSubmit: (
+    values: VisitorScheduleDTO,
+    file: { value: File | string | null; slot: number }[]
+  ) => void;
   handleClose: () => void;
 };
 const ReportForm = (props: ReportFormType) => {
   return (
     <Formik
       initialValues={props.initialValues}
-      onSubmit={(values) => {
-        props.handleSubmit({
-          visitor_training_id: props.data.visitorTrainingId,
-          visit_no: props.data.visitNo,
-          visit_at: props.data.visitAt,
-          comment: values.comment,
-        });
+      enableReinitialize
+      onSubmit={(values, { resetForm }) => {
+        props.handleSubmit(
+          {
+            visitor_training_id: props.data.visitorTrainingId,
+            visit_no: props.data.visitNo,
+            visit_at: props.data.visitAt,
+            comment: values.comment,
+          },
+          values.picture
+        );
+        resetForm();
         props.handleClose();
       }}
     >
-      {({ handleSubmit, setFieldValue }) => (
-        <Form onSubmit={handleSubmit}>
-          <Dropzone
-            file={""}
-            handleUpload={(file) => setFieldValue("company_image_1", file)}
-            preview
-          />
-          <Field
-            name="comment"
-            label_th="ความคิดเห็นจากอาจารย์นิเทศ"
-            placeholder="พิมพ์ข้อความ"
-            multiline
-            require
-          />
-          <div className="flex gap-3 justify-end mt-5">
-            <button
-              className="bg-gray-200 px-4 rounded-2xl"
-              type="button"
-              onClick={() => props.handleClose()}
-            >
-              ยกเลิก
-            </button>
-            <button className="secondary-button" type="submit">
-              บันทึก
-            </button>
-          </div>
-        </Form>
-      )}
+      {({ handleSubmit, setFieldValue, values }) => {
+        const slots = [0, 1, 2];
+
+        const getPhoto = (slot: number) => {
+          const item = values.picture.find((p) => p.slot === slot);
+
+          return item?.value || "";
+        };
+
+        const setPhoto = (slot: number, newVal: File | string | null) => {
+          const idx = values.picture.findIndex((p) => p.slot === slot);
+          if (idx === -1) {
+            setFieldValue("picture", [
+              ...values.picture,
+              { slot, value: newVal },
+            ]);
+          } else {
+            setFieldValue(`picture[${idx}].value`, newVal);
+          }
+        };
+        return (
+          <Form onSubmit={handleSubmit}>
+            <div className="grid grid-cols-2 gap-5">
+              {slots.map((slot) => (
+                <Dropzone
+                  key={slot}
+                  file={getPhoto(slot)}
+                  preview
+                  handleUpload={(file) => setPhoto(slot, file)}
+                />
+              ))}
+            </div>
+            <Field
+              name="comment"
+              label_th="ความคิดเห็นจากอาจารย์นิเทศ"
+              placeholder="พิมพ์ข้อความ"
+              multiline
+              require
+            />
+            <div className="flex gap-3 justify-end mt-5">
+              <button
+                className="bg-gray-200 px-4 rounded-2xl"
+                type="button"
+                onClick={() => props.handleClose()}
+              >
+                ยกเลิก
+              </button>
+              <button className="secondary-button" type="submit">
+                บันทึก
+              </button>
+            </div>
+          </Form>
+        );
+      }}
     </Formik>
   );
 };

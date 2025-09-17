@@ -36,10 +36,12 @@ export default class VisitorSchedule extends BaseModel {
   @belongsTo(() => VisitorTraining, {
     foreignKey: 'visitor_training_id',
   })
+  @column()
   declare training: BelongsTo<typeof VisitorTraining>
 
   @hasMany(() => VisitsPicture, {
-    foreignKey: 'visitor_schedule_id',
+    foreignKey: 'visitorScheduleId',
   })
+  @column()
   declare photos: HasMany<typeof VisitsPicture>
 }
