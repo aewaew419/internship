@@ -24,7 +24,9 @@ const VisitorEvaluateStudent = () => {
                   className={`px-3 py-1 rounded-full text-sm font-medium ${
                     data.evaluationStatus === "ประเมินแล้ว" 
                       ? "bg-green-100 text-green-800" 
-                      : "bg-yellow-100 text-yellow-800"
+                      : data.evaluationStatus === "ประเมินบางส่วน"
+                      ? "bg-orange-100 text-orange-800"
+                      : "bg-gray-100 text-gray-800"
                   }`}
                 >
                   {data.evaluationStatus || "ยังไม่ประเมิน"}
@@ -35,6 +37,8 @@ const VisitorEvaluateStudent = () => {
                   className={`px-4 py-2 rounded text-white font-medium ${
                     data.evaluationStatus === "ประเมินแล้ว"
                       ? "bg-blue-500 hover:bg-blue-600"
+                      : data.evaluationStatus === "ประเมินบางส่วน"
+                      ? "bg-yellow-500 hover:bg-yellow-600"
                       : "bg-orange-500 hover:bg-orange-600"
                   }`}
                   onClick={() =>
@@ -44,7 +48,11 @@ const VisitorEvaluateStudent = () => {
                     )
                   }
                 >
-                  {data.evaluationStatus === "ประเมินแล้ว" ? "แก้ไขการประเมิน" : "ประเมิน"}
+                  {data.evaluationStatus === "ประเมินแล้ว" 
+                    ? "แก้ไขการประเมิน" 
+                    : data.evaluationStatus === "ประเมินบางส่วน"
+                    ? "ประเมินต่อ"
+                    : "ประเมิน"}
                 </button>
               </td>
             </tr>

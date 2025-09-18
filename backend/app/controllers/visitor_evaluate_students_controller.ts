@@ -1,6 +1,6 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import VisitorEvaluateStudent from '#models/visitor_evaluate_student'
-import VisitorTraining from '#models/visitor_training'
+// import VisitorTraining from '#models/visitor_training'
 import StudentEnroll from '#models/student_enroll'
 import db from '@adonisjs/lucid/services/db'
 export default class VisitorEvaluateStudentsController {
@@ -45,7 +45,8 @@ export default class VisitorEvaluateStudentsController {
         // Evaluation status
         db.raw('COUNT(DISTINCT ves.id) as evaluationCount'),
         db.raw('COUNT(DISTINCT vs.id) as scheduleCount'),
-        db.raw('CASE WHEN COUNT(DISTINCT ves.id) > 0 THEN "ประเมินแล้ว" ELSE "ยังไม่ประเมิน" END as evaluationStatus')
+        db.raw('COUNT(DISTINCT CASE WHEN ves.score > 0 THEN ves.id END) as completedEvaluationCount'),
+        db.raw('CASE WHEN COUNT(DISTINCT ves.id) > 0 AND COUNT(DISTINCT CASE WHEN ves.score > 0 THEN ves.id END) = COUNT(DISTINCT ves.id) THEN "ประเมินแล้ว" WHEN COUNT(DISTINCT CASE WHEN ves.score > 0 THEN ves.id END) > 0 THEN "ประเมินบางส่วน" ELSE "ยังไม่ประเมิน" END as evaluationStatus')
       )
       .groupBy(
         'vt.id', 'vt.visitor_instructor_id', 'vt.student_enroll_id', 
@@ -63,7 +64,9 @@ export default class VisitorEvaluateStudentsController {
       updatedAt: training.updatedAt,
       evaluationStatus: training.evaluationStatus,
       evaluationCount: training.evaluationCount,
+      completedEvaluationCount: training.completedEvaluationCount,
       scheduleCount: training.scheduleCount,
+      isEvaluationComplete: training.evaluationCount > 0 && training.completedEvaluationCount === training.evaluationCount,
       studentEnroll: {
         id: training.studentEnrollId,
         student: {

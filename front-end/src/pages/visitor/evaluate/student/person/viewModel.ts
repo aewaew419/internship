@@ -9,10 +9,29 @@ const useViewModel = (id: number) => {
   const [visitors, setVisitors] = useState<VisitorEvaluateStudentInterface[]>(
     []
   );
-  const handleOnsubmit = (entity: VisitorEvaluateStudentDTO) => {
+  const handleOnsubmit = (entity: VisitorEvaluateStudentDTO, isDraft = false) => {
+    // ตรวจสอบว่าประเมินครบทุกข้อหรือไม่ (เฉพาะเมื่อไม่ใช่การบันทึกร่าง)
+    const hasIncompleteEvaluation = entity.scores.some(score => score === 0 || score === null || score === undefined);
+    
+    if (!isDraft && hasIncompleteEvaluation) {
+      alert('กรุณาประเมินให้ครบทุกข้อก่อนส่งข้อมูล');
+      return;
+    }
+
     visitorService
       .reqPutVisitorEvaluateStudent(id, entity)
-      .then((response) => console.log(response));
+      .then((response) => {
+        console.log(response);
+        if (isDraft) {
+          alert('บันทึกร่างเรียบร้อยแล้ว คุณสามารถกลับมาประเมินต่อได้ภายหลัง');
+        } else {
+          alert('บันทึกการประเมินเรียบร้อยแล้ว');
+        }
+      })
+      .catch((error) => {
+        console.error('Error submitting evaluation:', error);
+        alert('เกิดข้อผิดพลาดในการบันทึกข้อมูล');
+      });
   };
   useEffect(() => {
     visitorService

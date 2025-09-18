@@ -32,7 +32,6 @@ import StudentEnrollStatusesController from '#controllers/student_enroll_statuse
 import InstructorGradesController from '#controllers/instructor_grades_controller'
 import InternshipApprovalController from '#controllers/internship_approval_controller'
 import InstructorAssignmentController from '#controllers/instructor_assignment_controller'
-import InstructorAssignmentController from '#controllers/instructor_assignment_controller'
 
 import VisitorsController from '#controllers/visitors_controller'
 import VisitorSchedulesController from '#controllers/visitor_schedules_controller'
@@ -204,10 +203,7 @@ router
     router.put('/instructor-assignment/:studentEnrollId', [InstructorAssignmentController, 'updateInstructorAssignment'])
     router.get('/instructor-assignment/available-instructors', [InstructorAssignmentController, 'getAvailableInstructors'])
     router.get('/instructor-assignment/:studentEnrollId/history', [InstructorAssignmentController, 'getAssignmentHistory'])
-    router.get('/instructor-assignment/:stude'])
-
-    router.get('/instructor-assignment/available-instru
-    router.get('/instructor-assignment/:studentEnrollId/history', [y'])nmentHistor, 'getAssigntrollermentCoAssignorructInstuctors'])nstrableIgetAvailntroller, 'ssignmentCotructorArs', [Instoc])ment'rAssignteInstructor, 'updalentControlssignmetructorA [InsEnrollId',nt:studement/uctor-assignnstrr.put('/ioute    rmentrentAssignetCuroller, 'ggnmentContrructorAssi [InstntEnrollId',nt API endsignme
+    router.put('/instructor-assignment/:studentEnrollId', [InstructorAssignmentController, 'updateAssignment'])
   })
   .prefix('/api/v1')
 // .middleware(['auth']) // ล็อกอินก่อนใช้งาน
