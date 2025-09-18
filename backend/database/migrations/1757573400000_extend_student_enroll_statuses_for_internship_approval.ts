@@ -12,10 +12,10 @@ export default class extends BaseSchema {
     this.schema.alterTable(this.tableName, (table) => {
       table.enum('status', [
         'registered',     // Initial application
-        't.approved',     // Advisor approved
-        'c.approved',     // Committee approved
-        'doc.approved',   // Document approved
-        'doc.cancel',     // Cancelled after approval
+        'advisor_approved',     // Advisor approved
+        'committee_approved',     // Committee approved
+        'document_approved',   // Document approved
+        'document_cancelled',     // Cancelled after approval
         'approve',        // Legacy status
         'denied',         // Legacy status
         'pending'         // Legacy status
