@@ -47,7 +47,7 @@ export default class VisitorTraining extends BaseModel {
   declare evaluateCompany: HasMany<typeof VisitorEvaluateCompany>
 
   @hasMany(() => VisitorEvaluateStudent, {
-    foreignKey: 'student_training_id',
+    foreignKey: 'visitor_training_id',
   })
   declare evaluateStudent: HasMany<typeof VisitorEvaluateStudent>
 }

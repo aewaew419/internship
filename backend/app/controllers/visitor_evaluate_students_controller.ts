@@ -1,11 +1,92 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import VisitorEvaluateStudent from '#models/visitor_evaluate_student'
+import VisitorTraining from '#models/visitor_training'
 import StudentEnroll from '#models/student_enroll'
 import db from '@adonisjs/lucid/services/db'
 export default class VisitorEvaluateStudentsController {
-  public async index({}: HttpContext) {
-    const visitorEvaluateStudent = await VisitorEvaluateStudent.all()
-    return visitorEvaluateStudent
+  public async index({ request }: HttpContext) {
+    const instructorId = request.input('instructor_id')
+    
+    if (!instructorId) {
+      const visitorEvaluateStudent = await VisitorEvaluateStudent.all()
+      return visitorEvaluateStudent
+    }
+
+    // Get visitor trainings with evaluation status
+    const visitorTrainings = await db
+      .from('visitor_trainings as vt')
+      .leftJoin('student_enrolls as se', 'vt.student_enroll_id', 'se.id')
+      .leftJoin('students as s', 'se.student_id', 's.id')
+      .leftJoin('users as u', 's.user_id', 'u.id')
+      .leftJoin('student_trainings as st', 'se.id', 'st.student_enroll_id')
+      .leftJoin('companies as c', 'st.company_id', 'c.id')
+      .leftJoin('visitor_schedules as vs', 'vt.id', 'vs.visitor_training_id')
+      .leftJoin('visitor_evaluate_students as ves', 'vt.id', 'ves.visitor_training_id')
+      .where('vt.visitor_instructor_id', instructorId)
+      .select(
+        'vt.id',
+        'vt.visitor_instructor_id as visitorInstructorId',
+        'vt.student_enroll_id as studentEnrollId',
+        'vt.created_at as createdAt',
+        'vt.updated_at as updatedAt',
+        // Student information
+        'se.id as studentEnrollId',
+        's.id as studentId',
+        's.student_id as studentCode',
+        's.name as studentName',
+        's.middle_name as studentMiddleName',
+        's.surname as studentSurname',
+        'u.email as studentEmail',
+        // Company information
+        'c.id as companyId',
+        'c.company_name_th as companyName',
+        'st.position',
+        'st.department',
+        // Evaluation status
+        db.raw('COUNT(DISTINCT ves.id) as evaluationCount'),
+        db.raw('COUNT(DISTINCT vs.id) as scheduleCount'),
+        db.raw('CASE WHEN COUNT(DISTINCT ves.id) > 0 THEN "ประเมินแล้ว" ELSE "ยังไม่ประเมิน" END as evaluationStatus')
+      )
+      .groupBy(
+        'vt.id', 'vt.visitor_instructor_id', 'vt.student_enroll_id', 
+        'vt.created_at', 'vt.updated_at', 'se.id', 's.id', 's.student_id',
+        's.name', 's.middle_name', 's.surname', 'u.email',
+        'c.id', 'c.company_name_th', 'st.position', 'st.department'
+      )
+
+    // Transform to match frontend interface
+    const transformedData = visitorTrainings.map((training: any) => ({
+      id: training.id,
+      visitorInstructorId: training.visitorInstructorId,
+      studentEnrollId: training.studentEnrollId,
+      createdAt: training.createdAt,
+      updatedAt: training.updatedAt,
+      evaluationStatus: training.evaluationStatus,
+      evaluationCount: training.evaluationCount,
+      scheduleCount: training.scheduleCount,
+      studentEnroll: {
+        id: training.studentEnrollId,
+        student: {
+          id: training.studentId,
+          studentId: training.studentCode,
+          name: training.studentName,
+          middleName: training.studentMiddleName,
+          surname: training.studentSurname,
+          email: training.studentEmail,
+        },
+        student_training: {
+          position: training.position,
+          department: training.department,
+          company: {
+            id: training.companyId,
+            name: training.companyName,
+          }
+        }
+      },
+      schedules: []
+    }))
+
+    return transformedData
   }
 
   public async show({ params }: HttpContext) {

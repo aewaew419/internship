@@ -4,6 +4,9 @@ export type VisitorInterface = {
   studentEnrollId: number;
   createdAt: string;
   updatedAt: string;
+  evaluationStatus?: string;
+  evaluationCount?: number;
+  scheduleCount?: number;
   studentEnroll: {
     id: number;
     studentId: number;
