@@ -29,15 +29,15 @@ const VisitorEvaluateStudentPerson = () => {
                 comment: visitors?.[0]?.comment || "",
               }}
               enableReinitialize
-              onSubmit={(value) =>
+              onSubmit={(value) => {
                 handleOnsubmit({
                   ids: visitors.map((v) => v.id),
                   scores: value.scores.map((v) => Number(v)),
                   comment: value.comment,
-                })
-              }
+                }, false); // false = ไม่ใช่การบันทึกร่าง
+              }}
             >
-              {({}) => (
+              {({ values }) => (
                 <Form>
                   <div>
                     {visitors.map((data, index) => (
@@ -57,12 +57,32 @@ const VisitorEvaluateStudentPerson = () => {
                       <label>ข้อเสนอแนะเพิ่มเติม</label>
                       <Field name="comment" multiline />
                     </div>
-                    <button
-                      type="submit"
-                      className="bg-orange-500 text-white px-4 py-2 rounded"
-                    >
-                      Submit
-                    </button>
+                    <div className="flex gap-3">
+                      <button
+                        type="submit"
+                        className={`px-4 py-2 rounded text-white font-medium ${
+                          values.scores.every((score) => Number(score) > 0)
+                            ? "bg-green-500 hover:bg-green-600"
+                            : "bg-gray-400 cursor-not-allowed"
+                        }`}
+                        disabled={!values.scores.every((score) => Number(score) > 0)}
+                      >
+                        ส่งการประเมิน
+                      </button>
+                      <button
+                        type="button"
+                        className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded font-medium"
+                        onClick={() => {
+                          handleOnsubmit({
+                            ids: visitors.map((v) => v.id),
+                            scores: values.scores.map((v) => Number(v)),
+                            comment: values.comment,
+                          }, true); // true = บันทึกร่าง
+                        }}
+                      >
+                        บันทึกร่าง
+                      </button>
+                    </div>
                   </div>
                 </Form>
               )}

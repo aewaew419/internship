@@ -16,29 +16,34 @@ const useViewModel = (id: number) => {
   const [visitors, setVisitors] = useState<VisitorEvaluateStudentInterface[]>(
     []
   );
-  const handleOnsubmit = async (entity: VisitorEvaluateStudentDTO) => {
-    try {
-      await visitorService
-        .reqPutVisitorEvaluateStudent(id, entity)
-        .then((response) => console.log(response));
+  const handleOnsubmit = (
+    entity: VisitorEvaluateStudentDTO,
+    isDraft = false
+  ) => {
+    // ตรวจสอบว่าประเมินครบทุกข้อหรือไม่ (เฉพาะเมื่อไม่ใช่การบันทึกร่าง)
+    const hasIncompleteEvaluation = entity.scores.some(
+      (score) => score === 0 || score === null || score === undefined
+    );
 
-      Swal.fire({
-        title: "บันทึกข้อมูลสำเร็จ",
-        icon: "success",
-        confirmButtonText: "ปิด",
-        confirmButtonColor: "#966033",
-      });
-      navigate(PROTECTED_PATH.VISITOR_EVALUATE_STUDENT);
-    } catch (err) {
-      console.error(err);
-      Swal.fire({
-        title: "บันทึกข้อมูลไม่สำเร็จ",
-        icon: "error",
-        confirmButtonText: "ปิด",
-        confirmButtonColor: "#966033",
-      });
-      throw err;
+    if (!isDraft && hasIncompleteEvaluation) {
+      alert("กรุณาประเมินให้ครบทุกข้อก่อนส่งข้อมูล");
+      return;
     }
+
+    visitorService
+      .reqPutVisitorEvaluateStudent(id, entity)
+      .then((response) => {
+        console.log(response);
+        if (isDraft) {
+          alert("บันทึกร่างเรียบร้อยแล้ว คุณสามารถกลับมาประเมินต่อได้ภายหลัง");
+        } else {
+          alert("บันทึกการประเมินเรียบร้อยแล้ว");
+        }
+      })
+      .catch((error) => {
+        console.error("Error submitting evaluation:", error);
+        alert("เกิดข้อผิดพลาดในการบันทึกข้อมูล");
+      });
   };
   useEffect(() => {
     visitorService

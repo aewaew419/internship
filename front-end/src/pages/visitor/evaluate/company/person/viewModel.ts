@@ -14,29 +14,19 @@ const useViewModel = (id: number) => {
   const [visitors, setVisitors] = useState<VisitorEvaluateStudentInterface[]>(
     []
   );
-  const handleOnsubmit = async (entity: VisitorEvaluateStudentDTO) => {
-    try {
-      await visitorService
-        .reqPutVisitorEvaluateCompany(id, entity)
-        .then((response) => console.log(response));
-
-      Swal.fire({
-        title: "บันทึกข้อมูลสำเร็จ",
-        icon: "success",
-        confirmButtonText: "ปิด",
-        confirmButtonColor: "#966033",
+  const handleOnsubmit = (entity: VisitorEvaluateStudentDTO) => {
+    visitorService
+      .reqPutVisitorEvaluateCompany(id, entity)
+      .then((response) => {
+        console.log(response);
+        // Refresh data after successful submission
+        visitorService
+          .reqGetVisitorEvaluateCompany(id)
+          .then((response) => setVisitors(response));
+      })
+      .catch((error) => {
+        console.error("Error submitting evaluation:", error);
       });
-      navigate(PROTECTED_PATH.VISITOR_EVALUATE_COMPANY);
-    } catch (err) {
-      console.error(err);
-      Swal.fire({
-        title: "บันทึกข้อมูลไม่สำเร็จ",
-        icon: "error",
-        confirmButtonText: "ปิด",
-        confirmButtonColor: "#966033",
-      });
-      throw err;
-    }
   };
   useEffect(() => {
     visitorService

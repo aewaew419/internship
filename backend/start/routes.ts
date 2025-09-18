@@ -31,6 +31,7 @@ import StudentEnrollmentsController from '#controllers/student_enrollments_contr
 import StudentEnrollStatusesController from '#controllers/student_enroll_statuses_controller'
 import InstructorGradesController from '#controllers/instructor_grades_controller'
 import InternshipApprovalController from '#controllers/internship_approval_controller'
+import InstructorAssignmentController from '#controllers/instructor_assignment_controller'
 
 import VisitorsController from '#controllers/visitors_controller'
 import VisitorSchedulesController from '#controllers/visitor_schedules_controller'

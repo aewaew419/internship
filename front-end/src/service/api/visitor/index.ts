@@ -146,7 +146,7 @@ export class VisitorService extends RemoteA {
 
   // Enhanced visitor fetching with server-side filtering support
   reqGetVisitor = async (filterParams?: VisitorFilterParams): Promise<VisitorInterface[]> => {
-    let url = PROTECTED_PATH.VISITOR_VISITOR_TRAINING_LIST + "/" + this.instructor_id;
+    let url = PROTECTED_PATH.VISITOR_EVALUATE_STUDENT + "?instructor_id=" + this.instructor_id;
     
     // If filter parameters are provided, validate and apply them
     if (filterParams) {
