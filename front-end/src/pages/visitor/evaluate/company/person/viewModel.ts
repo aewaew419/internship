@@ -12,7 +12,16 @@ const useViewModel = (id: number) => {
   const handleOnsubmit = (entity: VisitorEvaluateStudentDTO) => {
     visitorService
       .reqPutVisitorEvaluateCompany(id, entity)
-      .then((response) => console.log(response));
+      .then((response) => {
+        console.log(response);
+        // Refresh data after successful submission
+        visitorService
+          .reqGetVisitorEvaluateCompany(id)
+          .then((response) => setVisitors(response));
+      })
+      .catch((error) => {
+        console.error('Error submitting evaluation:', error);
+      });
   };
   useEffect(() => {
     visitorService
