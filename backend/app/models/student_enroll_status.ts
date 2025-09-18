@@ -32,6 +32,16 @@ export interface StatusTransition {
   reason?: string
 }
 
+// Instructor assignment audit trail interface
+export interface InstructorAssignmentAudit {
+  previousInstructorId?: number
+  newInstructorId: number
+  changedBy: number
+  changedAt: DateTime
+  reason?: string
+  notificationSent: boolean
+}
+
 export default class StudentEnrollStatus extends BaseModel {
   @column({ isPrimary: true })
   declare id: number
@@ -80,6 +90,13 @@ export default class StudentEnrollStatus extends BaseModel {
     consume: (value: string) => value ? JSON.parse(value) : []
   })
   declare status_history: StatusTransition[]
+
+  // Instructor assignment history tracking
+  @column({
+    prepare: (value: InstructorAssignmentAudit[]) => JSON.stringify(value),
+    consume: (value: string) => value ? JSON.parse(value) : []
+  })
+  declare instructor_assignment_history: InstructorAssignmentAudit[]
 
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
@@ -226,5 +243,125 @@ export default class StudentEnrollStatus extends BaseModel {
    */
   public requiresCommitteeVoting(): boolean {
     return this.status === 't.approved'
+  }
+
+  /**
+   * Instructor assignment methods
+   */
+
+  /**
+   * Change instructor assignment with audit trail
+   */
+  public async changeInstructor(
+    newInstructorId: number,
+    changedBy: number,
+    reason?: string
+  ): Promise<boolean> {
+    // Validate the instructor change
+    if (!this.canChangeInstructor(newInstructorId)) {
+      return false
+    }
+
+    const previousInstructorId = this.instructor_id
+
+    // Create audit trail entry
+    const auditEntry: InstructorAssignmentAudit = {
+      previousInstructorId: previousInstructorId || undefined,
+      newInstructorId,
+      changedBy,
+      changedAt: DateTime.now(),
+      reason,
+      notificationSent: false
+    }
+
+    // Update instructor assignment history
+    this.instructor_assignment_history = [...this.instructor_assignment_history, auditEntry]
+    
+    // Update the instructor assignment
+    this.instructor_id = newInstructorId
+
+    await this.save()
+    return true
+  }
+
+  /**
+   * Validate if instructor can be changed
+   */
+  public canChangeInstructor(newInstructorId: number): boolean {
+    // Cannot assign to the same instructor
+    if (this.instructor_id === newInstructorId) {
+      return false
+    }
+
+    // Cannot change instructor if status is in final states
+    const finalStatuses: InternshipApprovalStatus[] = ['doc.cancel']
+    if (finalStatuses.includes(this.status)) {
+      return false
+    }
+
+    // New instructor ID must be valid (positive number)
+    if (!newInstructorId || newInstructorId <= 0) {
+      return false
+    }
+
+    return true
+  }
+
+  /**
+   * Check if instructor assignment can be changed by user
+   */
+  public canUserChangeInstructor(userId: number): boolean {
+    // This would typically check user permissions
+    // For now, we'll assume any valid user can change (admin check would be done at controller level)
+    return userId > 0
+  }
+
+  /**
+   * Get instructor assignment history
+   */
+  public getInstructorAssignmentHistory(): InstructorAssignmentAudit[] {
+    return this.instructor_assignment_history || []
+  }
+
+  /**
+   * Get latest instructor assignment change
+   */
+  public getLatestInstructorChange(): InstructorAssignmentAudit | null {
+    const history = this.getInstructorAssignmentHistory()
+    return history.length > 0 ? history[history.length - 1] : null
+  }
+
+  /**
+   * Check if instructor has been assigned to this enrollment before
+   */
+  public hasInstructorBeenAssigned(instructorId: number): boolean {
+    // Check current assignment
+    if (this.instructor_id === instructorId) {
+      return true
+    }
+
+    // Check assignment history
+    return this.instructor_assignment_history.some(
+      entry => entry.newInstructorId === instructorId || entry.previousInstructorId === instructorId
+    )
+  }
+
+  /**
+   * Mark notification as sent for latest assignment change
+   */
+  public async markNotificationSent(): Promise<void> {
+    const history = [...this.instructor_assignment_history]
+    if (history.length > 0) {
+      history[history.length - 1].notificationSent = true
+      this.instructor_assignment_history = history
+      await this.save()
+    }
+  }
+
+  /**
+   * Get assignment changes that need notification
+   */
+  public getUnnotifiedAssignmentChanges(): InstructorAssignmentAudit[] {
+    return this.instructor_assignment_history.filter(entry => !entry.notificationSent)
   }
 }

@@ -31,6 +31,8 @@ import StudentEnrollmentsController from '#controllers/student_enrollments_contr
 import StudentEnrollStatusesController from '#controllers/student_enroll_statuses_controller'
 import InstructorGradesController from '#controllers/instructor_grades_controller'
 import InternshipApprovalController from '#controllers/internship_approval_controller'
+import InstructorAssignmentController from '#controllers/instructor_assignment_controller'
+import InstructorAssignmentController from '#controllers/instructor_assignment_controller'
 
 import VisitorsController from '#controllers/visitors_controller'
 import VisitorSchedulesController from '#controllers/visitor_schedules_controller'
@@ -190,6 +192,22 @@ router
     router.post('/internship/approval/:studentEnrollId/committee-vote', [InternshipApprovalController, 'committeeMemberVote'])
     router.put('/internship/approval/:studentEnrollId/status', [InternshipApprovalController, 'updateApprovalStatus'])
     router.get('/internship/approval/:studentEnrollId/committee-voting', [InternshipApprovalController, 'getCommitteeVotingData'])
+
+    // Instructor Assignment API endpoints
+    router.get('/instructor-assignment/:studentEnrollId', [InstructorAssignmentController, 'getCurrentAssignment'])
+    router.put('/instructor-assignment/:studentEnrollId', [InstructorAssignmentController, 'updateInstructorAssignment'])
+    router.get('/instructor-assignment/available-instructors', [InstructorAssignmentController, 'getAvailableInstructors'])
+    router.get('/instructor-assignment/:studentEnrollId/history', [InstructorAssignmentController, 'getAssignmentHistory'])
+
+    // Instructor Assignment API endpoints
+    router.get('/instructor-assignment/:studentEnrollId', [InstructorAssignmentController, 'getCurrentAssignment'])
+    router.put('/instructor-assignment/:studentEnrollId', [InstructorAssignmentController, 'updateInstructorAssignment'])
+    router.get('/instructor-assignment/available-instructors', [InstructorAssignmentController, 'getAvailableInstructors'])
+    router.get('/instructor-assignment/:studentEnrollId/history', [InstructorAssignmentController, 'getAssignmentHistory'])
+    router.get('/instructor-assignment/:stude'])
+
+    router.get('/instructor-assignment/available-instru
+    router.get('/instructor-assignment/:studentEnrollId/history', [y'])nmentHistor, 'getAssigntrollermentCoAssignorructInstuctors'])nstrableIgetAvailntroller, 'ssignmentCotructorArs', [Instoc])ment'rAssignteInstructor, 'updalentControlssignmetructorA [InsEnrollId',nt:studement/uctor-assignnstrr.put('/ioute    rmentrentAssignetCuroller, 'ggnmentContrructorAssi [InstntEnrollId',nt API endsignme
   })
   .prefix('/api/v1')
 // .middleware(['auth']) // ล็อกอินก่อนใช้งาน

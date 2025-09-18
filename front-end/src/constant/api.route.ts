@@ -52,4 +52,6 @@ export const PROTECTED_PATH = {
 
   STUDENT_COOP_REQ_LETTER: "/letters/request-coop",
   STUDENT_REFER_LETTER: "/letters/refer-letter",
+  
+  REPORTS: "/reports",
 };
