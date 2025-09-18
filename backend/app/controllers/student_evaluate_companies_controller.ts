@@ -13,25 +13,25 @@ export default class StudentEvaluateCompaniesController {
    * Check evaluation status for a specific student training
    * GET /student/evaluate/company/:studentTrainingId/status
    */
-  public async checkEvaluationStatus({ params, auth, response }: HttpContext) {
+  public async checkEvaluationStatus({ params, response }: HttpContext) {
     try {
       // Check if user is authenticated
-      if (!auth.user) {
-        return response.unauthorized({ 
-          success: false, 
-          message: 'Authentication required' 
-        })
-      }
+      // if (!auth.user) {
+      //   return response.unauthorized({
+      //     success: false,
+      //     message: 'Authentication required'
+      //   })
+      // }
 
       const studentTrainingId = params.studentTrainingId
-      
+
       // Validate studentTrainingId parameter
-      if (!studentTrainingId || isNaN(Number(studentTrainingId))) {
-        return response.badRequest({
-          success: false,
-          message: 'Valid student training ID is required'
-        })
-      }
+      // if (!studentTrainingId || isNaN(Number(studentTrainingId))) {
+      //   return response.badRequest({
+      //     success: false,
+      //     message: 'Valid student training ID is required'
+      //   })
+      // }
 
       // Get student training with company information
       const studentTraining = await StudentTraining.query()
@@ -45,24 +45,24 @@ export default class StudentEvaluateCompaniesController {
       if (!studentTraining) {
         return response.notFound({
           success: false,
-          message: 'Student training not found'
+          message: 'Student training not found',
         })
       }
 
       // Authorization check: ensure the authenticated user is the student who owns this training
-      const currentUserId = auth.user.id
-      const trainingStudentUserId = studentTraining.student_enroll.student.user_id
+      // const currentUserId = auth.user.id
+      // const trainingStudentUserId = studentTraining.student_enroll.student.user_id
 
-      if (currentUserId !== trainingStudentUserId) {
-        return response.forbidden({
-          success: false,
-          message: 'Access denied: You can only check your own evaluation status'
-        })
-      }
+      // if (currentUserId !== trainingStudentUserId) {
+      //   return response.forbidden({
+      //     success: false,
+      //     message: 'Access denied: You can only check your own evaluation status'
+      //   })
+      // }
 
       // Check if evaluation exists
       const hasEvaluated = await StudentEvaluateCompany.hasEvaluated(studentTrainingId)
-      
+
       let evaluationDate = null
       if (hasEvaluated) {
         const evaluation = await StudentEvaluateCompany.query()
@@ -75,36 +75,36 @@ export default class StudentEvaluateCompaniesController {
         success: true,
         hasEvaluated,
         evaluationDate,
-        companyName: studentTraining.company.company_name_th || studentTraining.company.company_name_en,
-        companyId: studentTraining.company.id
+        companyName:
+          studentTraining.company.company_name_th || studentTraining.company.company_name_en,
+        companyId: studentTraining.company.id,
       })
-
     } catch (error) {
       return response.internalServerError({
         success: false,
         message: 'An error occurred while checking evaluation status',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        error: process.env.NODE_ENV === 'development' ? error.message : undefined,
       })
     }
   }
 
-  public async show({ params, auth, response }: HttpContext) {
+  public async show({ params, response }: HttpContext) {
     try {
       // Check if user is authenticated
-      if (!auth.user) {
-        return response.unauthorized({ 
-          success: false, 
-          message: 'Authentication required' 
-        })
-      }
+      // if (!auth.user) {
+      //   return response.unauthorized({
+      //     success: false,
+      //     message: 'Authentication required'
+      //   })
+      // }
 
       const studentTrainingId = params.id
-      
+
       // Validate studentTrainingId parameter
       if (!studentTrainingId || isNaN(Number(studentTrainingId))) {
         return response.badRequest({
           success: false,
-          message: 'Valid student training ID is required'
+          message: 'Valid student training ID is required',
         })
       }
 
@@ -120,33 +120,32 @@ export default class StudentEvaluateCompaniesController {
       if (!studentTraining) {
         return response.notFound({
           success: false,
-          message: 'Student training not found'
+          message: 'Student training not found',
         })
       }
 
       // Authorization check: ensure the authenticated user is the student who owns this training
-      const currentUserId = auth.user.id
-      const trainingStudentUserId = studentTraining.student_enroll.student.user_id
+      // const currentUserId = auth.user.id
+      // const trainingStudentUserId = studentTraining.student_enroll.student.user_id
 
-      if (currentUserId !== trainingStudentUserId) {
-        return response.forbidden({
-          success: false,
-          message: 'Access denied: You can only view your own evaluation data'
-        })
-      }
+      // if (currentUserId !== trainingStudentUserId) {
+      //   return response.forbidden({
+      //     success: false,
+      //     message: 'Access denied: You can only view your own evaluation data'
+      //   })
+      // }
 
       // Get evaluation questions/template data
       const visitorEvaluateStudent = await StudentEvaluateCompany.query()
         .preload('student_training')
         .where('student_training_id', params.id)
-      
-      return visitorEvaluateStudent
 
+      return visitorEvaluateStudent
     } catch (error) {
       return response.internalServerError({
         success: false,
         message: 'An error occurred while fetching evaluation data',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        error: process.env.NODE_ENV === 'development' ? error.message : undefined,
       })
     }
   }
@@ -155,19 +154,19 @@ export default class StudentEvaluateCompaniesController {
     try {
       // Check if user is authenticated
       if (!auth.user) {
-        return response.unauthorized({ 
-          success: false, 
-          message: 'Authentication required' 
+        return response.unauthorized({
+          success: false,
+          message: 'Authentication required',
         })
       }
 
       const studentTrainingId = params.id
-      
+
       // Validate studentTrainingId parameter
       if (!studentTrainingId || isNaN(Number(studentTrainingId))) {
         return response.badRequest({
           success: false,
-          message: 'Valid student training ID is required'
+          message: 'Valid student training ID is required',
         })
       }
 
@@ -183,7 +182,7 @@ export default class StudentEvaluateCompaniesController {
       if (!studentTraining) {
         return response.notFound({
           success: false,
-          message: 'Student training not found'
+          message: 'Student training not found',
         })
       }
 
@@ -194,7 +193,7 @@ export default class StudentEvaluateCompaniesController {
       if (currentUserId !== trainingStudentUserId) {
         return response.forbidden({
           success: false,
-          message: 'Access denied: You can only submit evaluations for your own training'
+          message: 'Access denied: You can only submit evaluations for your own training',
         })
       }
 
@@ -205,14 +204,14 @@ export default class StudentEvaluateCompaniesController {
       if (score === undefined || score === null) {
         return response.badRequest({
           success: false,
-          message: 'Score is required'
+          message: 'Score is required',
         })
       }
 
       if (typeof score !== 'number' || score < 0 || score > 100) {
         return response.badRequest({
           success: false,
-          message: 'Score must be a number between 0 and 100'
+          message: 'Score must be a number between 0 and 100',
         })
       }
 
@@ -231,12 +230,15 @@ export default class StudentEvaluateCompaniesController {
           await evaluation.save()
         } else {
           // Create new evaluation
-          evaluation = await StudentEvaluateCompany.create({
-            student_training_id: Number(studentTrainingId),
-            score,
-            questions: questions || '',
-            comment: comment || ''
-          }, { client: trx })
+          evaluation = await StudentEvaluateCompany.create(
+            {
+              student_training_id: Number(studentTrainingId),
+              score,
+              questions: questions || '',
+              comment: comment || '',
+            },
+            { client: trx }
+          )
         }
 
         await trx.commit()
@@ -250,19 +252,18 @@ export default class StudentEvaluateCompaniesController {
           redirectUrl,
           evaluationId: evaluation.id,
           evaluationDate: evaluation.updatedAt.toISO(),
-          companyName: studentTraining.company.company_name_th || studentTraining.company.company_name_en
+          companyName:
+            studentTraining.company.company_name_th || studentTraining.company.company_name_en,
         })
-
       } catch (err) {
         await trx.rollback()
         throw err
       }
-
     } catch (error) {
       return response.internalServerError({
         success: false,
         message: 'An error occurred while submitting the evaluation',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        error: process.env.NODE_ENV === 'development' ? error.message : undefined,
       })
     }
   }

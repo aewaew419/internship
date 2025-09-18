@@ -93,13 +93,13 @@ router
 
     router.resource('/visitor/evaluate/company', VisitorEvaluateCompaniesController).apiOnly()
     router.resource('/visitor/evaluate/student', VisitorEvaluateStudentsController).apiOnly()
-    
+
     // Custom route for checking evaluation status
     router.get('/student/evaluate/company/:studentTrainingId/status', [
       StudentEvaluateCompaniesController,
-      'checkEvaluationStatus'
+      'checkEvaluationStatus',
     ])
-    
+
     router.resource('/student/evaluate/company', StudentEvaluateCompaniesController).apiOnly()
 
     router.post('/users/bulk-excel', [UserController, 'bulkCreateFromExcel'])
@@ -186,11 +186,26 @@ router
     router.post('/letters/refer-letter/en/:id', [LetterController, 'requestReferLetterEN'])
 
     // Internship Approval API endpoints
-    router.get('/internship/approval/:studentEnrollId', [InternshipApprovalController, 'getApprovalStatus'])
-    router.post('/internship/approval/:studentEnrollId/advisor', [InternshipApprovalController, 'advisorApproval'])
-    router.post('/internship/approval/:studentEnrollId/committee-vote', [InternshipApprovalController, 'committeeMemberVote'])
-    router.put('/internship/approval/:studentEnrollId/status', [InternshipApprovalController, 'updateApprovalStatus'])
-    router.get('/internship/approval/:studentEnrollId/committee-voting', [InternshipApprovalController, 'getCommitteeVotingData'])
+    router.get('/internship/approval/:studentEnrollId', [
+      InternshipApprovalController,
+      'getApprovalStatus',
+    ])
+    router.post('/internship/approval/:studentEnrollId/advisor', [
+      InternshipApprovalController,
+      'advisorApproval',
+    ])
+    router.post('/internship/approval/:studentEnrollId/committee-vote', [
+      InternshipApprovalController,
+      'committeeMemberVote',
+    ])
+    // router.put('/internship/approval/:studentEnrollId/status', [
+    //   InternshipApprovalController,
+    //   'updateApprovalStatus',
+    // ])
+    router.get('/internship/approval/:studentEnrollId/committee-voting', [
+      InternshipApprovalController,
+      'getCommitteeVotingData',
+    ])
   })
   .prefix('/api/v1')
 // .middleware(['auth']) // ล็อกอินก่อนใช้งาน
