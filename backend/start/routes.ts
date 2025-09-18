@@ -206,6 +206,26 @@ router
       InternshipApprovalController,
       'getCommitteeVotingData',
     ])
+
+    // Instructor Assignment API endpoints
+    router.get('/instructor-assignment/:studentEnrollId', [
+      InstructorAssignmentController,
+      'getCurrentAssignment',
+    ])
+    router.put('/instructor-assignment/:studentEnrollId', [
+      InstructorAssignmentController,
+      'updateInstructorAssignment',
+    ])
+    router.get('/instructor-assignment/available-instructors', [
+      InstructorAssignmentController,
+      'getAvailableInstructors',
+    ])
+    router.get('/instructor-assignment/:studentEnrollId/history', [
+      InstructorAssignmentController,
+      'getAssignmentHistory',
+    ])
+
+    // router.put('/instructor-assignment/:studentEnrollId', [InstructorAssignmentController, 'updateAssignment'])
   })
   .prefix('/api/v1')
 // .middleware(['auth']) // ล็อกอินก่อนใช้งาน
