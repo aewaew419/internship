@@ -104,7 +104,7 @@ router
       InstructorCoursesController,
       'destroy',
     ])
-    router.delete('/course/committees/:course_id/:instructor_id', [
+    router.delete('/courses/committees/:course_id/:instructor_id', [
       CourseCommitteesController,
       'destroy',
     ])
