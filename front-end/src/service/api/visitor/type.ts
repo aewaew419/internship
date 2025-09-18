@@ -28,6 +28,44 @@ export type VisitorInterface = {
       curriculumId: number | null;
       majorId: number | null;
     };
+    student_training?: {
+      id: number;
+      studentEnrollId: number;
+      startDate: string;
+      endDate: string;
+      coordinator: string;
+      coordinatorPhoneNumber: string;
+      coordinatorEmail: string;
+      supervisor: string;
+      supervisorPhoneNumber: string;
+      supervisorEmail: string;
+      department: string;
+      position: string;
+      jobDescription: string;
+      documentLanguage: 'th' | 'en';
+      companyId: number;
+      company?: {
+        id: number;
+        companyRegisterNumber: string;
+        companyNameEn: string;
+        companyNameTh: string;
+        companyAddress: string;
+        companyMap: string;
+        companyEmail: string;
+        companyPhoneNumber: string;
+        companyType: string;
+      };
+    };
+  };
+  visitor?: {
+    id: number;
+    userId: number;
+    instructorId: string;
+    name: string;
+    middleName: string | null;
+    surname: string;
+    phoneNumber: string | null;
+    email: string | null;
   };
   schedules:
     | {

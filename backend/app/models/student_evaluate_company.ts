@@ -29,4 +29,33 @@ export default class StudentEvaluateCompany extends BaseModel {
 
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime
+
+  /**
+   * Check if evaluation exists for a student training ID
+   * @param studentTrainingId - The student training ID to check
+   * @returns Promise<boolean> - True if evaluation exists, false otherwise
+   */
+  static async hasEvaluated(studentTrainingId: number): Promise<boolean> {
+    const evaluation = await this.query()
+      .where('student_training_id', studentTrainingId)
+      .first()
+    
+    return evaluation !== null
+  }
+
+  /**
+   * Get evaluation with company information for a student training ID
+   * @param studentTrainingId - The student training ID to get evaluation for
+   * @returns Promise<StudentEvaluateCompany | null> - Evaluation with company info or null
+   */
+  static async getEvaluationWithCompany(studentTrainingId: number): Promise<StudentEvaluateCompany | null> {
+    const evaluation = await this.query()
+      .where('student_training_id', studentTrainingId)
+      .preload('student_training', (query) => {
+        query.preload('company')
+      })
+      .first()
+    
+    return evaluation
+  }
 }

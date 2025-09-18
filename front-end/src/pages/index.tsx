@@ -3,7 +3,7 @@ import Dashboard from "../pages/dashboard";
 import Setting from "../pages/setting";
 import AddPerson from "./addPerson";
 import PersonInformation from "./addPerson/person";
-import SupervisorReport from "./superviseReport";
+import SupervisorReport from "./superviseReport/index";
 import SupervisorSchedule from "./superviseSchedule";
 import InternDoc from "./internDoc";
 import InternDocPerson from "./internDoc/person";

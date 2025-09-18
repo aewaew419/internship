@@ -8,6 +8,8 @@ import type {
   StudentEnrollRegisterInteface,
   StudentEvaluateCompanyDTO,
   StudentEvaluateCompanyInterface,
+  EvaluationStatusResponse,
+  SubmissionResponse,
 } from "./type";
 import type { AxiosResponse } from "axios";
 import { useToken } from "../../../utils/localStorage";
@@ -86,23 +88,73 @@ export class StudentService extends RemoteA {
   getStudentEvaluateCompany = async (
     id: number
   ): Promise<StudentEvaluateCompanyInterface[]> => {
-    const response = await this.getAxiosInstance().get(
-      PROTECTED_PATH.STUDENT_EVALUATE_COMPANY + `/${id}`
-    );
-    const { data } = response;
-    return data;
+    try {
+      const response = await this.getAxiosInstance().get(
+        PROTECTED_PATH.STUDENT_EVALUATE_COMPANY + `/${id}`
+      );
+      const { data } = response;
+      return data;
+    } catch (error: any) {
+      // Re-throw with additional context for better error handling
+      if (error.response?.status === 404) {
+        throw new Error('Company not found or invalid student training ID');
+      } else if (error.response?.status === 401) {
+        throw new Error('Unauthorized access - please log in');
+      } else if (error.response?.status === 403) {
+        throw new Error('Access forbidden - you can only view your own evaluations');
+      } else if (error.response?.status === 400) {
+        throw new Error('Invalid request - please check the company ID');
+      } else if (error.response?.status >= 500) {
+        throw new Error('Server error - please try again later');
+      }
+      throw error;
+    }
   };
 
   putStudentEvaluateCompany = async (
     id: number,
     entity: StudentEvaluateCompanyDTO
-  ): Promise<AxiosResponse> => {
-    const response = await this.getAxiosInstance().put(
-      PROTECTED_PATH.STUDENT_EVALUATE_COMPANY + `/${id}`,
-      entity
-    );
-    const { data } = response;
-    return data;
+  ): Promise<SubmissionResponse> => {
+    try {
+      const response = await this.getAxiosInstance().put(
+        PROTECTED_PATH.STUDENT_EVALUATE_COMPANY + `/${id}`,
+        entity
+      );
+      const { data } = response;
+      return data;
+    } catch (error: any) {
+      // Re-throw with additional context for better error handling
+      if (error.response?.status === 404) {
+        throw new Error('Student training not found');
+      } else if (error.response?.status === 401) {
+        throw new Error('Unauthorized access');
+      } else if (error.response?.status === 422) {
+        throw new Error('Validation failed - please check your input');
+      }
+      throw error;
+    }
+  };
+
+  checkEvaluationStatus = async (
+    studentTrainingId: number
+  ): Promise<EvaluationStatusResponse> => {
+    try {
+      const response = await this.getAxiosInstance().get(
+        PROTECTED_PATH.STUDENT_EVALUATE_COMPANY + `/${studentTrainingId}/status`
+      );
+      const { data } = response;
+      return data;
+    } catch (error: any) {
+      // Re-throw with additional context for better error handling
+      if (error.response?.status === 404) {
+        throw new Error('Company not found or invalid student training ID');
+      } else if (error.response?.status === 401) {
+        throw new Error('Unauthorized access');
+      } else if (error.response?.status === 403) {
+        throw new Error('Access forbidden - evaluation not allowed');
+      }
+      throw error;
+    }
   };
 
   postStudentCoopReqLetter = async (
