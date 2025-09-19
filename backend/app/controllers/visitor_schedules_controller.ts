@@ -69,7 +69,7 @@ export default class VisitorSchedulesController {
     const schedule = await VisitorSchedule.findOrFail(id)
 
     const files = request.files('photos', {
-      size: '5mb',
+      size: '20mb',
       extnames: ['jpg', 'jpeg', 'png', 'webp'],
     })
 

@@ -232,8 +232,8 @@ export default class StudentEnrollmentsController {
       .firstOrFail()
 
     // exactly one file must be sent
-    const pic1 = request.file('picture_1', { size: '2mb', extnames: ['jpg', 'png', 'jpeg'] })
-    const pic2 = request.file('picture_2', { size: '2mb', extnames: ['jpg', 'png', 'jpeg'] })
+    const pic1 = request.file('picture_1', { size: '20mb', extnames: ['jpg', 'png', 'jpeg'] })
+    const pic2 = request.file('picture_2', { size: '20mb', extnames: ['jpg', 'png', 'jpeg'] })
 
     if (!pic1 && !pic2) return response.badRequest({ message: 'No file provided' })
     if (pic1 && pic2) return response.badRequest({ message: 'Send only one file per request' })

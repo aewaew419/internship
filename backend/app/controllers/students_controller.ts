@@ -57,7 +57,7 @@ export default class StudentsController {
       const major = request.input('major_id')
 
       const picture = request.file('picture', {
-        size: '2mb',
+        size: '20mb',
         extnames: ['jpg', 'png', 'jpeg'],
       })
       if (picture) {
