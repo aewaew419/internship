@@ -1,0 +1,410 @@
+generator client {
+  provider = "go run github.com/steebchen/prisma-client-go"
+  output   = "../internal/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// Core User Management
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  firstName String?  @map("first_name")
+  lastName  String?  @map("last_name")
+  role      String   @default("user")
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relationships
+  student    Student?
+  instructor Instructor?
+  staff      Staff?
+
+  @@map("users")
+}
+
+model Role {
+  id          Int    @id @default(autoincrement())
+  name        String @unique
+  description String?
+  permissions Json?
+
+  @@map("roles")
+}
+
+model Permission {
+  id          Int    @id @default(autoincrement())
+  name        String @unique
+  description String?
+  resource    String
+  action      String
+
+  @@map("permissions")
+}
+
+// Academic Structure
+model Campus {
+  id        Int      @id @default(autoincrement())
+  name      String
+  code      String   @unique
+  address   String?
+  phone     String?
+  email     String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relationships
+  faculties Faculty[]
+
+  @@map("campuses")
+}
+
+model Faculty {
+  id       Int    @id @default(autoincrement())
+  campusId Int    @map("campus_id")
+  name     String
+  code     String @unique
+  dean     String?
+
+  // Relationships
+  campus   Campus    @relation(fields: [campusId], references: [id])
+  programs Program[]
+
+  @@map("faculties")
+}
+
+model Program {
+  id        Int    @id @default(autoincrement())
+  facultyId Int    @map("faculty_id")
+  name      String
+  code      String @unique
+  degree    String // bachelor, master, doctoral
+
+  // Relationships
+  faculty Faculty @relation(fields: [facultyId], references: [id])
+  majors  Major[]
+
+  @@map("programs")
+}
+
+model Major {
+  id        Int    @id @default(autoincrement())
+  programId Int    @map("program_id")
+  name      String
+  code      String @unique
+
+  // Relationships
+  program     Program      @relation(fields: [programId], references: [id])
+  curriculums Curriculum[]
+  students    Student[]
+
+  @@map("majors")
+}
+
+model Curriculum {
+  id      Int    @id @default(autoincrement())
+  majorId Int    @map("major_id")
+  name    String
+  year    Int
+  version String
+
+  // Relationships
+  major   Major     @relation(fields: [majorId], references: [id])
+  courses Course[]
+
+  @@map("curriculums")
+}
+
+// Student Management
+model Student {
+  id        Int     @id @default(autoincrement())
+  userId    Int     @unique @map("user_id")
+  studentId String  @unique @map("student_id")
+  majorId   Int     @map("major_id")
+  year      Int?
+  semester  Int?
+  gpa       Float?
+  status    String  @default("active")
+  advisor   String?
+
+  // Relationships
+  user   User  @relation(fields: [userId], references: [id])
+  major  Major @relation(fields: [majorId], references: [id])
+  
+  // Course enrollments
+  enrollments     StudentEnroll[]
+  trainings       StudentTraining[]
+  evaluations     StudentEvaluateCompany[]
+  visitorEvals    VisitorEvaluateStudent[]
+
+  @@map("students")
+}
+
+model Instructor {
+  id           Int     @id @default(autoincrement())
+  userId       Int     @unique @map("user_id")
+  instructorId String  @unique @map("instructor_id")
+  department   String?
+  position     String?
+  expertise    String?
+
+  // Relationships
+  user    User              @relation(fields: [userId], references: [id])
+  courses InstructorCourse[]
+
+  @@map("instructors")
+}
+
+model Staff {
+  id       Int     @id @default(autoincrement())
+  userId   Int     @unique @map("user_id")
+  staffId  String  @unique @map("staff_id")
+  position String?
+  department String?
+
+  // Relationships
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("staff")
+}
+
+// Course Management
+model Course {
+  id           Int    @id @default(autoincrement())
+  curriculumId Int    @map("curriculum_id")
+  code         String @unique
+  name         String
+  credits      Int
+  description  String?
+  prerequisites String?
+
+  // Relationships
+  curriculum   Curriculum         @relation(fields: [curriculumId], references: [id])
+  sections     CourseSection[]
+  instructors  InstructorCourse[]
+
+  @@map("courses")
+}
+
+model CourseSection {
+  id         Int    @id @default(autoincrement())
+  courseId   Int    @map("course_id")
+  section    String
+  semester   String
+  year       Int
+  maxStudents Int   @default(30) @map("max_students")
+  schedule   String?
+
+  // Relationships
+  course      Course          @relation(fields: [courseId], references: [id])
+  enrollments StudentEnroll[]
+
+  @@map("course_sections")
+}
+
+model InstructorCourse {
+  id           Int @id @default(autoincrement())
+  instructorId Int @map("instructor_id")
+  courseId     Int @map("course_id")
+  role         String @default("instructor") // instructor, assistant, coordinator
+
+  // Relationships
+  instructor Instructor @relation(fields: [instructorId], references: [id])
+  course     Course     @relation(fields: [courseId], references: [id])
+
+  @@unique([instructorId, courseId])
+  @@map("instructor_courses")
+}
+
+model StudentEnroll {
+  id              Int     @id @default(autoincrement())
+  studentId       Int     @map("student_id")
+  courseSectionId Int     @map("course_section_id")
+  enrollDate      DateTime @default(now()) @map("enroll_date")
+  status          String  @default("enrolled") // enrolled, dropped, completed
+  grade           String?
+  gradePoints     Float?  @map("grade_points")
+
+  // Relationships
+  student       Student       @relation(fields: [studentId], references: [id])
+  courseSection CourseSection @relation(fields: [courseSectionId], references: [id])
+
+  @@unique([studentId, courseSectionId])
+  @@map("student_enrolls")
+}
+
+model StudentEnrollStatus {
+  id        Int      @id @default(autoincrement())
+  studentId Int      @map("student_id")
+  semester  String
+  year      Int
+  status    String   // active, inactive, graduated, dropped
+  gpa       Float?
+  credits   Int      @default(0)
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([studentId, semester, year])
+  @@map("student_enroll_status")
+}
+
+// Training and Internship Management
+model StudentTraining {
+  id          Int      @id @default(autoincrement())
+  studentId   Int      @map("student_id")
+  companyName String   @map("company_name")
+  position    String?
+  startDate   DateTime @map("start_date")
+  endDate     DateTime @map("end_date")
+  status      String   @default("pending") // pending, approved, rejected, completed
+  supervisor  String?
+  description String?
+
+  // Relationships
+  student Student @relation(fields: [studentId], references: [id])
+
+  @@map("student_trainings")
+}
+
+// Visitor Management
+model Visitor {
+  id          Int     @id @default(autoincrement())
+  name        String
+  email       String?
+  phone       String?
+  company     String?
+  position    String?
+  expertise   String?
+  isActive    Boolean @default(true) @map("is_active")
+
+  // Relationships
+  trainings   VisitorTraining[]
+  schedules   VisitorSchedule[]
+  studentEvals VisitorEvaluateStudent[]
+  companyEvals VisitorEvaluateCompany[]
+  pictures    VisitsPictures[]
+
+  @@map("visitors")
+}
+
+model VisitorTraining {
+  id        Int      @id @default(autoincrement())
+  visitorId Int      @map("visitor_id")
+  topic     String
+  date      DateTime
+  duration  Int      // in hours
+  location  String?
+  status    String   @default("scheduled") // scheduled, completed, cancelled
+
+  // Relationships
+  visitor Visitor @relation(fields: [visitorId], references: [id])
+
+  @@map("visitor_trainings")
+}
+
+model VisitorSchedule {
+  id        Int      @id @default(autoincrement())
+  visitorId Int      @map("visitor_id")
+  date      DateTime
+  startTime String   @map("start_time")
+  endTime   String   @map("end_time")
+  activity  String
+  location  String?
+  notes     String?
+
+  // Relationships
+  visitor Visitor @relation(fields: [visitorId], references: [id])
+
+  @@map("visitor_schedules")
+}
+
+// Evaluation System
+model VisitorEvaluateStudent {
+  id        Int      @id @default(autoincrement())
+  visitorId Int      @map("visitor_id")
+  studentId Int      @map("student_id")
+  date      DateTime @default(now())
+  score     Float?
+  comments  String?
+  criteria  Json?    // JSON object with evaluation criteria
+
+  // Relationships
+  visitor Visitor @relation(fields: [visitorId], references: [id])
+  student Student @relation(fields: [studentId], references: [id])
+
+  @@unique([visitorId, studentId])
+  @@map("visitor_evaluate_students")
+}
+
+model VisitorEvaluateCompany {
+  id          Int      @id @default(autoincrement())
+  visitorId   Int      @map("visitor_id")
+  companyName String   @map("company_name")
+  date        DateTime @default(now())
+  score       Float?
+  comments    String?
+  criteria    Json?    // JSON object with evaluation criteria
+
+  // Relationships
+  visitor Visitor @relation(fields: [visitorId], references: [id])
+
+  @@map("visitor_evaluate_companies")
+}
+
+model StudentEvaluateCompany {
+  id          Int      @id @default(autoincrement())
+  studentId   Int      @map("student_id")
+  companyName String   @map("company_name")
+  date        DateTime @default(now())
+  score       Float?
+  comments    String?
+  criteria    Json?    // JSON object with evaluation criteria
+
+  // Relationships
+  student Student @relation(fields: [studentId], references: [id])
+
+  @@map("student_evaluate_companies")
+}
+
+// Course Committee Management
+model CourseCommittee {
+  id          Int    @id @default(autoincrement())
+  name        String
+  description String?
+  chairperson String?
+  members     Json?  // JSON array of member IDs or names
+
+  @@map("course_committees")
+}
+
+// File Management
+model VisitsPictures {
+  id        Int      @id @default(autoincrement())
+  visitorId Int      @map("visitor_id")
+  filename  String
+  filepath  String
+  filesize  Int?
+  mimetype  String?
+  uploadedAt DateTime @default(now()) @map("uploaded_at")
+
+  // Relationships
+  visitor Visitor @relation(fields: [visitorId], references: [id])
+
+  @@map("visits_pictures")
+}
+
+model CompanyPictures {
+  id          Int      @id @default(autoincrement())
+  companyName String   @map("company_name")
+  filename    String
+  filepath    String
+  filesize    Int?
+  mimetype    String?
+  uploadedAt  DateTime @default(now()) @map("uploaded_at")
+
+  @@map("company_pictures")
+}
