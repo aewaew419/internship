@@ -6,12 +6,9 @@ import type {
   SubmissionResponse,
 } from "../../../../service/api/student/type";
 import { useEffect, useState } from "react";
-<<<<<<< HEAD
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 import { PROTECTED_PATH } from "../../../../constant/path.route";
-=======
-import { useNavigate } from "react-router-dom";
 
 interface ViewModelState {
   student: StudentEvaluateCompanyInterface[];
@@ -26,12 +23,10 @@ interface ViewModelState {
   validationError: string | null;
   isValidating: boolean;
 }
->>>>>>> ppick
 
 const useViewModel = (id: number) => {
   const navigate = useNavigate();
   const studentService = new StudentService();
-  const navigate = useNavigate();
   
   const [state, setState] = useState<ViewModelState>({
     student: [],
@@ -74,31 +69,6 @@ const useViewModel = (id: number) => {
     setState(prev => ({ ...prev, isValidating: false }));
     return true;
   };
-<<<<<<< HEAD
-  const handleOnsubmit = async (value: StudentEvaluateCompanyDTO) => {
-    try {
-      await studentService
-        .putStudentEvaluateCompany(id, value)
-        .then((response) => {
-          console.log(response);
-        });
-      Swal.fire({
-        title: "บันทึกข้อมูลสำเร็จ",
-        icon: "success",
-        confirmButtonText: "ปิด",
-        confirmButtonColor: "#966033",
-      });
-      navigate(PROTECTED_PATH.EVALUTAE_COMPANY);
-    } catch (err) {
-      Swal.fire({
-        title: "บันทึกข้อมูลไม่สำเร็จ",
-        icon: "error",
-        confirmButtonText: "ปิด",
-        confirmButtonColor: "#966033",
-      });
-      console.error(err);
-=======
-
   // Check evaluation status on component mount
   const checkEvaluationStatus = async () => {
     if (!id) return;
@@ -133,7 +103,6 @@ const useViewModel = (id: number) => {
         statusError: errorMessage,
         isStatusLoading: false 
       }));
->>>>>>> ppick
     }
   };
 
@@ -194,25 +163,30 @@ const useViewModel = (id: number) => {
         submissionMessage: response.message 
       }));
 
+      // Show success message
+      Swal.fire({
+        title: "บันทึกข้อมูลสำเร็จ",
+        icon: "success",
+        confirmButtonText: "ปิด",
+        confirmButtonColor: "#966033",
+      });
+
       // Update evaluation status after successful submission
       await checkEvaluationStatus();
 
-      // Navigate back to the same page to show updated status
-      // This ensures the URL stays the same but the component re-renders with new status
-      if (response.redirectUrl) {
-        // Small delay to show success message before redirect
-        setTimeout(() => {
-          navigate(response.redirectUrl, { replace: true });
-        }, 1500);
-      } else {
-        // Fallback: refresh current page
-        setTimeout(() => {
-          window.location.reload();
-        }, 1500);
-      }
+      // Navigate back to evaluation list
+      navigate(PROTECTED_PATH.EVALUTAE_COMPANY);
 
     } catch (error: any) {
       console.error("Error submitting evaluation:", error);
+      
+      Swal.fire({
+        title: "บันทึกข้อมูลไม่สำเร็จ",
+        icon: "error",
+        confirmButtonText: "ปิด",
+        confirmButtonColor: "#966033",
+      });
+      
       setState(prev => ({ 
         ...prev, 
         error: error.message || "Failed to submit evaluation",
