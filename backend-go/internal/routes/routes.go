@@ -27,8 +27,10 @@ func Setup(app *fiber.App, db *gorm.DB, cfg *config.Config) {
 	// Setup user management routes
 	setupUserRoutes(api, db, cfg)
 
+	// Setup student management routes
+	setupStudentRoutes(api, db, cfg)
+
 	// TODO: Add more route groups as they are implemented
-	// setupStudentRoutes(api, db, cfg)
 	// etc.
 }
 
@@ -77,4 +79,31 @@ func setupUserRoutes(api fiber.Router, db *gorm.DB, cfg *config.Config) {
 	// Bulk operations
 	users.Delete("/bulk", userHandler.BulkDeleteUsers)        // DELETE /api/v1/users/bulk
 	users.Post("/bulk-excel", userHandler.BulkCreateFromExcel) // POST /api/v1/users/bulk-excel
+}
+
+// setupStudentRoutes sets up student management routes
+func setupStudentRoutes(api fiber.Router, db *gorm.DB, cfg *config.Config) {
+	// Initialize services
+	jwtService := services.NewJWTService(cfg.JWTSecret)
+	studentService := services.NewStudentService(db)
+	studentHandler := handlers.NewStudentHandler(studentService)
+
+	// Authentication middleware
+	authMiddleware := middleware.AuthMiddleware(jwtService)
+
+	// Student management routes (all require authentication)
+	students := api.Group("/students", authMiddleware)
+	
+	// Basic CRUD operations
+	students.Get("/", studentHandler.GetStudents)           // GET /api/v1/students
+	students.Get("/stats", studentHandler.GetStudentStats)  // GET /api/v1/students/stats
+	students.Get("/:id", studentHandler.GetStudent)         // GET /api/v1/students/:id
+	students.Post("/", studentHandler.CreateStudent)        // POST /api/v1/students
+	students.Put("/:id", studentHandler.UpdateStudent)      // PUT /api/v1/students/:id
+	students.Delete("/:id", studentHandler.DeleteStudent)   // DELETE /api/v1/students/:id
+	
+	// Enrollment management
+	students.Post("/enroll", studentHandler.EnrollStudent)                    // POST /api/v1/students/enroll
+	students.Put("/enrollments/:id", studentHandler.UpdateEnrollment)         // PUT /api/v1/students/enrollments/:id
+	students.Get("/:id/enrollments", studentHandler.GetStudentEnrollments)    // GET /api/v1/students/:id/enrollments
 }
