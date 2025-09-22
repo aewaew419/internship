@@ -206,3 +206,10 @@ func Close(db *gorm.DB) error {
 	
 	return sqlDB.Close()
 }
+
+// ConnectSQLite establishes SQLite database connection for testing
+// Note: This function is commented out because SQLite requires CGO
+// func ConnectSQLite(dsn string) (*gorm.DB, error) {
+//     // Implementation would go here
+//     return nil, fmt.Errorf("SQLite support requires CGO to be enabled")
+// }

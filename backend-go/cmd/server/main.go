@@ -58,7 +58,7 @@ func main() {
 	})
 
 	// Setup routes
-	routes.Setup(app, db)
+	routes.Setup(app, db, cfg)
 
 	// Start server
 	port := cfg.Port

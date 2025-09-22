@@ -4,31 +4,54 @@ import (
 	"fmt"
 	"log"
 
+	"backend-go/internal/models"
 	"gorm.io/gorm"
 )
 
-// AutoMigrate runs automatic migration for all models
-func AutoMigrate(db *gorm.DB) error {
-	log.Println("Starting database auto-migration...")
+// Migrate runs automatic migration for all models
+func Migrate(db *gorm.DB) error {
+	log.Println("Starting database migration...")
 
-	// Note: Models will be imported and added here as they are created
-	// For now, we'll prepare the structure for future model migrations
+	err := db.AutoMigrate(
+		&models.Role{},
+		&models.Permission{},
+		&models.User{},
+		&models.Campus{},
+		&models.Faculty{},
+		&models.Program{},
+		&models.Major{},
+		&models.Curriculum{},
+		&models.Student{},
+		&models.Instructor{},
+		&models.Staff{},
+		&models.Course{},
+		&models.CourseSection{},
+		&models.CourseInstructor{},
+		&models.CourseCommittee{},
+		&models.StudentEnroll{},
+		&models.StudentEnrollStatus{},
+		&models.StudentTraining{},
+		&models.Company{},
+		&models.CompanyPicture{},
+		&models.VisitorTraining{},
+		&models.VisitorSchedule{},
+		&models.VisitorEvaluateStudent{},
+		&models.VisitorEvaluateCompany{},
+		&models.StudentEvaluateCompany{},
+		&models.VisitsPicture{},
+	)
 	
-	// Example of how models will be migrated:
-	// err := db.AutoMigrate(
-	//     &models.User{},
-	//     &models.Student{},
-	//     &models.Instructor{},
-	//     &models.Course{},
-	//     // ... other models
-	// )
-	
-	// if err != nil {
-	//     return fmt.Errorf("failed to auto-migrate models: %w", err)
-	// }
+	if err != nil {
+		return fmt.Errorf("failed to migrate models: %w", err)
+	}
 
-	log.Println("Database auto-migration completed successfully")
+	log.Println("Database migration completed successfully")
 	return nil
+}
+
+// AutoMigrate runs automatic migration for all models (alias for Migrate)
+func AutoMigrate(db *gorm.DB) error {
+	return Migrate(db)
 }
 
 // CreateIndexes creates additional database indexes for performance optimization
