@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
       url: request.headers.get('referer') || 'unknown',
       userAgent: request.headers.get('user-agent') || 'unknown',
       timestamp: data.timestamp || Date.now(),
-      ip: request.ip || 'unknown'
+      ip: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
     };
 
     // Validate the data

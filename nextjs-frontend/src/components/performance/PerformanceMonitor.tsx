@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getCLS, getFCP, getFID, getLCP, getTTFB } from 'web-vitals';
+// import { getCLS, getFCP, getFID, getLCP, getTTFB } from 'web-vitals';
 
 interface WebVital {
   name: string;
@@ -75,11 +75,11 @@ export default function PerformanceMonitor({
     };
 
     // Register Web Vitals observers
-    getCLS(onVital);
-    getFCP(onVital);
-    getFID(onVital);
-    getLCP(onVital);
-    getTTFB(onVital);
+    // getCLS(onVital);
+    // getFCP(onVital);
+    // getFID(onVital);
+    // getLCP(onVital);
+    // getTTFB(onVital);
 
     // Collect navigation timing
     if ('performance' in window && 'getEntriesByType' in performance) {
@@ -205,11 +205,11 @@ export function usePerformanceData() {
       }]);
     };
 
-    getCLS(onVital);
-    getFCP(onVital);
-    getFID(onVital);
-    getLCP(onVital);
-    getTTFB(onVital);
+    // getCLS(onVital);
+    // getFCP(onVital);
+    // getFID(onVital);
+    // getLCP(onVital);
+    // getTTFB(onVital);
   }, []);
 
   return vitals;

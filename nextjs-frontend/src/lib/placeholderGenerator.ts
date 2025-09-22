@@ -17,7 +17,7 @@ export class PlaceholderGenerator {
     const {
       width,
       height,
-      text = `${width}×${height}`,
+      text = `${width}x${height}`,
       backgroundColor = '#f3f4f6',
       textColor = '#9ca3af',
       fontSize = Math.min(width, height) / 8,
@@ -54,7 +54,7 @@ export class PlaceholderGenerator {
     const {
       width,
       height,
-      text = `${width}×${height}`,
+      text = `${width}x${height}`,
       backgroundColor = '#f3f4f6',
       textColor = '#9ca3af',
       fontSize = Math.min(width, height) / 8,

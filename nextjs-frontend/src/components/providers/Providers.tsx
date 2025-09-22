@@ -3,6 +3,7 @@
 import { ReactNode } from "react";
 import { AuthProvider } from "./AuthProvider";
 import { ErrorBoundary } from "./ErrorBoundary";
+import { ServiceWorkerProvider } from "./ServiceWorkerProvider";
 
 interface ProvidersProps {
   children: ReactNode;
@@ -11,9 +12,11 @@ interface ProvidersProps {
 export const Providers = ({ children }: ProvidersProps) => {
   return (
     <ErrorBoundary>
-      <AuthProvider>
-        {children}
-      </AuthProvider>
+      <ServiceWorkerProvider>
+        <AuthProvider>
+          {children}
+        </AuthProvider>
+      </ServiceWorkerProvider>
     </ErrorBoundary>
   );
 };

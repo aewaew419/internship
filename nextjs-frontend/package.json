@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build --turbopack",
+    "build": "next build",
     "start": "next start",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
@@ -21,7 +21,23 @@
     "perf:vitals": "node scripts/test-web-vitals.js",
     "perf:bundle": "npm run analyze && node scripts/analyze-bundle.js",
     "perf:full": "node scripts/performance-test-runner.js",
-    "perf:ci": "node scripts/performance-test-runner.js --skip-build"
+    "perf:ci": "node scripts/performance-test-runner.js --skip-build",
+    "test:cross-device": "node scripts/cross-device-test.js",
+    "test:responsive": "jest src/__tests__/cross-device/responsive.test.tsx",
+    "test:visual": "jest src/__tests__/cross-device/visual-regression.test.ts",
+    "test:mobile": "npm run test:responsive && npm run test:cross-device",
+    "build:production": "node scripts/build-production.js",
+    "deploy": "node scripts/deploy.js",
+    "deploy:vercel": "DEPLOYMENT_TARGET=vercel node scripts/deploy.js",
+    "deploy:netlify": "DEPLOYMENT_TARGET=netlify node scripts/deploy.js",
+    "deploy:docker": "DEPLOYMENT_TARGET=docker node scripts/deploy.js",
+    "docker:build": "docker build -t internship-nextjs .",
+    "docker:run": "docker run -p 3000:3000 internship-nextjs",
+    "docker:compose": "docker-compose up -d",
+    "docker:compose:build": "docker-compose up --build -d",
+    "docker:compose:down": "docker-compose down",
+    "verify:production": "node scripts/verify-production.js",
+    "verify:local": "VERIFY_URL=http://localhost:3000 node scripts/verify-production.js"
   },
   "dependencies": {
     "react": "19.1.0",
