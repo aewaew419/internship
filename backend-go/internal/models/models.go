@@ -30,6 +30,19 @@ func AllModels() []interface{} {
 		&CourseInstructor{},
 		&CourseCommittee{},
 		&StudentEnrollStatus{},
+		
+		// Company and training
+		&Company{},
+		&CompanyPicture{},
+		&StudentTraining{},
+		
+		// Visitor and evaluation system
+		&VisitorTraining{},
+		&VisitorSchedule{},
+		&VisitorEvaluateStudent{},
+		&VisitorEvaluateCompany{},
+		&StudentEvaluateCompany{},
+		&VisitsPicture{},
 	}
 }
 

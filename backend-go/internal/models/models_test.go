@@ -12,7 +12,7 @@ func TestAllModels(t *testing.T) {
 	models := AllModels()
 	
 	// Verify we have all expected models
-	expectedCount := 18 // Total number of models we created (including RolePermission and StudentEnrollStatus)
+	expectedCount := 27 // Total number of models including visitor and evaluation models
 	assert.Len(t, models, expectedCount)
 	
 	// Verify specific models are included
