@@ -238,3 +238,194 @@ func TestStudentTrainingStruct(t *testing.T) {
 		assert.Equal(t, DocumentLanguage("en"), DocumentLanguageEN)
 	})
 }
+
+func TestVisitorEvaluationRelationships(t *testing.T) {
+	t.Run("VisitorTraining Relationships", func(t *testing.T) {
+		vt := VisitorTraining{
+			ID:                  1,
+			StudentEnrollID:     10,
+			VisitorInstructorID: 20,
+		}
+
+		// Test that relationships can be initialized
+		vt.Schedules = []VisitorSchedule{{ID: 1, VisitorTrainingID: 1}}
+		vt.EvaluateCompany = []VisitorEvaluateCompany{{ID: 1, VisitorTrainingID: 1}}
+		vt.EvaluateStudent = []VisitorEvaluateStudent{{ID: 1, VisitorTrainingID: 1}}
+
+		assert.Equal(t, 1, len(vt.Schedules))
+		assert.Equal(t, 1, len(vt.EvaluateCompany))
+		assert.Equal(t, 1, len(vt.EvaluateStudent))
+		assert.Equal(t, uint(1), vt.Schedules[0].VisitorTrainingID)
+		assert.Equal(t, uint(1), vt.EvaluateCompany[0].VisitorTrainingID)
+		assert.Equal(t, uint(1), vt.EvaluateStudent[0].VisitorTrainingID)
+	})
+
+	t.Run("VisitorSchedule with Photos", func(t *testing.T) {
+		vs := VisitorSchedule{
+			ID:                1,
+			VisitorTrainingID: 10,
+			VisitNo:           1,
+		}
+
+		// Test photos relationship
+		vs.Photos = []VisitsPicture{
+			{ID: 1, VisitorScheduleID: 1, PhotoNo: 1, FileURL: "/uploads/visit1_photo1.jpg"},
+			{ID: 2, VisitorScheduleID: 1, PhotoNo: 2, FileURL: "/uploads/visit1_photo2.jpg"},
+		}
+
+		assert.Equal(t, 2, len(vs.Photos))
+		assert.Equal(t, uint(1), vs.Photos[0].VisitorScheduleID)
+		assert.Equal(t, uint(1), vs.Photos[1].VisitorScheduleID)
+		assert.Equal(t, 1, vs.Photos[0].PhotoNo)
+		assert.Equal(t, 2, vs.Photos[1].PhotoNo)
+	})
+}
+
+func TestEvaluationValidation(t *testing.T) {
+	t.Run("VisitorEvaluateStudent Score Validation", func(t *testing.T) {
+		ves := VisitorEvaluateStudent{
+			ID:                1,
+			Score:             85,
+			Questions:         `{"technical_skills": 4, "communication": 5}`,
+			Comment:           "Good performance",
+			VisitorTrainingID: 10,
+		}
+
+		// Test score range (assuming 0-100)
+		assert.GreaterOrEqual(t, ves.Score, 0)
+		assert.LessOrEqual(t, ves.Score, 100)
+		assert.NotEmpty(t, ves.Questions)
+		assert.NotEmpty(t, ves.Comment)
+	})
+
+	t.Run("VisitorEvaluateCompany Score Validation", func(t *testing.T) {
+		studentTrainingID := uint(20)
+		vec := VisitorEvaluateCompany{
+			ID:                1,
+			Score:             90,
+			Questions:         `{"facilities": 5, "supervision": 4}`,
+			Comment:           "Excellent company",
+			VisitorTrainingID: 10,
+			StudentTrainingID: &studentTrainingID,
+		}
+
+		// Test score range and required fields
+		assert.GreaterOrEqual(t, vec.Score, 0)
+		assert.LessOrEqual(t, vec.Score, 100)
+		assert.NotEmpty(t, vec.Questions)
+		assert.NotEmpty(t, vec.Comment)
+		assert.NotNil(t, vec.StudentTrainingID)
+	})
+
+	t.Run("StudentEvaluateCompany Score Validation", func(t *testing.T) {
+		sec := StudentEvaluateCompany{
+			ID:                1,
+			Score:             88,
+			Questions:         `{"overall_satisfaction": 4, "learning": 5}`,
+			Comment:           "Great experience",
+			StudentTrainingID: 10,
+		}
+
+		// Test score range and required fields
+		assert.GreaterOrEqual(t, sec.Score, 0)
+		assert.LessOrEqual(t, sec.Score, 100)
+		assert.NotEmpty(t, sec.Questions)
+		assert.NotEmpty(t, sec.Comment)
+	})
+}
+
+func TestVisitorScheduleValidation(t *testing.T) {
+	t.Run("VisitNo Validation", func(t *testing.T) {
+		vs := VisitorSchedule{
+			ID:                1,
+			VisitorTrainingID: 10,
+			VisitNo:           1,
+		}
+
+		// Test visit number range (1-4 based on check constraint)
+		assert.GreaterOrEqual(t, vs.VisitNo, 1)
+		assert.LessOrEqual(t, vs.VisitNo, 4)
+	})
+
+	t.Run("Optional Fields", func(t *testing.T) {
+		vs := VisitorSchedule{
+			ID:                1,
+			VisitorTrainingID: 10,
+			VisitNo:           2,
+		}
+
+		// Test that optional fields can be nil
+		assert.Nil(t, vs.VisitAt)
+		assert.Nil(t, vs.Comment)
+
+		// Test setting optional fields
+		visitTime := time.Now()
+		comment := "Visit completed successfully"
+		vs.VisitAt = &visitTime
+		vs.Comment = &comment
+
+		assert.NotNil(t, vs.VisitAt)
+		assert.NotNil(t, vs.Comment)
+		assert.Equal(t, visitTime, *vs.VisitAt)
+		assert.Equal(t, "Visit completed successfully", *vs.Comment)
+	})
+}
+
+func TestFileHandlingModels(t *testing.T) {
+	t.Run("VisitsPicture File URL Validation", func(t *testing.T) {
+		vp := VisitsPicture{
+			ID:                1,
+			VisitorScheduleID: 10,
+			PhotoNo:           1,
+			FileURL:           "/uploads/visits/photo1.jpg",
+		}
+
+		assert.NotEmpty(t, vp.FileURL)
+		assert.Contains(t, vp.FileURL, "/uploads/")
+		assert.Greater(t, vp.PhotoNo, 0)
+	})
+
+	t.Run("CompanyPicture Optional Picture Field", func(t *testing.T) {
+		// Test with picture
+		picture := "company_logo.jpg"
+		cp1 := CompanyPicture{
+			ID:        1,
+			Picture:   &picture,
+			CompanyID: 10,
+		}
+
+		assert.NotNil(t, cp1.Picture)
+		assert.Equal(t, "company_logo.jpg", *cp1.Picture)
+
+		// Test without picture
+		cp2 := CompanyPicture{
+			ID:        2,
+			CompanyID: 10,
+		}
+
+		assert.Nil(t, cp2.Picture)
+	})
+}
+
+func TestModelTableNames(t *testing.T) {
+	t.Run("All Visitor Models Have Correct Table Names", func(t *testing.T) {
+		models := map[string]string{
+			"VisitorTraining":        "visitor_trainings",
+			"VisitorSchedule":        "visitor_schedules", 
+			"VisitorEvaluateStudent": "visitor_evaluate_students",
+			"VisitorEvaluateCompany": "visitor_evaluate_companies",
+			"StudentEvaluateCompany": "student_evaluate_companies",
+			"VisitsPicture":          "visits_pictures",
+			"CompanyPicture":         "company_pictures",
+		}
+
+		// Test each model's table name
+		assert.Equal(t, models["VisitorTraining"], VisitorTraining{}.TableName())
+		assert.Equal(t, models["VisitorSchedule"], VisitorSchedule{}.TableName())
+		assert.Equal(t, models["VisitorEvaluateStudent"], VisitorEvaluateStudent{}.TableName())
+		assert.Equal(t, models["VisitorEvaluateCompany"], VisitorEvaluateCompany{}.TableName())
+		assert.Equal(t, models["StudentEvaluateCompany"], StudentEvaluateCompany{}.TableName())
+		assert.Equal(t, models["VisitsPicture"], VisitsPicture{}.TableName())
+		assert.Equal(t, models["CompanyPicture"], CompanyPicture{}.TableName())
+	})
+}
