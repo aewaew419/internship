@@ -1,0 +1,388 @@
+/* 
+🔒 PROTECTED STYLES - DO NOT MODIFY
+=================================
+This file contains the original CSS styles that are locked and protected.
+Any modifications to these styles must be approved and documented.
+
+⚠️  WARNING: Modifying these styles may break existing functionality
+📝 To add new styles, create a new CSS file or add to custom-styles.css
+🔧 For style modifications, contact the development team
+
+Last Updated: September 22, 2025
+Protected By: CSS Style Lock System
+*/
+
+/* =================================
+   🎨 CORE THEME VARIABLES (LOCKED)
+   ================================= */
+:root {
+  /* 🔒 LOCKED: Original theme variables - DO NOT CHANGE */
+  --background: #f3f3f3;
+  --foreground: #575860;
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --ring: #f28362;
+  --radius: 0.5rem;
+  
+  /* 🔒 LOCKED: Error and success colors - DO NOT CHANGE */
+  --error: #a01f38;
+  --success: #2f7b69;
+}
+
+/* =================================
+   🎨 COLOR PALETTE (LOCKED)
+   ================================= */
+@theme {
+  /* 🔒 LOCKED: Primary color palette - DO NOT CHANGE */
+  --color-primary-50: #ffe6db;
+  --color-primary-100: #ffd1bd;
+  --color-primary-200: #ffc1a8;
+  --color-primary-300: #ffaf92;
+  --color-primary-400: #ff9c7f;
+  --color-primary-500: #f28362;
+  --color-primary-600: #f45626;
+  --color-primary-700: #e44a18;
+  --color-primary-800: #cf4111;
+  --color-primary-900: #4e281c;
+
+  /* 🔒 LOCKED: Secondary color palette - DO NOT CHANGE */
+  --color-secondary-50: #ffebcd;
+  --color-secondary-100: #ffdfb6;
+  --color-secondary-200: #ffd19e;
+  --color-secondary-300: #ffc38d;
+  --color-secondary-400: #f1b07c;
+  --color-secondary-500: #d89967;
+  --color-secondary-600: #966033;
+  --color-secondary-700: #54371e;
+  --color-secondary-800: #482d16;
+  --color-secondary-900: #412610;
+
+  /* 🔒 LOCKED: Background colors - DO NOT CHANGE */
+  --color-bg-100: #fcfcfd;
+  --color-bg-200: #f8f8fa;
+
+  /* 🔒 LOCKED: Text colors - DO NOT CHANGE */
+  --color-text-50: #eceef1;
+  --color-text-100: #e3e5e9;
+  --color-text-200: #dbdde2;
+  --color-text-300: #d2d4db;
+  --color-text-400: #c6c8d1;
+  --color-text-500: #b0b3be;
+  --color-text-600: #80828d;
+  --color-text-700: #747781;
+  --color-text-800: #575860;
+  --color-text-900: #1c1d20;
+
+  /* 🔒 LOCKED: Utility colors - DO NOT CHANGE */
+  --color-error: #a01f38;
+  --color-success: #2f7b69;
+}
+
+/* =================================
+   🌙 DARK MODE (LOCKED)
+   ================================= */
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* 🔒 LOCKED: Dark mode variables - DO NOT CHANGE */
+    --background: #1c1d20;
+    --foreground: #eceef1;
+    --border: #334155;
+    --input: #334155;
+    --ring: #f28362;
+  }
+}
+
+/* =================================
+   🎯 CORE STYLES (LOCKED)
+   ================================= */
+
+/* 🔒 LOCKED: Base styles - DO NOT CHANGE */
+* {
+  border-color: var(--border);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: "Bai Jamjuree", sans-serif;
+  line-height: 1.6;
+}
+
+/* 🔒 LOCKED: Custom gradient utilities - DO NOT CHANGE */
+.gradient-text {
+  background: linear-gradient(
+    137deg,
+    #d89967 16.63%,
+    #966033 37.95%,
+    #412610 88.14%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.bg-gradient {
+  background: linear-gradient(
+    137deg,
+    #d89967 16.63%,
+    #966033 37.95%,
+    #412610 88.14%
+  );
+}
+
+/* =================================
+   🔘 BUTTON STYLES (LOCKED)
+   ================================= */
+
+/* 🔒 LOCKED: Primary button - DO NOT CHANGE */
+.primary-button {
+  @apply text-white px-5 py-2 rounded font-medium flex justify-center gap-2 
+          hover:opacity-90 transition duration-300 ease-in-out;
+  background: linear-gradient(137deg, #d89967 16.63%, #966033 37.95%, #412610 88.14%);
+}
+
+/* 🔒 LOCKED: Secondary button - DO NOT CHANGE */
+.secondary-button {
+  @apply flex gap-1 bg-primary-700 rounded-2xl text-white px-4 py-2 hover:bg-primary-600;
+}
+
+/* 🔒 LOCKED: Button cursor - DO NOT CHANGE */
+button {
+  @apply cursor-pointer;
+}
+
+/* =================================
+   📊 TABLE STYLES (LOCKED)
+   ================================= */
+
+/* 🔒 LOCKED: Table styles - DO NOT CHANGE */
+.start-table {
+  @apply ps-5;
+}
+
+.table-body td {
+  @apply py-4;
+}
+
+.table-body tr {
+  @apply border border-text-200;
+}
+
+/* =================================
+   📱 MOBILE NAVIGATION (LOCKED)
+   ================================= */
+
+/* 🔒 LOCKED: Mobile navigation overlay - DO NOT CHANGE */
+.mobile-nav-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 40;
+  backdrop-filter: blur(2px);
+}
+
+/* 🔒 LOCKED: Mobile navigation sidebar - DO NOT CHANGE */
+.mobile-nav-sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 280px;
+  background: var(--background);
+  z-index: 50;
+  transform: translateX(-100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
+  will-change: transform;
+}
+
+.mobile-nav-sidebar.open {
+  transform: translateX(0);
+}
+
+/* 🔒 LOCKED: Mobile navigation animations - DO NOT CHANGE */
+.mobile-nav-item {
+  transition: all 0.2s ease-out;
+  transform: translateX(0);
+}
+
+.mobile-nav-item:hover {
+  transform: translateX(4px);
+}
+
+.mobile-nav-item:active {
+  transform: translateX(2px) scale(0.98);
+}
+
+/* =================================
+   🎬 ANIMATIONS (LOCKED)
+   ================================= */
+
+/* 🔒 LOCKED: Core animations - DO NOT CHANGE */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideInFromLeft {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes slideInFromRight {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes slideInFromTop {
+  from { transform: translateY(-100%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes slideInFromBottom {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+/* 🔒 LOCKED: Animation utility classes - DO NOT CHANGE */
+.animate-in {
+  animation-fill-mode: both;
+}
+
+.fade-in-0 {
+  animation: fadeIn 0.2s ease-out;
+}
+
+.slide-in-from-left {
+  animation: slideInFromLeft 0.3s ease-out;
+}
+
+.slide-in-from-right {
+  animation: slideInFromRight 0.3s ease-out;
+}
+
+.slide-in-from-top {
+  animation: slideInFromTop 0.3s ease-out;
+}
+
+.slide-in-from-bottom {
+  animation: slideInFromBottom 0.3s ease-out;
+}
+
+/* =================================
+   📱 RESPONSIVE UTILITIES (LOCKED)
+   ================================= */
+
+/* 🔒 LOCKED: Container styles - DO NOT CHANGE */
+.container {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 640px) {
+  .container {
+    max-width: 640px;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .container {
+    max-width: 768px;
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    max-width: 1024px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .container {
+    max-width: 1280px;
+  }
+}
+
+/* =================================
+   ♿ ACCESSIBILITY (LOCKED)
+   ================================= */
+
+/* 🔒 LOCKED: Screen reader only - DO NOT CHANGE */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* 🔒 LOCKED: Focus styles - DO NOT CHANGE */
+.focus-visible:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* =================================
+   📱 TOUCH & MOBILE (LOCKED)
+   ================================= */
+
+/* 🔒 LOCKED: Touch-friendly button sizing - DO NOT CHANGE */
+.btn-touch {
+  min-height: 44px;
+  min-width: 44px;
+  touch-action: manipulation;
+}
+
+/* 🔒 LOCKED: Safe area utilities - DO NOT CHANGE */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.pt-safe {
+  padding-top: env(safe-area-inset-top);
+}
+
+.pl-safe {
+  padding-left: env(safe-area-inset-left);
+}
+
+.pr-safe {
+  padding-right: env(safe-area-inset-right);
+}
+
+/* =================================
+   END OF PROTECTED STYLES
+   ================================= */
+
+/* 
+📝 MODIFICATION LOG:
+- 2025-09-22: Initial protection of core styles
+- Add future modifications here with date and description
+
+🔧 TO ADD NEW STYLES:
+- Use custom-styles.css for new additions
+- Use component-specific CSS modules
+- Document any new utility classes
+
+⚠️  REMEMBER: These styles are the foundation of the design system
+    Modifying them affects the entire application
+*/

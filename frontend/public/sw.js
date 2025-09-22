@@ -203,26 +203,98 @@ async function doBackgroundSync() {
 
 // Push notifications
 self.addEventListener('push', (event) => {
+  console.log('Push event received:', event);
+  
   if (event.data) {
-    const data = event.data.json();
-    const options = {
-      body: data.body,
-      icon: '/favicon.ico',
-      badge: '/favicon.ico',
-      data: data.data || {}
-    };
-    
-    event.waitUntil(
-      self.registration.showNotification(data.title, options)
-    );
+    try {
+      const data = event.data.json();
+      console.log('Push notification data:', data);
+      
+      const options = {
+        body: data.body || 'New notification',
+        icon: data.icon || '/favicon.ico',
+        badge: data.badge || '/favicon.ico',
+        image: data.image,
+        data: data.data || {},
+        actions: data.actions || [],
+        tag: data.tag || 'default',
+        requireInteraction: data.requireInteraction || false,
+        silent: data.silent || false,
+        timestamp: data.timestamp || Date.now(),
+        vibrate: data.vibrate || [200, 100, 200]
+      };
+      
+      event.waitUntil(
+        self.registration.showNotification(data.title || 'Notification', options)
+      );
+    } catch (error) {
+      console.error('Error processing push notification:', error);
+      
+      // Fallback notification
+      event.waitUntil(
+        self.registration.showNotification('New Notification', {
+          body: 'You have a new notification',
+          icon: '/favicon.ico',
+          badge: '/favicon.ico'
+        })
+      );
+    }
   }
 });
 
 // Notification click handler
 self.addEventListener('notificationclick', (event) => {
+  console.log('Notification clicked:', event);
   event.notification.close();
   
-  event.waitUntil(
-    clients.openWindow(event.notification.data.url || '/')
-  );
+  const notificationData = event.notification.data || {};
+  const url = notificationData.url || '/';
+  
+  // Handle notification actions
+  if (event.action) {
+    console.log('Notification action clicked:', event.action);
+    
+    switch (event.action) {
+      case 'view':
+        event.waitUntil(clients.openWindow(url));
+        break;
+      case 'dismiss':
+        // Just close the notification
+        break;
+      case 'accept':
+        event.waitUntil(clients.openWindow(url + '?action=accept'));
+        break;
+      default:
+        event.waitUntil(clients.openWindow(url));
+    }
+  } else {
+    // Default click action
+    event.waitUntil(
+      clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+        // Check if there's already a window/tab open with the target URL
+        for (const client of clientList) {
+          if (client.url === url && 'focus' in client) {
+            return client.focus();
+          }
+        }
+        
+        // If no existing window/tab, open a new one
+        if (clients.openWindow) {
+          return clients.openWindow(url);
+        }
+      })
+    );
+  }
+});
+
+// Notification close handler
+self.addEventListener('notificationclose', (event) => {
+  console.log('Notification closed:', event);
+  
+  // Track notification dismissal if needed
+  const notificationData = event.notification.data || {};
+  if (notificationData.trackDismissal) {
+    // Could send analytics data here
+    console.log('Notification dismissed:', notificationData);
+  }
 });

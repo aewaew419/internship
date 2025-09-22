@@ -89,9 +89,16 @@ export class ServiceWorkerManager {
     }
 
     try {
+      // Check if already subscribed
+      const existingSubscription = await this.registration.pushManager.getSubscription();
+      if (existingSubscription) {
+        console.log('Already subscribed to push notifications');
+        return existingSubscription;
+      }
+
       const subscription = await this.registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: this.urlBase64ToUint8Array(vapidKey)
+        applicationServerKey: this.urlBase64ToUint8Array(vapidKey) as BufferSource
       });
 
       console.log('Push subscription successful');
@@ -99,6 +106,42 @@ export class ServiceWorkerManager {
     } catch (error) {
       console.error('Push subscription failed:', error);
       return null;
+    }
+  }
+
+  // Get existing push subscription
+  async getPushSubscription(): Promise<PushSubscription | null> {
+    if (!this.registration) {
+      console.error('Service Worker not registered');
+      return null;
+    }
+
+    try {
+      return await this.registration.pushManager.getSubscription();
+    } catch (error) {
+      console.error('Failed to get push subscription:', error);
+      return null;
+    }
+  }
+
+  // Unsubscribe from push notifications
+  async unsubscribeFromPush(): Promise<boolean> {
+    if (!this.registration) {
+      console.error('Service Worker not registered');
+      return false;
+    }
+
+    try {
+      const subscription = await this.registration.pushManager.getSubscription();
+      if (subscription) {
+        const success = await subscription.unsubscribe();
+        console.log('Push unsubscription successful:', success);
+        return success;
+      }
+      return true;
+    } catch (error) {
+      console.error('Push unsubscription failed:', error);
+      return false;
     }
   }
 
@@ -177,6 +220,8 @@ export function useServiceWorker() {
     isStandalone: () => swManager.isStandalone(),
     requestNotificationPermission: () => swManager.requestNotificationPermission(),
     subscribeToPush: (vapidKey: string) => swManager.subscribeToPush(vapidKey),
+    getPushSubscription: () => swManager.getPushSubscription(),
+    unsubscribeFromPush: () => swManager.unsubscribeFromPush(),
     requestBackgroundSync: (tag: string) => swManager.requestBackgroundSync(tag),
     clearCache: () => swManager.clearCache(),
     getCacheSize: () => swManager.getCacheSize()

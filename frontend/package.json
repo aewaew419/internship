@@ -37,7 +37,12 @@
     "docker:compose:build": "docker-compose up --build -d",
     "docker:compose:down": "docker-compose down",
     "verify:production": "node scripts/verify-production.js",
-    "verify:local": "VERIFY_URL=http://localhost:3000 node scripts/verify-production.js"
+    "verify:local": "VERIFY_URL=http://localhost:3000 node scripts/verify-production.js",
+    "style-guard:init": "node scripts/style-guard.js init",
+    "style-guard:check": "node scripts/style-guard.js check",
+    "style-guard:report": "node scripts/style-guard.js report",
+    "styles:protect": "npm run style-guard:init",
+    "styles:validate": "npm run style-guard:check"
   },
   "dependencies": {
     "react": "19.1.0",

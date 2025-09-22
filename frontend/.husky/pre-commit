@@ -1,0 +1,10 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# 🔒 CSS Style Guard - Pre-commit Hook
+echo "🔒 Running CSS Style Guard..."
+npm run style-guard:check
+
+# Run other pre-commit checks
+npm run lint
+npm run type-check
