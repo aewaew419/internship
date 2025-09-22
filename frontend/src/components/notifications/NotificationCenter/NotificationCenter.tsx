@@ -1,13 +1,14 @@
 'use client';
 
 import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
-import { Search, Filter, X, RefreshCw, Settings, Bell, BellOff } from 'lucide-react';
+import { Search, Filter, X, RefreshCw, Settings, Bell, BellOff, CheckCircle } from 'lucide-react';
 import { useNotifications, useFilteredNotifications, useNotificationStats } from '../../../hooks/useNotifications';
 import { NotificationList } from './NotificationList';
 import { NotificationFilters } from './NotificationFilters';
 import { NotificationSearch } from './NotificationSearch';
 import { EmptyState } from './EmptyState';
 import { LoadingState } from './LoadingState';
+import { BulkNotificationActions } from './BulkNotificationActions';
 import type { NotificationType, NotificationCategory } from '../../../types/notifications';
 
 interface NotificationCenterProps {
@@ -49,6 +50,8 @@ export function NotificationCenter({
   const [showUnreadOnly, setShowUnreadOnly] = useState(false);
   const [showFiltersPanel, setShowFiltersPanel] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [selectedNotificationIds, setSelectedNotificationIds] = useState<string[]>([]);
+  const [showBulkActions, setShowBulkActions] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -112,6 +115,22 @@ export function NotificationCenter({
     setSelectedType(undefined);
     setSelectedCategory(undefined);
     setShowUnreadOnly(false);
+  }, []);
+
+  // Handle bulk selection
+  const handleSelectionChange = useCallback((selectedIds: string[]) => {
+    setSelectedNotificationIds(selectedIds);
+    setShowBulkActions(selectedIds.length > 0);
+  }, []);
+
+  // Handle bulk operation completion
+  const handleBulkOperationComplete = useCallback((operation: string, result: any) => {
+    if (result.success) {
+      setSelectedNotificationIds([]);
+      setShowBulkActions(false);
+      // Optionally show a success message
+      console.log(`Bulk ${operation} completed successfully`);
+    }
   }, []);
 
   // Handle keyboard shortcuts
@@ -239,6 +258,26 @@ export function NotificationCenter({
             </button>
           )}
 
+          {/* Selection mode toggle */}
+          {notifications.length > 0 && (
+            <button
+              onClick={() => {
+                setShowBulkActions(!showBulkActions);
+                if (showBulkActions) {
+                  setSelectedNotificationIds([]);
+                }
+              }}
+              className={`p-1 transition-colors ${
+                showBulkActions
+                  ? 'text-blue-600 hover:text-blue-700'
+                  : 'text-gray-400 hover:text-gray-600'
+              }`}
+              title="Toggle selection mode"
+            >
+              <CheckCircle className="h-4 w-4" />
+            </button>
+          )}
+
           {/* Filters toggle */}
           {showFilters && (
             <button
@@ -294,6 +333,16 @@ export function NotificationCenter({
         </div>
       )}
 
+      {/* Bulk Actions */}
+      {showBulkActions && (
+        <BulkNotificationActions
+          notifications={filteredNotifications}
+          selectedIds={selectedNotificationIds}
+          onSelectionChange={handleSelectionChange}
+          onBulkOperationComplete={handleBulkOperationComplete}
+        />
+      )}
+
       {/* Content */}
       <div 
         className="flex-1 overflow-hidden"
@@ -329,6 +378,9 @@ export function NotificationCenter({
             isLoading={isLoading}
             onLoadMore={loadMoreNotifications}
             maxHeight={maxHeight - 120}
+            selectedIds={selectedNotificationIds}
+            onSelectionChange={handleSelectionChange}
+            selectionMode={showBulkActions}
           />
         )}
       </div>

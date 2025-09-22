@@ -10,6 +10,8 @@ import type {
   NotificationType,
   NotificationCategory,
   PushNotificationError,
+  BulkNotificationOperation,
+  BulkOperationResult,
 } from '../../types/notifications';
 
 // Notification Context State Interface
@@ -35,6 +37,11 @@ export interface NotificationContextActions {
   markAllAsRead: () => Promise<void>;
   deleteNotification: (notificationId: string) => Promise<void>;
   clearAll: () => Promise<void>;
+  
+  // Bulk operations
+  bulkMarkAsRead: (notificationIds: string[]) => Promise<BulkOperationResult>;
+  bulkDelete: (notificationIds: string[]) => Promise<BulkOperationResult>;
+  bulkArchive: (notificationIds: string[]) => Promise<BulkOperationResult>;
   
   // Settings management
   fetchSettings: () => Promise<void>;
@@ -69,7 +76,10 @@ type NotificationAction =
   | { type: 'SET_CONNECTED'; payload: boolean }
   | { type: 'SET_LAST_FETCH'; payload: number }
   | { type: 'CLEAR_NOTIFICATIONS' }
-  | { type: 'UPDATE_UNREAD_COUNT'; payload: number };
+  | { type: 'UPDATE_UNREAD_COUNT'; payload: number }
+  | { type: 'BULK_MARK_AS_READ'; payload: string[] }
+  | { type: 'BULK_DELETE'; payload: string[] }
+  | { type: 'BULK_ARCHIVE'; payload: string[] };
 
 // Initial State
 const initialState: NotificationContextState = {
@@ -177,6 +187,38 @@ function notificationReducer(state: NotificationContextState, action: Notificati
     
     case 'UPDATE_UNREAD_COUNT':
       return { ...state, unreadCount: action.payload };
+    
+    case 'BULK_MARK_AS_READ':
+      const bulkReadNotifications = state.notifications.map(notification =>
+        action.payload.includes(notification.id)
+          ? { ...notification, isRead: true, readAt: notification.readAt || new Date().toISOString() }
+          : notification
+      );
+      const unreadAfterBulkRead = bulkReadNotifications.filter(n => !n.isRead).length;
+      return {
+        ...state,
+        notifications: bulkReadNotifications,
+        unreadCount: unreadAfterBulkRead,
+      };
+    
+    case 'BULK_DELETE':
+      const remainingNotifications = state.notifications.filter(n => !action.payload.includes(n.id));
+      const unreadAfterBulkDelete = remainingNotifications.filter(n => !n.isRead).length;
+      return {
+        ...state,
+        notifications: remainingNotifications,
+        unreadCount: unreadAfterBulkDelete,
+      };
+    
+    case 'BULK_ARCHIVE':
+      // For now, archive behaves like delete (could be extended to add archived flag)
+      const remainingAfterArchive = state.notifications.filter(n => !action.payload.includes(n.id));
+      const unreadAfterArchive = remainingAfterArchive.filter(n => !n.isRead).length;
+      return {
+        ...state,
+        notifications: remainingAfterArchive,
+        unreadCount: unreadAfterArchive,
+      };
     
     default:
       return state;
@@ -467,6 +509,88 @@ export function NotificationProvider({
     dispatch({ type: 'SET_ERROR', payload: null });
   }, []);
 
+  // Bulk Operations
+  const bulkMarkAsRead = useCallback(async (notificationIds: string[]): Promise<BulkOperationResult> => {
+    try {
+      const operation: BulkNotificationOperation = {
+        notificationIds,
+        operation: 'mark_read',
+      };
+      
+      const result = await notificationService.bulkOperation(operation);
+      
+      if (result.success) {
+        dispatch({ type: 'BULK_MARK_AS_READ', payload: notificationIds });
+      }
+      
+      return result;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to mark notifications as read';
+      dispatch({ type: 'SET_ERROR', payload: errorMessage });
+      
+      return {
+        success: false,
+        processedCount: 0,
+        failedIds: notificationIds,
+        errors: [{ code: 'BULK_OPERATION_FAILED', message: errorMessage }],
+      };
+    }
+  }, []);
+
+  const bulkDelete = useCallback(async (notificationIds: string[]): Promise<BulkOperationResult> => {
+    try {
+      const operation: BulkNotificationOperation = {
+        notificationIds,
+        operation: 'delete',
+      };
+      
+      const result = await notificationService.bulkOperation(operation);
+      
+      if (result.success) {
+        dispatch({ type: 'BULK_DELETE', payload: notificationIds });
+      }
+      
+      return result;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to delete notifications';
+      dispatch({ type: 'SET_ERROR', payload: errorMessage });
+      
+      return {
+        success: false,
+        processedCount: 0,
+        failedIds: notificationIds,
+        errors: [{ code: 'BULK_OPERATION_FAILED', message: errorMessage }],
+      };
+    }
+  }, []);
+
+  const bulkArchive = useCallback(async (notificationIds: string[]): Promise<BulkOperationResult> => {
+    try {
+      const operation: BulkNotificationOperation = {
+        notificationIds,
+        operation: 'archive',
+      };
+      
+      const result = await notificationService.bulkOperation(operation);
+      
+      if (result.success) {
+        dispatch({ type: 'BULK_ARCHIVE', payload: notificationIds });
+      }
+      
+      return result;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to archive notifications';
+      dispatch({ type: 'SET_ERROR', payload: errorMessage });
+      
+      return {
+        success: false,
+        processedCount: 0,
+        failedIds: notificationIds,
+        errors: [{ code: 'BULK_OPERATION_FAILED', message: errorMessage }],
+      };
+    }
+  }, []);
+
   // Initialize on mount
   useEffect(() => {
     // Load cached data first
@@ -543,6 +667,9 @@ export function NotificationProvider({
     getNotificationsByType,
     getNotificationsByCategory,
     clearError,
+    bulkMarkAsRead,
+    bulkDelete,
+    bulkArchive,
   };
 
   return (

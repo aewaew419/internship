@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useMemo } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { BreadcrumbItem } from "@/types/navigation";
 import { PROTECTED_PATH } from "@/constants/navigation";
 
@@ -67,10 +67,11 @@ const breadcrumbMap: Record<string, string> = {
   "/setting/password": "เปลี่ยนรหัสผ่าน",
 };
 
-export const useBreadcrumbs = (): BreadcrumbItem[] => {
+export const useBreadcrumbs = () => {
   const pathname = usePathname();
+  const [customBreadcrumbs, setCustomBreadcrumbs] = useState<string[] | null>(null);
 
-  return useMemo(() => {
+  const breadcrumbs = useMemo(() => {
     // Handle root path
     if (pathname === "/") {
       return [{ name: "หน้าแรก", path: "/" }];
@@ -112,5 +113,30 @@ export const useBreadcrumbs = (): BreadcrumbItem[] => {
     });
 
     return breadcrumbs;
-  }, [pathname]);
+  }, [pathname, customBreadcrumbs]);
+
+  const updateBreadcrumbs = useCallback((newBreadcrumbs: string[]) => {
+    setCustomBreadcrumbs(newBreadcrumbs);
+  }, []);
+
+  const clearCustomBreadcrumbs = useCallback(() => {
+    setCustomBreadcrumbs(null);
+  }, []);
+
+  // If custom breadcrumbs are set, use them instead
+  const finalBreadcrumbs = useMemo(() => {
+    if (customBreadcrumbs) {
+      return customBreadcrumbs.map((name, index) => ({
+        name,
+        path: index === customBreadcrumbs.length - 1 ? pathname : '#'
+      }));
+    }
+    return breadcrumbs;
+  }, [customBreadcrumbs, breadcrumbs, pathname]);
+
+  return {
+    breadcrumbs: finalBreadcrumbs,
+    updateBreadcrumbs,
+    clearCustomBreadcrumbs
+  };
 };

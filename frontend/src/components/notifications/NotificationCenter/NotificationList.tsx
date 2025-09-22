@@ -16,6 +16,9 @@ interface NotificationListProps {
   maxHeight: number;
   itemHeight?: number;
   className?: string;
+  selectedIds?: string[];
+  onSelectionChange?: (selectedIds: string[]) => void;
+  selectionMode?: boolean;
 }
 
 interface ListItemProps {
@@ -28,12 +31,25 @@ interface ListItemProps {
     onNotificationClick: (notification: Notification) => void;
     onMarkAsRead: (notificationId: string) => void;
     onDelete: (notificationId: string) => void;
+    selectedIds?: string[];
+    onSelectionChange?: (selectedIds: string[]) => void;
+    selectionMode?: boolean;
   };
 }
 
 // Individual list item component for virtualization
 const ListItem: React.FC<ListItemProps> = ({ index, style, data }) => {
-  const { notifications, hasMore, isLoading, onNotificationClick, onMarkAsRead, onDelete } = data;
+  const { 
+    notifications, 
+    hasMore, 
+    isLoading, 
+    onNotificationClick, 
+    onMarkAsRead, 
+    onDelete,
+    selectedIds = [],
+    onSelectionChange,
+    selectionMode = false
+  } = data;
   
   // Check if this is a loading item
   const isLoadingItem = index >= notifications.length;
@@ -53,15 +69,31 @@ const ListItem: React.FC<ListItemProps> = ({ index, style, data }) => {
     return <div style={style} />;
   }
 
+  // Handle selection toggle
+  const handleSelectionToggle = (notificationId: string) => {
+    if (!onSelectionChange) return;
+    
+    const isSelected = selectedIds.includes(notificationId);
+    if (isSelected) {
+      onSelectionChange(selectedIds.filter(id => id !== notificationId));
+    } else {
+      onSelectionChange([...selectedIds, notificationId]);
+    }
+  };
+
+  const isSelected = selectedIds.includes(notification.id);
+
   return (
     <div style={style}>
       <NotificationItem
         notification={notification}
-        onClick={onNotificationClick}
+        onClick={selectionMode ? () => handleSelectionToggle(notification.id) : onNotificationClick}
         onMarkAsRead={onMarkAsRead}
         onDelete={onDelete}
-        showActions={true}
+        showActions={!selectionMode}
         compact={false}
+        isSelected={isSelected}
+        selectionMode={selectionMode}
       />
     </div>
   );
@@ -75,6 +107,9 @@ export function NotificationList({
   maxHeight,
   itemHeight = 120,
   className = '',
+  selectedIds = [],
+  onSelectionChange,
+  selectionMode = false,
 }: NotificationListProps) {
   const { markAsRead, deleteNotification } = useNotificationActions();
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -137,6 +172,9 @@ export function NotificationList({
     onNotificationClick: handleNotificationClick,
     onMarkAsRead: handleMarkAsRead,
     onDelete: handleDelete,
+    selectedIds,
+    onSelectionChange,
+    selectionMode,
   }), [
     notifications,
     hasMore,
@@ -144,6 +182,9 @@ export function NotificationList({
     handleNotificationClick,
     handleMarkAsRead,
     handleDelete,
+    selectedIds,
+    onSelectionChange,
+    selectionMode,
   ]);
 
   // Scroll to top when notifications change significantly

@@ -17,6 +17,8 @@ import {
 } from 'lucide-react';
 import { useSwipeGesture } from '../../../hooks/useSwipeGesture';
 import { useNotificationUtils } from '../../../hooks/useNotifications';
+import { NotificationActions } from './NotificationActions';
+import { useNotificationRouter } from '../NotificationRouter/NotificationRouter';
 import type { Notification, NotificationType, NotificationCategory } from '../../../types/notifications';
 
 interface NotificationItemProps {
@@ -28,6 +30,8 @@ interface NotificationItemProps {
   compact?: boolean;
   className?: string;
   enableSwipe?: boolean;
+  isSelected?: boolean;
+  selectionMode?: boolean;
 }
 
 // Icon mapping for notification types
@@ -66,6 +70,8 @@ export function NotificationItem({
   compact = false,
   className = '',
   enableSwipe = true,
+  isSelected = false,
+  selectionMode = false,
 }: NotificationItemProps) {
   const [showMenu, setShowMenu] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -74,6 +80,7 @@ export function NotificationItem({
   const menuRef = useRef<HTMLDivElement>(null);
   
   const { formatNotificationTime, isNotificationExpired } = useNotificationUtils();
+  const { navigateToNotification } = useNotificationRouter();
 
   // Handle swipe gestures for mobile
   const { 
@@ -102,14 +109,27 @@ export function NotificationItem({
   const isExpired = isNotificationExpired(notification);
 
   // Handle click
-  const handleClick = useCallback((event: React.MouseEvent) => {
+  const handleClick = useCallback(async (event: React.MouseEvent) => {
     // Don't trigger click if clicking on action buttons
     if ((event.target as HTMLElement).closest('.notification-actions')) {
       return;
     }
     
-    onClick(notification);
-  }, [onClick, notification]);
+    // If in selection mode, use the onClick prop
+    if (selectionMode) {
+      onClick(notification);
+      return;
+    }
+    
+    // Otherwise, navigate to the notification
+    try {
+      await navigateToNotification(notification.id);
+    } catch (error) {
+      console.error('Failed to navigate to notification:', error);
+      // Fallback to the original onClick
+      onClick(notification);
+    }
+  }, [onClick, notification, selectionMode, navigateToNotification]);
 
   // Handle mark as read
   const handleMarkAsRead = useCallback(async (event?: React.MouseEvent) => {
@@ -145,15 +165,9 @@ export function NotificationItem({
     }
   }, [notification.id, onDelete, isDeleting, resetSwipe]);
 
-  // Handle action click
-  const handleActionClick = useCallback((action: any, event: React.MouseEvent) => {
-    event.stopPropagation();
-    
-    if (action.url) {
-      window.open(action.url, '_blank');
-    }
-    
-    // Mark as read when action is clicked
+  // Handle action completion
+  const handleActionComplete = useCallback((actionId: string, result: any) => {
+    // Mark as read when action is completed
     if (!notification.isRead) {
       handleMarkAsRead();
     }
@@ -194,7 +208,9 @@ export function NotificationItem({
     ${priorityBorder ? `border-l-4 ${priorityBorder}` : ''}
     ${isExpired ? 'opacity-60' : ''}
     ${isSwipeActive ? 'transform transition-transform duration-200' : ''}
-    hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset
+    ${isSelected ? 'bg-blue-100 border-blue-500' : 'hover:bg-gray-50'}
+    ${selectionMode ? 'border-2' : ''}
+    focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset
     ${className}
   `;
 
@@ -245,13 +261,25 @@ export function NotificationItem({
         }}
       >
         <div className="flex items-start space-x-3">
-          {/* Notification icon */}
-          <div className={`
-            flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center
-            ${categoryColor}
-          `}>
-            <IconComponent className="h-5 w-5" />
-          </div>
+          {/* Selection checkbox or notification icon */}
+          {selectionMode ? (
+            <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center">
+              <input
+                type="checkbox"
+                checked={isSelected}
+                onChange={() => onClick(notification)}
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>
+          ) : (
+            <div className={`
+              flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center
+              ${categoryColor}
+            `}>
+              <IconComponent className="h-5 w-5" />
+            </div>
+          )}
 
           {/* Content */}
           <div className="flex-1 min-w-0">
@@ -341,21 +369,13 @@ export function NotificationItem({
               </div>
 
               {/* Action buttons */}
-              {notification.actions && notification.actions.length > 0 && (
-                <div className="notification-actions flex items-center space-x-2">
-                  {notification.actions.slice(0, 2).map((action) => (
-                    <button
-                      key={action.id}
-                      onClick={(e) => handleActionClick(action, e)}
-                      className="inline-flex items-center px-2 py-1 text-xs font-medium rounded border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                      {action.icon && <span className="mr-1">{action.icon}</span>}
-                      {action.title}
-                      {action.url && <ExternalLink className="h-3 w-3 ml-1" />}
-                    </button>
-                  ))}
-                </div>
-              )}
+              <div className="notification-actions">
+                <NotificationActions
+                  notification={notification}
+                  onActionComplete={handleActionComplete}
+                  compact={compact}
+                />
+              </div>
             </div>
           </div>
         </div>
