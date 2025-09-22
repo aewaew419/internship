@@ -36,6 +36,9 @@ func Setup(app *fiber.App, db *gorm.DB, cfg *config.Config) {
 	// Setup student management routes
 	setupStudentRoutes(api, db, cfg)
 
+	// Setup visitor management routes
+	setupVisitorRoutes(api, db, cfg)
+
 	// TODO: Add more route groups as they are implemented
 	// etc.
 }
@@ -144,4 +147,59 @@ func setupStudentRoutes(api fiber.Router, db *gorm.DB, cfg *config.Config) {
 	students.Post("/enroll", studentHandler.EnrollStudent)                    // POST /api/v1/students/enroll
 	students.Put("/enrollments/:id", studentHandler.UpdateEnrollment)         // PUT /api/v1/students/enrollments/:id
 	students.Get("/:id/enrollments", studentHandler.GetStudentEnrollments)    // GET /api/v1/students/:id/enrollments
+}
+
+// setupVisitorRoutes sets up visitor management routes
+func setupVisitorRoutes(api fiber.Router, db *gorm.DB, cfg *config.Config) {
+	// Initialize services
+	jwtService := services.NewJWTService(cfg.JWTSecret)
+	visitorService := services.NewVisitorService(db)
+	visitorHandler := handlers.NewVisitorHandler(visitorService)
+
+	// Authentication middleware
+	authMiddleware := middleware.AuthMiddleware(jwtService)
+
+	// Visitor Training routes
+	visitorTrainings := api.Group("/visitor-trainings", authMiddleware)
+	visitorTrainings.Get("/", visitorHandler.GetVisitorTrainings)                                    // GET /api/v1/visitor-trainings
+	visitorTrainings.Get("/:id", visitorHandler.GetVisitorTraining)                                  // GET /api/v1/visitor-trainings/:id
+	visitorTrainings.Post("/", visitorHandler.CreateVisitorTraining)                                 // POST /api/v1/visitor-trainings
+	visitorTrainings.Put("/:id", visitorHandler.UpdateVisitorTraining)                               // PUT /api/v1/visitor-trainings/:id
+	visitorTrainings.Delete("/:id", visitorHandler.DeleteVisitorTraining)                            // DELETE /api/v1/visitor-trainings/:id
+	
+	// Visitor Training nested routes for evaluations
+	visitorTrainings.Get("/:training_id/evaluate-students", visitorHandler.GetVisitorEvaluateStudents)   // GET /api/v1/visitor-trainings/:training_id/evaluate-students
+	visitorTrainings.Get("/:training_id/evaluate-companies", visitorHandler.GetVisitorEvaluateCompanies) // GET /api/v1/visitor-trainings/:training_id/evaluate-companies
+
+	// Visitor Schedule routes
+	visitorSchedules := api.Group("/visitor-schedules", authMiddleware)
+	visitorSchedules.Get("/", visitorHandler.GetVisitorSchedules)                                    // GET /api/v1/visitor-schedules
+	visitorSchedules.Get("/:id", visitorHandler.GetVisitorSchedule)                                  // GET /api/v1/visitor-schedules/:id
+	visitorSchedules.Post("/", visitorHandler.CreateVisitorSchedule)                                 // POST /api/v1/visitor-schedules
+	visitorSchedules.Put("/:id", visitorHandler.UpdateVisitorSchedule)                               // PUT /api/v1/visitor-schedules/:id
+	visitorSchedules.Delete("/:id", visitorHandler.DeleteVisitorSchedule)                            // DELETE /api/v1/visitor-schedules/:id
+	
+	// Visitor Schedule nested routes for photos
+	visitorSchedules.Get("/:schedule_id/photos", visitorHandler.GetVisitPhotos)                      // GET /api/v1/visitor-schedules/:schedule_id/photos
+	visitorSchedules.Post("/:schedule_id/photos", visitorHandler.UploadVisitPhoto)                   // POST /api/v1/visitor-schedules/:schedule_id/photos
+
+	// Visitor Evaluate Student routes
+	visitorEvaluateStudents := api.Group("/visitor-evaluate-students", authMiddleware)
+	visitorEvaluateStudents.Get("/:id", visitorHandler.GetVisitorEvaluateStudent)                    // GET /api/v1/visitor-evaluate-students/:id
+	visitorEvaluateStudents.Post("/", visitorHandler.CreateVisitorEvaluateStudent)                   // POST /api/v1/visitor-evaluate-students
+	visitorEvaluateStudents.Put("/:id", visitorHandler.UpdateVisitorEvaluateStudent)                 // PUT /api/v1/visitor-evaluate-students/:id
+	visitorEvaluateStudents.Delete("/:id", visitorHandler.DeleteVisitorEvaluateStudent)              // DELETE /api/v1/visitor-evaluate-students/:id
+
+	// Visitor Evaluate Company routes
+	visitorEvaluateCompanies := api.Group("/visitor-evaluate-companies", authMiddleware)
+	visitorEvaluateCompanies.Get("/:id", visitorHandler.GetVisitorEvaluateCompany)                   // GET /api/v1/visitor-evaluate-companies/:id
+	visitorEvaluateCompanies.Post("/", visitorHandler.CreateVisitorEvaluateCompany)                  // POST /api/v1/visitor-evaluate-companies
+	visitorEvaluateCompanies.Put("/:id", visitorHandler.UpdateVisitorEvaluateCompany)                // PUT /api/v1/visitor-evaluate-companies/:id
+	visitorEvaluateCompanies.Delete("/:id", visitorHandler.DeleteVisitorEvaluateCompany)             // DELETE /api/v1/visitor-evaluate-companies/:id
+
+	// Visit Photo routes
+	visitPhotos := api.Group("/visit-photos", authMiddleware)
+	visitPhotos.Get("/:id", visitorHandler.GetVisitPhoto)                                            // GET /api/v1/visit-photos/:id
+	visitPhotos.Put("/:id", visitorHandler.UpdateVisitPhoto)                                         // PUT /api/v1/visit-photos/:id
+	visitPhotos.Delete("/:id", visitorHandler.DeleteVisitPhoto)                                      // DELETE /api/v1/visit-photos/:id
 }
