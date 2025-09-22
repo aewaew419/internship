@@ -1,9 +1,15 @@
 import type { NextConfig } from "next";
 
-// Bundle analyzer setup
-const withBundleAnalyzer = require('@next/bundle-analyzer')({
-  enabled: process.env.ANALYZE === 'true',
-});
+// Bundle analyzer setup - only load if available
+let withBundleAnalyzer: (config: NextConfig) => NextConfig;
+try {
+  withBundleAnalyzer = require('@next/bundle-analyzer')({
+    enabled: process.env.ANALYZE === 'true',
+  });
+} catch (error) {
+  // Fallback if bundle analyzer is not installed
+  withBundleAnalyzer = (config: NextConfig) => config;
+}
 
 const nextConfig: NextConfig = {
   // Enable experimental features for better performance
@@ -51,8 +57,6 @@ const nextConfig: NextConfig = {
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     // Enable responsive images by default
     unoptimized: false,
-    // Quality settings for different scenarios
-    quality: 75, // Default quality
     // Loader configuration for custom CDN
     // loader: 'custom',
     // loaderFile: './src/lib/imageLoader.ts',
