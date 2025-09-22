@@ -1,6 +1,10 @@
 'use client';
 
 import { ServiceWorkerManager } from './serviceWorker';
+import { initializeCrossBrowserCompatibility } from './push-notifications';
+import { browserCompatibility } from './push-notifications/browser-compatibility';
+import { featureDetection } from './push-notifications/feature-detection';
+import { compatibilityManager } from './push-notifications/compatibility-layers';
 import { 
   PushSubscriptionData, 
   DeviceTokenRegistration, 
@@ -31,12 +35,25 @@ export class PushNotificationManager {
    */
   async initialize(vapidKey?: string): Promise<boolean> {
     try {
+      // Initialize cross-browser compatibility system
+      const compatibilityResult = await initializeCrossBrowserCompatibility();
+      
+      if (!compatibilityResult.isSupported) {
+        console.warn('Push notifications not supported:', compatibilityResult.detectionResult.limitations);
+        return false;
+      }
+
       // Get VAPID key from environment or parameter
       this.vapidPublicKey = vapidKey || process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || null;
       
       if (!this.vapidPublicKey) {
         console.warn('VAPID public key not configured');
         return false;
+      }
+
+      // Validate VAPID key for browser compatibility
+      if (!browserCompatibility.isVapidSupported()) {
+        console.warn('VAPID not supported in this browser');
       }
 
       // Register service worker
@@ -50,6 +67,7 @@ export class PushNotificationManager {
       
       this.isInitialized = true;
       console.log('Push notification manager initialized successfully');
+      console.log('Compatibility result:', compatibilityResult);
       return true;
     } catch (error) {
       console.error('Push notification manager initialization failed:', error);
@@ -61,12 +79,7 @@ export class PushNotificationManager {
    * Check if push notifications are supported
    */
   isSupported(): boolean {
-    return (
-      typeof window !== 'undefined' &&
-      'serviceWorker' in navigator &&
-      'PushManager' in window &&
-      'Notification' in window
-    );
+    return browserCompatibility.isSupported();
   }
 
   /**
@@ -109,6 +122,12 @@ export class PushNotificationManager {
         throw new Error(PushNotificationError.VAPID_KEY_MISSING);
       }
 
+      // Check browser compatibility
+      const config = browserCompatibility.getConfig();
+      if (config.requiresUserGesture) {
+        console.log('Browser requires user gesture for subscription');
+      }
+
       // Request permission first
       const permission = await this.requestPermission();
       if (permission !== 'granted') {
@@ -121,11 +140,11 @@ export class PushNotificationManager {
         throw new Error(PushNotificationError.SERVICE_WORKER_ERROR);
       }
 
-      // Subscribe to push notifications
-      this.subscription = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: this.urlBase64ToUint8Array(this.vapidPublicKey) as BufferSource
-      });
+      // Get browser-specific subscription options
+      const subscriptionOptions = browserCompatibility.getSubscriptionOptions(this.vapidPublicKey);
+
+      // Subscribe to push notifications with browser-specific options
+      this.subscription = await registration.pushManager.subscribe(subscriptionOptions);
 
       console.log('Push subscription successful');
       return this.subscription;
@@ -231,28 +250,60 @@ export class PushNotificationManager {
   }
 
   /**
-   * Handle push notification errors
+   * Handle push notification errors with browser-specific messages
    */
   handleError(error: any): PushNotificationError {
+    let errorType: PushNotificationError;
+    
     if (error.message?.includes('permission')) {
-      return PushNotificationError.PERMISSION_DENIED;
+      errorType = PushNotificationError.PERMISSION_DENIED;
+    } else if (error.message?.includes('not supported')) {
+      errorType = PushNotificationError.NOT_SUPPORTED;
+    } else if (error.message?.includes('subscription')) {
+      errorType = PushNotificationError.SUBSCRIPTION_FAILED;
+    } else if (error.message?.includes('network')) {
+      errorType = PushNotificationError.NETWORK_ERROR;
+    } else if (error.message?.includes('service worker')) {
+      errorType = PushNotificationError.SERVICE_WORKER_ERROR;
+    } else if (error.message?.includes('vapid')) {
+      errorType = PushNotificationError.VAPID_KEY_MISSING;
+    } else {
+      errorType = PushNotificationError.SUBSCRIPTION_FAILED;
     }
-    if (error.message?.includes('not supported')) {
-      return PushNotificationError.NOT_SUPPORTED;
-    }
-    if (error.message?.includes('subscription')) {
-      return PushNotificationError.SUBSCRIPTION_FAILED;
-    }
-    if (error.message?.includes('network')) {
-      return PushNotificationError.NETWORK_ERROR;
-    }
-    if (error.message?.includes('service worker')) {
-      return PushNotificationError.SERVICE_WORKER_ERROR;
-    }
-    if (error.message?.includes('vapid')) {
-      return PushNotificationError.VAPID_KEY_MISSING;
-    }
-    return PushNotificationError.SUBSCRIPTION_FAILED;
+
+    // Log browser-specific error message
+    const browserSpecificMessage = browserCompatibility.getBrowserSpecificErrorMessage(errorType);
+    console.error('Browser-specific error message:', browserSpecificMessage);
+
+    return errorType;
+  }
+
+  /**
+   * Get browser-specific error message
+   */
+  getBrowserSpecificErrorMessage(error: PushNotificationError): string {
+    return browserCompatibility.getBrowserSpecificErrorMessage(error);
+  }
+
+  /**
+   * Get browser setup instructions
+   */
+  getSetupInstructions(): string[] {
+    return browserCompatibility.getSetupInstructions();
+  }
+
+  /**
+   * Get browser compatibility information
+   */
+  getBrowserInfo() {
+    return browserCompatibility.getBrowserInfo();
+  }
+
+  /**
+   * Get feature detection results
+   */
+  getFeatureDetectionResult() {
+    return featureDetection.getDetectionResult();
   }
 
   // Private helper methods
