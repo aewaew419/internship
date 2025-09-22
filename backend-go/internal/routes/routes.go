@@ -21,8 +21,14 @@ func Setup(app *fiber.App, db *gorm.DB, cfg *config.Config) {
 		})
 	})
 
+	// Health check endpoints
+	setupHealthRoutes(api, db, cfg)
+
 	// Setup authentication routes
 	setupAuthRoutes(api, db, cfg)
+
+	// Setup notification routes
+	setupNotificationRoutes(api, db, cfg)
 
 	// Setup user management routes
 	setupUserRoutes(api, db, cfg)
@@ -32,6 +38,38 @@ func Setup(app *fiber.App, db *gorm.DB, cfg *config.Config) {
 
 	// TODO: Add more route groups as they are implemented
 	// etc.
+}
+
+// setupHealthRoutes sets up health check routes
+func setupHealthRoutes(api fiber.Router, db *gorm.DB, cfg *config.Config) {
+	healthHandler := handlers.NewHealthHandler(db, cfg)
+
+	// Health check routes (no auth required)
+	api.Get("/health", healthHandler.Health)
+	api.Head("/health", healthHandler.HealthHead)
+	api.Get("/health/detailed", healthHandler.HealthDetailed)
+}
+
+// setupNotificationRoutes sets up push notification routes
+func setupNotificationRoutes(api fiber.Router, db *gorm.DB, cfg *config.Config) {
+	// Initialize services
+	jwtService := services.NewJWTService(cfg.JWTSecret)
+	notificationHandler := handlers.NewNotificationHandler(db, cfg)
+
+	// Authentication middleware
+	authMiddleware := middleware.AuthMiddleware(jwtService)
+
+	// Notification routes (all require authentication)
+	notifications := api.Group("/notifications", authMiddleware)
+	
+	notifications.Post("/register-token", notificationHandler.RegisterToken)
+	notifications.Delete("/unregister-token", notificationHandler.UnregisterToken)
+	notifications.Post("/send", notificationHandler.SendNotification)
+	notifications.Post("/send-to-user/:userId", notificationHandler.SendToUser)
+	notifications.Get("/history", notificationHandler.GetNotificationHistory)
+	notifications.Put("/:id/read", notificationHandler.MarkAsRead)
+	notifications.Get("/settings", notificationHandler.GetSettings)
+	notifications.Put("/settings", notificationHandler.UpdateSettings)
 }
 
 // setupAuthRoutes sets up authentication-related routes

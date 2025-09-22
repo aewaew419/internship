@@ -1,1 +1,0 @@
-export { DataDisplayExample } from './DataDisplayExample';

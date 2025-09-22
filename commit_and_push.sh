@@ -1,5 +1,5 @@
 #!/bin/bash
-cd nextjs-frontend
+cd frontend
 
 # Add all files except .kiro folder
 git add .

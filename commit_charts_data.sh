@@ -1,5 +1,5 @@
 #!/bin/bash
-git add nextjs-frontend/
+git add frontend/
 git commit -m "เสร็จสิ้นการพัฒนาคอมโพเนนต์แสดงผลข้อมูลและกราฟแบบ Responsive
 
 ✨ คอมโพเนนต์ที่เพิ่ม:

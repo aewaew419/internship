@@ -2,8 +2,8 @@
 
 echo "กำลัง commit การเปลี่ยนแปลง..."
 
-# เพิ่มไฟล์ nextjs-frontend เท่านั้น (ไม่รวม .kiro)
-git add nextjs-frontend/
+# เพิ่มไฟล์ frontend เท่านั้น (ไม่รวม .kiro)
+git add frontend/
 
 # Commit ด้วยข้อความภาษาไทย
 git commit -m "พัฒนาฟีเจอร์มือถือสำหรับระบบจัดการฝึกงาน

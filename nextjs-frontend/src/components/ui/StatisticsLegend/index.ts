@@ -1,1 +1,0 @@
-export { StatisticsLegend } from './StatisticsLegend';

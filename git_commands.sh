@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Add only the nextjs-frontend changes (excluding .kiro folder which is already in .gitignore)
-git add nextjs-frontend/
+# Add only the frontend changes (excluding .kiro folder which is already in .gitignore)
+git add frontend/
 
 # Commit with Thai message
 git commit -m "เสร็จสิ้นการพัฒนาคอมโพเนนต์แสดงผลข้อมูลและกราหแบบ Responsive

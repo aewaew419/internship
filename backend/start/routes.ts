@@ -61,6 +61,34 @@ router
     router.get('/reports', [ReportsController, 'index'])
     router.post('/login', [AuthController, 'login'])
 
+    // Health check endpoints
+    router.get('/health', async () => {
+      const HealthController = (await import('#controllers/health_controller')).default
+      const controller = new HealthController()
+      return controller.index({ response: arguments[0].response } as any)
+    })
+    router.head('/health', async () => {
+      const HealthController = (await import('#controllers/health_controller')).default
+      const controller = new HealthController()
+      return controller.head({ response: arguments[0].response } as any)
+    })
+    router.get('/health/detailed', async () => {
+      const HealthController = (await import('#controllers/health_controller')).default
+      const controller = new HealthController()
+      return controller.detailed({ response: arguments[0].response } as any)
+    })
+
+    // Push notification endpoints
+    const NotificationsController = () => import('#controllers/notifications_controller')
+    router.post('/notifications/register-token', [NotificationsController, 'registerToken'])
+    router.delete('/notifications/unregister-token', [NotificationsController, 'unregisterToken'])
+    router.post('/notifications/send', [NotificationsController, 'send'])
+    router.post('/notifications/send-to-user/:userId', [NotificationsController, 'sendToUser'])
+    router.get('/notifications/history', [NotificationsController, 'history'])
+    router.put('/notifications/:id/read', [NotificationsController, 'markAsRead'])
+    router.get('/notifications/settings', [NotificationsController, 'getSettings'])
+    router.put('/notifications/settings', [NotificationsController, 'updateSettings'])
+
     router.resource('/roles', RoleController).apiOnly()
 
     router.resource('/students', StudentsController).apiOnly()

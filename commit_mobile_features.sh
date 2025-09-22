@@ -1,5 +1,5 @@
 #!/bin/bash
-git add nextjs-frontend/src/ nextjs-frontend/package.json nextjs-frontend/next.config.ts
+git add frontend/src/ frontend/package.json frontend/next.config.ts
 git commit -m "เพิ่มฟีเจอร์มือถือ: การนำทาง อัปโหลดไฟล์ และรูปภาพแบบตอบสนอง
 
 ✨ Features ที่เพิ่ม:

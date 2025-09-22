@@ -1,5 +1,5 @@
 #!/bin/bash
-git add nextjs-frontend/
+git add frontend/
 git commit -m "เพิ่มระบบ API และการดึงข้อมูลที่ปรับปรุงสำหรับ Next.js
 
 ✨ Features ที่เพิ่ม:

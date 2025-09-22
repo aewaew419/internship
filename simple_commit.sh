@@ -1,5 +1,5 @@
 #!/bin/bash
-git add nextjs-frontend/
+git add frontend/
 git commit -m "เพิ่มระบบ UI Component Library ที่รองรับ Mobile-First Design
 
 ✨ Features ที่เพิ่ม:

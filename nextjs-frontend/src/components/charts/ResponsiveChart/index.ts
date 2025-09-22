@@ -1,1 +1,0 @@
-export { ResponsiveChart } from './ResponsiveChart';
