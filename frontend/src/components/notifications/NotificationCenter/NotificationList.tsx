@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useCallback, useRef, useEffect, useState, useMemo } from 'react';
-import { FixedSizeList as List } from 'react-window';
-import InfiniteLoader from 'react-window-infinite-loader';
-import { Loader2 } from 'lucide-react';
-import { NotificationItem } from './NotificationItem';
+import React, { useCallback, useRef, useEffect, useState, useMemo, memo } from 'react';
+import { VirtualizedNotificationList, type VirtualizedNotificationListRef } from './VirtualizedNotificationList';
+import { NotificationOptimizer, NotificationPerformanceMonitor } from '../../../lib/notifications/NotificationOptimizer';
+import { notificationCache } from '../../../lib/notifications/NotificationCache';
+import { notificationBatcher } from '../../../lib/notifications/NotificationBatcher';
 import { useNotificationActions } from '../../../hooks/useNotifications';
-import type { Notification } from '../../../types/notifications';
+import type { Notification, NotificationType, NotificationCategory } from '../../../types/notifications';
 
 interface NotificationListProps {
   notifications: Notification[];
@@ -19,87 +19,25 @@ interface NotificationListProps {
   selectedIds?: string[];
   onSelectionChange?: (selectedIds: string[]) => void;
   selectionMode?: boolean;
+  filters?: {
+    type?: NotificationType;
+    category?: NotificationCategory;
+    unreadOnly?: boolean;
+    search?: string;
+  };
+  sortOptions?: Array<{
+    field: 'createdAt' | 'priority' | 'type' | 'isRead';
+    direction: 'asc' | 'desc';
+  }>;
+  enableVirtualization?: boolean;
+  enableCaching?: boolean;
+  enableBatching?: boolean;
 }
 
-interface ListItemProps {
-  index: number;
-  style: React.CSSProperties;
-  data: {
-    notifications: Notification[];
-    hasMore: boolean;
-    isLoading: boolean;
-    onNotificationClick: (notification: Notification) => void;
-    onMarkAsRead: (notificationId: string) => void;
-    onDelete: (notificationId: string) => void;
-    selectedIds?: string[];
-    onSelectionChange?: (selectedIds: string[]) => void;
-    selectionMode?: boolean;
-  };
-}
+// Memoized filter function for performance
+const memoizedFilter = NotificationOptimizer.createMemoizedFilter();
 
-// Individual list item component for virtualization
-const ListItem: React.FC<ListItemProps> = ({ index, style, data }) => {
-  const { 
-    notifications, 
-    hasMore, 
-    isLoading, 
-    onNotificationClick, 
-    onMarkAsRead, 
-    onDelete,
-    selectedIds = [],
-    onSelectionChange,
-    selectionMode = false
-  } = data;
-  
-  // Check if this is a loading item
-  const isLoadingItem = index >= notifications.length;
-  
-  if (isLoadingItem) {
-    return (
-      <div style={style} className="flex items-center justify-center p-4">
-        <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
-        <span className="ml-2 text-sm text-gray-500">Loading more notifications...</span>
-      </div>
-    );
-  }
-
-  const notification = notifications[index];
-  
-  if (!notification) {
-    return <div style={style} />;
-  }
-
-  // Handle selection toggle
-  const handleSelectionToggle = (notificationId: string) => {
-    if (!onSelectionChange) return;
-    
-    const isSelected = selectedIds.includes(notificationId);
-    if (isSelected) {
-      onSelectionChange(selectedIds.filter(id => id !== notificationId));
-    } else {
-      onSelectionChange([...selectedIds, notificationId]);
-    }
-  };
-
-  const isSelected = selectedIds.includes(notification.id);
-
-  return (
-    <div style={style}>
-      <NotificationItem
-        notification={notification}
-        onClick={selectionMode ? () => handleSelectionToggle(notification.id) : onNotificationClick}
-        onMarkAsRead={onMarkAsRead}
-        onDelete={onDelete}
-        showActions={!selectionMode}
-        compact={false}
-        isSelected={isSelected}
-        selectionMode={selectionMode}
-      />
-    </div>
-  );
-};
-
-export function NotificationList({
+export const NotificationList = memo<NotificationListProps>(({
   notifications,
   hasMore,
   isLoading,
@@ -110,157 +48,218 @@ export function NotificationList({
   selectedIds = [],
   onSelectionChange,
   selectionMode = false,
-}: NotificationListProps) {
+  filters = {},
+  sortOptions = NotificationOptimizer.getSmartSort(),
+  enableVirtualization = true,
+  enableCaching = true,
+  enableBatching = true,
+}) => {
   const { markAsRead, deleteNotification } = useNotificationActions();
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const listRef = useRef<List>(null);
-  const infiniteLoaderRef = useRef<InfiniteLoader>(null);
+  const [processedNotifications, setProcessedNotifications] = useState<Notification[]>([]);
+  const listRef = useRef<VirtualizedNotificationListRef>(null);
 
-  // Calculate total item count (notifications + loading item if needed)
-  const itemCount = hasMore ? notifications.length + 1 : notifications.length;
+  // Process notifications with filtering, sorting, and caching
+  useEffect(() => {
+    const processNotifications = () => {
+      return NotificationPerformanceMonitor.measure('notification-processing', () => {
+        // Check cache first if enabled
+        if (enableCaching) {
+          const cached = notificationCache.getCachedNotificationList(filters);
+          if (cached) {
+            return cached;
+          }
+        }
 
-  // Check if item is loaded
-  const isItemLoaded = useCallback((index: number) => {
-    return index < notifications.length;
-  }, [notifications.length]);
+        // Filter notifications
+        let filtered = notifications;
+        if (Object.keys(filters).length > 0) {
+          filtered = memoizedFilter(notifications, filters);
+        }
 
-  // Load more items
+        // Sort notifications
+        if (sortOptions.length > 0) {
+          filtered = NotificationOptimizer.sortNotifications(filtered, sortOptions);
+        }
+
+        // Cache the result if enabled
+        if (enableCaching) {
+          notificationCache.cacheNotificationList(filtered, filters);
+        }
+
+        return filtered;
+      });
+    };
+
+    const processed = processNotifications();
+    setProcessedNotifications(processed);
+
+    // Build search index for better performance
+    NotificationOptimizer.buildSearchIndex(notifications);
+  }, [notifications, filters, sortOptions, enableCaching]);
+
+  // Load more items with performance monitoring
   const loadMoreItems = useCallback(async () => {
     if (isLoadingMore || !hasMore) return;
     
     setIsLoadingMore(true);
     try {
-      await onLoadMore();
+      await NotificationPerformanceMonitor.measureAsync('load-more-notifications', async () => {
+        await onLoadMore();
+      });
     } finally {
       setIsLoadingMore(false);
     }
   }, [isLoadingMore, hasMore, onLoadMore]);
 
-  // Handle notification click
+  // Handle notification click with caching
   const handleNotificationClick = useCallback((notification: Notification) => {
-    // Mark as read if not already read
-    if (!notification.isRead) {
-      markAsRead(notification.id);
-    }
-
-    // Handle navigation based on notification data
-    if (notification.data?.url) {
-      window.location.href = notification.data.url;
-    } else if (notification.actions && notification.actions.length > 0) {
-      const primaryAction = notification.actions[0];
-      if (primaryAction.url) {
-        window.location.href = primaryAction.url;
+    NotificationPerformanceMonitor.measure('notification-click', () => {
+      // Mark as read if not already read
+      if (!notification.isRead) {
+        if (enableBatching) {
+          notificationBatcher.addOperation('mark_read', [notification.id]);
+        } else {
+          markAsRead(notification.id);
+        }
       }
-    }
-  }, [markAsRead]);
 
-  // Handle mark as read
+      // Update cache
+      if (enableCaching) {
+        const updatedNotification = { ...notification, isRead: true };
+        notificationCache.cacheNotification(updatedNotification);
+      }
+
+      // Handle navigation based on notification data
+      if (notification.data?.url) {
+        window.location.href = notification.data.url;
+      } else if (notification.actions && notification.actions.length > 0) {
+        const primaryAction = notification.actions[0];
+        if (primaryAction.url) {
+          window.location.href = primaryAction.url;
+        }
+      }
+    });
+  }, [markAsRead, enableBatching, enableCaching]);
+
+  // Handle mark as read with batching
   const handleMarkAsRead = useCallback(async (notificationId: string) => {
-    await markAsRead(notificationId);
-  }, [markAsRead]);
+    if (enableBatching) {
+      await notificationBatcher.addOperation('mark_read', [notificationId]);
+    } else {
+      await markAsRead(notificationId);
+    }
 
-  // Handle delete
+    // Invalidate cache
+    if (enableCaching) {
+      notificationCache.invalidateNotification(notificationId);
+    }
+  }, [markAsRead, enableBatching, enableCaching]);
+
+  // Handle delete with batching
   const handleDelete = useCallback(async (notificationId: string) => {
-    await deleteNotification(notificationId);
-  }, [deleteNotification]);
+    if (enableBatching) {
+      await notificationBatcher.addOperation('delete', [notificationId]);
+    } else {
+      await deleteNotification(notificationId);
+    }
 
-  // Prepare data for virtualized list
-  const listData = useMemo(() => ({
-    notifications,
-    hasMore,
-    isLoading: isLoadingMore,
-    onNotificationClick: handleNotificationClick,
-    onMarkAsRead: handleMarkAsRead,
-    onDelete: handleDelete,
-    selectedIds,
-    onSelectionChange,
-    selectionMode,
-  }), [
-    notifications,
-    hasMore,
-    isLoadingMore,
-    handleNotificationClick,
-    handleMarkAsRead,
-    handleDelete,
-    selectedIds,
-    onSelectionChange,
-    selectionMode,
-  ]);
+    // Invalidate cache
+    if (enableCaching) {
+      notificationCache.invalidateNotification(notificationId);
+    }
+  }, [deleteNotification, enableBatching, enableCaching]);
+
+  // Subscribe to batch updates
+  useEffect(() => {
+    if (!enableBatching) return;
+
+    const unsubscribe = notificationBatcher.subscribe((updates) => {
+      // Handle batch updates
+      updates.forEach(update => {
+        if (enableCaching) {
+          if (update.type === 'deleted') {
+            notificationCache.invalidateNotification(update.id);
+          } else if (update.notification) {
+            notificationCache.cacheNotification(update.notification);
+          }
+        }
+      });
+
+      // Invalidate list caches to force refresh
+      if (enableCaching) {
+        notificationCache.invalidateListCaches();
+      }
+    });
+
+    return unsubscribe;
+  }, [enableBatching, enableCaching]);
 
   // Scroll to top when notifications change significantly
   useEffect(() => {
-    if (listRef.current) {
-      listRef.current.scrollToItem(0, 'start');
+    if (listRef.current && processedNotifications.length === 0) {
+      listRef.current.scrollToTop();
     }
-  }, [notifications.length === 0]); // Only when going from some to none or vice versa
+  }, [processedNotifications.length === 0]);
 
-  // Handle keyboard navigation
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (!listRef.current) return;
-
-      switch (event.key) {
-        case 'Home':
-          event.preventDefault();
-          listRef.current.scrollToItem(0, 'start');
-          break;
-        case 'End':
-          event.preventDefault();
-          listRef.current.scrollToItem(notifications.length - 1, 'end');
-          break;
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [notifications.length]);
-
-  if (notifications.length === 0) {
+  if (processedNotifications.length === 0) {
     return null;
   }
 
-  return (
-    <div className={`notification-list ${className}`}>
-      <InfiniteLoader
-        ref={infiniteLoaderRef}
-        isItemLoaded={isItemLoaded}
-        itemCount={itemCount}
-        loadMoreItems={loadMoreItems}
-        threshold={5} // Start loading when 5 items from the end
-      >
-        {({ onItemsRendered, ref }) => (
-          <List
-            ref={(list) => {
-              listRef.current = list;
-              if (typeof ref === 'function') {
-                ref(list);
-              } else if (ref) {
-                ref.current = list;
-              }
-            }}
-            height={maxHeight}
-            itemCount={itemCount}
-            itemSize={itemHeight}
-            itemData={listData}
-            onItemsRendered={onItemsRendered}
-            overscanCount={5} // Render 5 extra items for smooth scrolling
-            className="notification-list-container"
-          >
-            {ListItem}
-          </List>
-        )}
-      </InfiniteLoader>
+  // Use virtualized list if enabled, otherwise use simple rendering
+  if (enableVirtualization) {
+    return (
+      <div className={`notification-list ${className}`}>
+        <VirtualizedNotificationList
+          ref={listRef}
+          notifications={processedNotifications}
+          hasMore={hasMore}
+          isLoading={isLoading}
+          onLoadMore={loadMoreItems}
+          maxHeight={maxHeight}
+          selectedIds={selectedIds}
+          onSelectionChange={onSelectionChange}
+          selectionMode={selectionMode}
+          estimatedItemSize={itemHeight}
+          className="virtualized-notification-list"
+        />
+      </div>
+    );
+  }
 
-      {/* Loading indicator at the bottom */}
-      {isLoading && notifications.length > 0 && (
-        <div className="flex items-center justify-center p-4 border-t border-gray-200">
-          <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
-          <span className="ml-2 text-sm text-gray-500">Loading...</span>
-        </div>
-      )}
+  // Fallback to simple rendering for smaller lists
+  return (
+    <div className={`notification-list simple ${className}`} style={{ maxHeight }}>
+      <div className="overflow-y-auto">
+        {processedNotifications.map((notification) => (
+          <div key={notification.id} className="notification-item-wrapper">
+            <NotificationItem
+              notification={notification}
+              onClick={selectionMode 
+                ? () => {
+                    if (onSelectionChange) {
+                      const isSelected = selectedIds.includes(notification.id);
+                      if (isSelected) {
+                        onSelectionChange(selectedIds.filter(id => id !== notification.id));
+                      } else {
+                        onSelectionChange([...selectedIds, notification.id]);
+                      }
+                    }
+                  }
+                : handleNotificationClick
+              }
+              onMarkAsRead={handleMarkAsRead}
+              onDelete={handleDelete}
+              showActions={!selectionMode}
+              compact={false}
+              isSelected={selectedIds.includes(notification.id)}
+              selectionMode={selectionMode}
+            />
+          </div>
+        ))}
+      </div>
     </div>
   );
-}
+});
 
-// Export additional components for flexibility
-export { ListItem };
+NotificationList.displayName = 'NotificationList';

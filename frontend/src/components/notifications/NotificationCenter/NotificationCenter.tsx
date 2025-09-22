@@ -3,6 +3,7 @@
 import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import { Search, Filter, X, RefreshCw, Settings, Bell, BellOff, CheckCircle } from 'lucide-react';
 import { useNotifications, useFilteredNotifications, useNotificationStats } from '../../../hooks/useNotifications';
+import { useNotificationPerformance } from '../../../hooks/useNotificationPerformance';
 import { NotificationList } from './NotificationList';
 import { NotificationFilters } from './NotificationFilters';
 import { NotificationSearch } from './NotificationSearch';
@@ -43,6 +44,17 @@ export function NotificationCenter({
     markAllAsRead,
     clearAll,
   } = useNotifications();
+
+  const {
+    metrics,
+    measureRender,
+    getPerformanceGrade,
+    getRecommendations,
+  } = useNotificationPerformance({
+    enableMonitoring: process.env.NODE_ENV === 'development',
+    enableCaching: true,
+    enableBatching: true,
+  });
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState<NotificationType | undefined>();
@@ -372,16 +384,27 @@ export function NotificationCenter({
             onRefresh={handleRefresh}
           />
         ) : (
-          <NotificationList
-            notifications={filteredNotifications}
-            hasMore={hasMore}
-            isLoading={isLoading}
-            onLoadMore={loadMoreNotifications}
-            maxHeight={maxHeight - 120}
-            selectedIds={selectedNotificationIds}
-            onSelectionChange={handleSelectionChange}
-            selectionMode={showBulkActions}
-          />
+          measureRender(() => (
+            <NotificationList
+              notifications={filteredNotifications}
+              hasMore={hasMore}
+              isLoading={isLoading}
+              onLoadMore={loadMoreNotifications}
+              maxHeight={maxHeight - 120}
+              selectedIds={selectedNotificationIds}
+              onSelectionChange={handleSelectionChange}
+              selectionMode={showBulkActions}
+              filters={{
+                type: selectedType,
+                category: selectedCategory,
+                unreadOnly: showUnreadOnly,
+                search: searchQuery,
+              }}
+              enableVirtualization={filteredNotifications.length > 50}
+              enableCaching={true}
+              enableBatching={true}
+            />
+          ))
         )}
       </div>
 
