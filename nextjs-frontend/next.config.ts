@@ -3,7 +3,14 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   // Enable experimental features for better performance
   experimental: {
-    optimizePackageImports: ['@heroicons/react', 'lucide-react'],
+    optimizePackageImports: [
+      '@mui/material',
+      '@mui/icons-material',
+      'chart.js',
+      'react-chartjs-2',
+      'formik',
+      'yup'
+    ],
   },
   
   // Image optimization configuration
@@ -22,10 +29,9 @@ const nextConfig: NextConfig = {
       },
     ],
     formats: ['image/webp', 'image/avif'],
+    deviceSizes: [320, 420, 768, 1024, 1200],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
-  
-  // Note: i18n is handled differently in App Router
-  // See: https://nextjs.org/docs/app/building-your-application/routing/internationalization
   
   // Security headers
   async headers() {
@@ -45,6 +51,10 @@ const nextConfig: NextConfig = {
             key: 'Referrer-Policy',
             value: 'origin-when-cross-origin',
           },
+          {
+            key: 'X-DNS-Prefetch-Control',
+            value: 'on',
+          },
         ],
       },
     ];
@@ -61,14 +71,31 @@ const nextConfig: NextConfig = {
     ];
   },
   
-  // Environment variables
-  env: {
-    CUSTOM_KEY: process.env.CUSTOM_KEY,
+  // Bundle analyzer configuration
+  webpack: (config, { dev, isServer }) => {
+    // Optimize bundle size
+    if (!dev && !isServer) {
+      config.optimization.splitChunks.cacheGroups = {
+        ...config.optimization.splitChunks.cacheGroups,
+        mui: {
+          name: 'mui',
+          test: /[\\/]node_modules[\\/]@mui[\\/]/,
+          chunks: 'all',
+          priority: 10,
+        },
+        charts: {
+          name: 'charts',
+          test: /[\\/]node_modules[\\/](chart\.js|react-chartjs-2)[\\/]/,
+          chunks: 'all',
+          priority: 10,
+        },
+      };
+    }
+    
+    return config;
   },
   
-  // Additional configurations can be added here as needed
-  
-  // Output configuration for static export if needed
+  // Output configuration
   output: 'standalone',
   
   // Compression
@@ -80,7 +107,15 @@ const nextConfig: NextConfig = {
   // Strict mode
   reactStrictMode: true,
   
-  // SWC minification is enabled by default in Next.js 13+
+  // TypeScript configuration
+  typescript: {
+    ignoreBuildErrors: false,
+  },
+  
+  // ESLint configuration
+  eslint: {
+    ignoreDuringBuilds: false,
+  },
 };
 
 export default nextConfig;
