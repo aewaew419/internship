@@ -24,8 +24,10 @@ func Setup(app *fiber.App, db *gorm.DB, cfg *config.Config) {
 	// Setup authentication routes
 	setupAuthRoutes(api, db, cfg)
 
+	// Setup user management routes
+	setupUserRoutes(api, db, cfg)
+
 	// TODO: Add more route groups as they are implemented
-	// setupUserRoutes(api, db, cfg)
 	// setupStudentRoutes(api, db, cfg)
 	// etc.
 }
@@ -49,4 +51,30 @@ func setupAuthRoutes(api fiber.Router, db *gorm.DB, cfg *config.Config) {
 	api.Get("/me", authMiddleware, authHandler.Me)
 	api.Post("/change-password", authMiddleware, authHandler.ChangePassword)
 	api.Post("/logout", authMiddleware, authHandler.Logout)
+}
+
+// setupUserRoutes sets up user management routes
+func setupUserRoutes(api fiber.Router, db *gorm.DB, cfg *config.Config) {
+	// Initialize services
+	jwtService := services.NewJWTService(cfg.JWTSecret)
+	userService := services.NewUserService(db)
+	userHandler := handlers.NewUserHandler(userService)
+
+	// Authentication middleware
+	authMiddleware := middleware.AuthMiddleware(jwtService)
+
+	// User management routes (all require authentication)
+	users := api.Group("/users", authMiddleware)
+	
+	// Basic CRUD operations
+	users.Get("/", userHandler.GetUsers)           // GET /api/v1/users
+	users.Get("/stats", userHandler.GetUserStats)  // GET /api/v1/users/stats
+	users.Get("/:id", userHandler.GetUser)         // GET /api/v1/users/:id
+	users.Post("/", userHandler.CreateUser)        // POST /api/v1/users
+	users.Put("/:id", userHandler.UpdateUser)      // PUT /api/v1/users/:id
+	users.Delete("/:id", userHandler.DeleteUser)   // DELETE /api/v1/users/:id
+	
+	// Bulk operations
+	users.Delete("/bulk", userHandler.BulkDeleteUsers)        // DELETE /api/v1/users/bulk
+	users.Post("/bulk-excel", userHandler.BulkCreateFromExcel) // POST /api/v1/users/bulk-excel
 }

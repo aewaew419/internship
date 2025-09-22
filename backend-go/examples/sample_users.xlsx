@@ -1,0 +1,12 @@
+This is a placeholder for the Excel file. In a real implementation, you would create an actual Excel file with the following structure:
+
+Column A: full_name
+Column B: email  
+Column C: password
+
+Row 1 (Header): full_name | email | password
+Row 2: John Doe | john.doe@example.com | password123
+Row 3: Jane Smith | jane.smith@example.com | password456
+Row 4: Bob Johnson | bob.johnson@example.com | password789
+
+To create this file, you can use Excel or any spreadsheet application and save it as .xlsx format.
