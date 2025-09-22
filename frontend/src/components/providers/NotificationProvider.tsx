@@ -2,6 +2,9 @@
 
 import React, { createContext, useContext, useReducer, useEffect, useCallback, useRef } from 'react';
 import { notificationService } from '../../lib/api/services/notification.service';
+import { offlineNotificationManager } from '../../lib/notifications/offline-queue';
+import { offlineNotificationStorage } from '../../lib/notifications/offline-storage';
+import { networkStatusManager } from '../../lib/notifications/network-status';
 import type {
   Notification,
   NotificationSettings,
@@ -307,39 +310,74 @@ export function NotificationProvider({
     dispatch({ type: 'SET_ERROR', payload: null });
 
     try {
-      const response: NotificationListResponse = await notificationService.getNotificationsWithRetry(params);
-      
-      dispatch({
-        type: 'SET_NOTIFICATIONS',
-        payload: {
-          notifications: response.notifications,
-          unreadCount: response.unreadCount,
-          hasMore: response.notifications.length === (params?.limit || 20),
-          page: params?.page || 1,
-        },
-      });
+      if (networkStatusManager.isOnline()) {
+        const response: NotificationListResponse = await notificationService.getNotificationsWithRetry(params);
+        
+        dispatch({
+          type: 'SET_NOTIFICATIONS',
+          payload: {
+            notifications: response.notifications,
+            unreadCount: response.unreadCount,
+            hasMore: response.notifications.length === (params?.limit || 20),
+            page: params?.page || 1,
+          },
+        });
 
-      // Cache the results
-      saveToCache(STORAGE_KEYS.NOTIFICATIONS, response.notifications.slice(0, CACHE_CONFIG.MAX_CACHED_NOTIFICATIONS), CACHE_CONFIG.NOTIFICATIONS_TTL);
-      dispatch({ type: 'SET_LAST_FETCH', payload: Date.now() });
-      
-      retryCount.current = 0; // Reset retry count on success
+        // Cache the results in localStorage
+        saveToCache(STORAGE_KEYS.NOTIFICATIONS, response.notifications.slice(0, CACHE_CONFIG.MAX_CACHED_NOTIFICATIONS), CACHE_CONFIG.NOTIFICATIONS_TTL);
+        
+        // Store in IndexedDB for offline access
+        await offlineNotificationStorage.storeNotifications(response.notifications);
+        
+        dispatch({ type: 'SET_LAST_FETCH', payload: Date.now() });
+        retryCount.current = 0; // Reset retry count on success
+      } else {
+        // Load from offline storage when offline
+        console.log('Loading notifications from offline storage');
+        const offlineResponse = await offlineNotificationStorage.getNotifications(params);
+        
+        dispatch({
+          type: 'SET_NOTIFICATIONS',
+          payload: {
+            notifications: offlineResponse.notifications,
+            unreadCount: offlineResponse.unreadCount,
+            hasMore: offlineResponse.notifications.length === (params?.limit || 20),
+            page: params?.page || 1,
+          },
+        });
+      }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to fetch notifications';
       dispatch({ type: 'SET_ERROR', payload: errorMessage });
       
       // Try to load from cache on error
-      const cachedNotifications = loadFromCache(STORAGE_KEYS.NOTIFICATIONS);
-      if (cachedNotifications) {
-        dispatch({
-          type: 'SET_NOTIFICATIONS',
-          payload: {
-            notifications: cachedNotifications,
-            unreadCount: cachedNotifications.filter((n: Notification) => !n.isRead).length,
-            hasMore: false,
-            page: 1,
-          },
-        });
+      try {
+        const cachedNotifications = loadFromCache(STORAGE_KEYS.NOTIFICATIONS);
+        if (cachedNotifications) {
+          dispatch({
+            type: 'SET_NOTIFICATIONS',
+            payload: {
+              notifications: cachedNotifications,
+              unreadCount: cachedNotifications.filter((n: Notification) => !n.isRead).length,
+              hasMore: false,
+              page: 1,
+            },
+          });
+        } else {
+          // Fallback to offline storage
+          const offlineResponse = await offlineNotificationStorage.getNotifications(params);
+          dispatch({
+            type: 'SET_NOTIFICATIONS',
+            payload: {
+              notifications: offlineResponse.notifications,
+              unreadCount: offlineResponse.unreadCount,
+              hasMore: false,
+              page: 1,
+            },
+          });
+        }
+      } catch (offlineError) {
+        console.error('Failed to load notifications from offline storage:', offlineError);
       }
     }
   }, [saveToCache, loadFromCache]);
@@ -377,47 +415,149 @@ export function NotificationProvider({
 
   // Mark as Read
   const markAsRead = useCallback(async (notificationId: string) => {
+    // Optimistically update UI
+    dispatch({ type: 'MARK_AS_READ', payload: notificationId });
+    
     try {
-      await notificationService.markAsRead(notificationId);
-      dispatch({ type: 'MARK_AS_READ', payload: notificationId });
+      if (networkStatusManager.isOnline()) {
+        await notificationService.markAsRead(notificationId);
+        // Update offline storage
+        await offlineNotificationStorage.updateNotification(notificationId, { 
+          isRead: true, 
+          readAt: new Date().toISOString() 
+        });
+      } else {
+        // Queue for offline processing
+        offlineNotificationManager.queueAction('mark_read', { notificationId });
+        console.log('Queued mark as read action for offline processing');
+      }
     } catch (error) {
+      // Revert optimistic update on error
+      dispatch({ type: 'UPDATE_NOTIFICATION', payload: { 
+        id: notificationId, 
+        updates: { isRead: false, readAt: undefined } 
+      }});
+      
       const errorMessage = error instanceof Error ? error.message : 'Failed to mark notification as read';
       dispatch({ type: 'SET_ERROR', payload: errorMessage });
+      
+      // Queue for retry if network error
+      if (!networkStatusManager.isOnline()) {
+        offlineNotificationManager.queueAction('mark_read', { notificationId });
+      }
     }
   }, []);
 
   // Mark All as Read
   const markAllAsRead = useCallback(async () => {
+    // Optimistically update UI
+    dispatch({ type: 'MARK_ALL_AS_READ' });
+    
     try {
-      await notificationService.markAllAsRead();
-      dispatch({ type: 'MARK_ALL_AS_READ' });
+      if (networkStatusManager.isOnline()) {
+        await notificationService.markAllAsRead();
+        // Update offline storage
+        const notifications = await offlineNotificationStorage.getNotifications();
+        for (const notification of notifications.notifications) {
+          if (!notification.isRead) {
+            await offlineNotificationStorage.updateNotification(notification.id, { 
+              isRead: true, 
+              readAt: new Date().toISOString() 
+            });
+          }
+        }
+      } else {
+        // Queue for offline processing
+        offlineNotificationManager.queueAction('mark_all_read', {});
+        console.log('Queued mark all as read action for offline processing');
+      }
     } catch (error) {
+      // Revert optimistic update on error - would need to restore previous read states
+      await refreshNotifications();
+      
       const errorMessage = error instanceof Error ? error.message : 'Failed to mark all notifications as read';
       dispatch({ type: 'SET_ERROR', payload: errorMessage });
+      
+      // Queue for retry if network error
+      if (!networkStatusManager.isOnline()) {
+        offlineNotificationManager.queueAction('mark_all_read', {});
+      }
     }
   }, []);
 
   // Delete Notification
   const deleteNotification = useCallback(async (notificationId: string) => {
+    // Store notification for potential restoration
+    const notificationToDelete = state.notifications.find(n => n.id === notificationId);
+    
+    // Optimistically update UI
+    dispatch({ type: 'REMOVE_NOTIFICATION', payload: notificationId });
+    
     try {
-      await notificationService.deleteNotification(notificationId);
-      dispatch({ type: 'REMOVE_NOTIFICATION', payload: notificationId });
+      if (networkStatusManager.isOnline()) {
+        await notificationService.deleteNotification(notificationId);
+        // Remove from offline storage
+        await offlineNotificationStorage.deleteNotification(notificationId);
+      } else {
+        // Queue for offline processing
+        offlineNotificationManager.queueAction('delete', { notificationId });
+        console.log('Queued delete notification action for offline processing');
+      }
     } catch (error) {
+      // Restore notification on error
+      if (notificationToDelete) {
+        dispatch({ type: 'ADD_NOTIFICATION', payload: notificationToDelete });
+      }
+      
       const errorMessage = error instanceof Error ? error.message : 'Failed to delete notification';
       dispatch({ type: 'SET_ERROR', payload: errorMessage });
+      
+      // Queue for retry if network error
+      if (!networkStatusManager.isOnline()) {
+        offlineNotificationManager.queueAction('delete', { notificationId });
+      }
     }
-  }, []);
+  }, [state.notifications]);
 
   // Clear All Notifications
   const clearAll = useCallback(async () => {
+    // Store notifications for potential restoration
+    const notificationsToRestore = [...state.notifications];
+    
+    // Optimistically update UI
+    dispatch({ type: 'CLEAR_NOTIFICATIONS' });
+    
     try {
-      await notificationService.clearAll();
-      dispatch({ type: 'CLEAR_NOTIFICATIONS' });
+      if (networkStatusManager.isOnline()) {
+        await notificationService.clearAll();
+        // Clear offline storage
+        await offlineNotificationStorage.clearNotifications();
+      } else {
+        // Queue for offline processing
+        offlineNotificationManager.queueAction('clear_all', {});
+        console.log('Queued clear all notifications action for offline processing');
+      }
     } catch (error) {
+      // Restore notifications on error
+      dispatch({
+        type: 'SET_NOTIFICATIONS',
+        payload: {
+          notifications: notificationsToRestore,
+          unreadCount: notificationsToRestore.filter(n => !n.isRead).length,
+          hasMore: false,
+          page: 1,
+        },
+      });
+      
       const errorMessage = error instanceof Error ? error.message : 'Failed to clear all notifications';
       dispatch({ type: 'SET_ERROR', payload: errorMessage });
+      
+      // Queue for retry if network error
+      if (!networkStatusManager.isOnline()) {
+        offlineNotificationManager.queueAction('clear_all', {});
+      }
     }
-  }, []);
+  }, [state.notifications]);
 
   // Fetch Settings
   const fetchSettings = useCallback(async () => {
@@ -439,15 +579,44 @@ export function NotificationProvider({
 
   // Update Settings
   const updateSettings = useCallback(async (settings: Partial<NotificationSettings>) => {
-    try {
-      const updatedSettings = await notificationService.updateSettingsWithRetry(settings);
+    // Store current settings for potential restoration
+    const currentSettings = state.settings;
+    
+    // Optimistically update UI
+    if (currentSettings) {
+      const updatedSettings = { ...currentSettings, ...settings };
       dispatch({ type: 'SET_SETTINGS', payload: updatedSettings });
-      saveToCache(STORAGE_KEYS.SETTINGS, updatedSettings, CACHE_CONFIG.SETTINGS_TTL);
+    }
+    
+    try {
+      if (networkStatusManager.isOnline()) {
+        const updatedSettings = await notificationService.updateSettingsWithRetry(settings);
+        dispatch({ type: 'SET_SETTINGS', payload: updatedSettings });
+        saveToCache(STORAGE_KEYS.SETTINGS, updatedSettings, CACHE_CONFIG.SETTINGS_TTL);
+        
+        // Update offline storage
+        // Note: Would need userId - this is a simplified version
+        await offlineNotificationStorage.storeSettings(updatedSettings, 1);
+      } else {
+        // Queue for offline processing
+        offlineNotificationManager.queueAction('update_settings', { settings });
+        console.log('Queued update settings action for offline processing');
+      }
     } catch (error) {
+      // Restore previous settings on error
+      if (currentSettings) {
+        dispatch({ type: 'SET_SETTINGS', payload: currentSettings });
+      }
+      
       const errorMessage = error instanceof Error ? error.message : 'Failed to update notification settings';
       dispatch({ type: 'SET_ERROR', payload: errorMessage });
+      
+      // Queue for retry if network error
+      if (!networkStatusManager.isOnline()) {
+        offlineNotificationManager.queueAction('update_settings', { settings });
+      }
     }
-  }, [saveToCache]);
+  }, [saveToCache, state.settings]);
 
   // Real-time Connection Management
   const connect = useCallback(() => {
@@ -593,6 +762,11 @@ export function NotificationProvider({
 
   // Initialize on mount
   useEffect(() => {
+    // Initialize offline storage
+    offlineNotificationStorage.initialize().catch(error => {
+      console.warn('Failed to initialize offline storage:', error);
+    });
+
     // Load cached data first
     const cachedNotifications = loadFromCache(STORAGE_KEYS.NOTIFICATIONS);
     const cachedSettings = loadFromCache(STORAGE_KEYS.SETTINGS);
@@ -613,8 +787,22 @@ export function NotificationProvider({
       dispatch({ type: 'SET_SETTINGS', payload: cachedSettings });
     }
 
-    // Fetch fresh data if auto-fetch is enabled
-    if (autoFetch) {
+    // Set up network status monitoring
+    const unsubscribeNetwork = networkStatusManager.addListener((status) => {
+      if (status.isOnline) {
+        console.log('Network restored, processing offline queue');
+        // Process offline queue when network is restored
+        offlineNotificationManager.processQueue();
+        
+        // Refresh notifications to sync with server
+        if (autoFetch) {
+          fetchNotifications();
+        }
+      }
+    });
+
+    // Fetch fresh data if auto-fetch is enabled and online
+    if (autoFetch && networkStatusManager.isOnline()) {
       fetchNotifications();
       fetchSettings();
     }
@@ -627,6 +815,7 @@ export function NotificationProvider({
     // Cleanup on unmount
     return () => {
       disconnect();
+      unsubscribeNetwork();
     };
   }, [autoFetch, enableRealTime, connect, disconnect, fetchNotifications, fetchSettings, loadFromCache]);
 
