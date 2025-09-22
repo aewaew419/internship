@@ -54,4 +54,16 @@ export const PROTECTED_PATH = {
   STUDENT_REFER_LETTER: "/letters/refer-letter",
   
   REPORTS: "/reports",
+
+  // Notification endpoints
+  NOTIFICATIONS: "/notifications",
+  NOTIFICATIONS_MARK_READ: "/notifications/mark-read",
+  NOTIFICATIONS_MARK_ALL_READ: "/notifications/mark-all-read",
+  NOTIFICATIONS_DELETE: "/notifications/delete",
+  NOTIFICATIONS_BULK: "/notifications/bulk",
+  NOTIFICATIONS_SETTINGS: "/notifications/settings",
+  NOTIFICATIONS_PUSH_SUBSCRIBE: "/notifications/push/subscribe",
+  NOTIFICATIONS_PUSH_UNSUBSCRIBE: "/notifications/push/unsubscribe",
+  NOTIFICATIONS_TEST: "/notifications/test",
+  NOTIFICATIONS_STATS: "/notifications/stats",
 } as const;
