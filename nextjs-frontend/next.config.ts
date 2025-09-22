@@ -1,5 +1,10 @@
 import type { NextConfig } from "next";
 
+// Bundle analyzer setup
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+  enabled: process.env.ANALYZE === 'true',
+});
+
 const nextConfig: NextConfig = {
   // Enable experimental features for better performance
   experimental: {
@@ -27,10 +32,30 @@ const nextConfig: NextConfig = {
         hostname: '*.amazonaws.com',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'via.placeholder.com',
+        pathname: '/**',
+      },
     ],
     formats: ['image/webp', 'image/avif'],
-    deviceSizes: [320, 420, 768, 1024, 1200],
-    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    deviceSizes: [320, 420, 768, 1024, 1200, 1920],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384, 512, 640, 750, 828, 1080, 1200],
+    minimumCacheTTL: 60 * 60 * 24 * 30, // 30 days
+    dangerouslyAllowSVG: true,
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    // Enable responsive images by default
+    unoptimized: false,
+    // Quality settings for different scenarios
+    quality: 75, // Default quality
+    // Loader configuration for custom CDN
+    // loader: 'custom',
+    // loaderFile: './src/lib/imageLoader.ts',
   },
   
   // Security headers
@@ -118,4 +143,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withBundleAnalyzer(nextConfig);

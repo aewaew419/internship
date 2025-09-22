@@ -205,6 +205,7 @@ button {
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.5);
   z-index: 40;
+  backdrop-filter: blur(2px);
 }
 
 .mobile-nav-sidebar {
@@ -216,11 +217,91 @@ button {
   background: var(--background);
   z-index: 50;
   transform: translateX(-100%);
-  transition: transform 0.3s ease-in-out;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
+  will-change: transform;
 }
 
 .mobile-nav-sidebar.open {
   transform: translateX(0);
+}
+
+/* Enhanced mobile navigation animations */
+.mobile-nav-item {
+  transition: all 0.2s ease-out;
+  transform: translateX(0);
+}
+
+.mobile-nav-item:hover {
+  transform: translateX(4px);
+}
+
+.mobile-nav-item:active {
+  transform: translateX(2px) scale(0.98);
+}
+
+/* Swipe indicator */
+.swipe-indicator {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0.3;
+  transition: opacity 0.2s ease-out;
+}
+
+.mobile-nav-sidebar:hover .swipe-indicator {
+  opacity: 0.6;
+}
+
+/* Pull to refresh animations */
+.pull-to-refresh-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.pull-to-refresh-indicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7));
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  transform: translateY(-100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.pull-to-refresh-indicator.visible {
+  transform: translateY(0);
+}
+
+/* Enhanced touch feedback */
+.touch-feedback {
+  position: relative;
+  overflow: hidden;
+}
+
+.touch-feedback::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.3s ease-out, height 0.3s ease-out;
+  pointer-events: none;
+}
+
+.touch-feedback:active::before {
+  width: 200px;
+  height: 200px;
 }
 
 /* Responsive table utilities */
@@ -300,4 +381,484 @@ button {
 .focus-visible:focus-visible {
   outline: 2px solid var(--ring);
   outline-offset: 2px;
+}
+
+/* Hide scrollbar utility */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Toast animations */
+@keyframes shrink {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}
+
+/* Modal and overlay animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInFromRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInFromLeft {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInFromTop {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInFromBottom {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideOutToRight {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes slideOutToLeft {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes slideOutToTop {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-100%);
+  }
+}
+
+@keyframes slideOutToBottom {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes zoomIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Animation utility classes */
+.animate-in {
+  animation-fill-mode: both;
+}
+
+.animate-out {
+  animation-fill-mode: both;
+}
+
+.fade-in-0 {
+  animation: fadeIn 0.2s ease-out;
+}
+
+.zoom-in-95 {
+  animation: zoomIn 0.2s ease-out;
+}
+
+.slide-in-from-right {
+  animation: slideInFromRight 0.3s ease-out;
+}
+
+.slide-in-from-left {
+  animation: slideInFromLeft 0.3s ease-out;
+}
+
+.slide-in-from-top {
+  animation: slideInFromTop 0.3s ease-out;
+}
+
+.slide-in-from-bottom {
+  animation: slideInFromBottom 0.3s ease-out;
+}
+
+.slide-out-to-right {
+  animation: slideOutToRight 0.2s ease-in;
+}
+
+.slide-out-to-left {
+  animation: slideOutToLeft 0.2s ease-in;
+}
+
+.slide-out-to-top {
+  animation: slideOutToTop 0.2s ease-in;
+}
+
+.slide-out-to-bottom {
+  animation: slideOutToBottom 0.2s ease-in;
+}
+
+/* Safe area utilities for mobile */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.pt-safe {
+  padding-top: env(safe-area-inset-top);
+}
+
+.pl-safe {
+  padding-left: env(safe-area-inset-left);
+}
+
+.pr-safe {
+  padding-right: env(safe-area-inset-right);
+}
+
+/* Mobile file upload utilities */
+.mobile-file-upload {
+  width: 100%;
+}
+
+.mobile-file-upload input[type="file"] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* File upload drag states */
+.file-upload-drag-active {
+  border-color: var(--color-primary-500);
+  background-color: var(--color-primary-50);
+  transform: scale(1.02);
+}
+
+.file-upload-drag-reject {
+  border-color: var(--color-error);
+  background-color: rgba(160, 31, 56, 0.05);
+}
+
+/* File preview animations */
+.file-preview-enter {
+  opacity: 0;
+  transform: scale(0.9);
+}
+
+.file-preview-enter-active {
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+}
+
+.file-preview-exit {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.file-preview-exit-active {
+  opacity: 0;
+  transform: scale(0.9);
+  transition: opacity 0.2s ease-in, transform 0.2s ease-in;
+}
+
+/* Upload progress animations */
+.upload-progress-bar {
+  background: linear-gradient(
+    90deg,
+    var(--color-primary-500) 0%,
+    var(--color-primary-400) 50%,
+    var(--color-primary-500) 100%
+  );
+  background-size: 200% 100%;
+  animation: progress-shimmer 2s infinite;
+}
+
+@keyframes progress-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Camera capture button */
+.camera-capture-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.camera-capture-btn:hover {
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+  transform: translateY(-1px);
+}
+
+.camera-capture-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+}
+
+/* File type icons */
+.file-type-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  background: var(--color-bg-100);
+  border: 1px solid var(--color-border);
+}
+
+.file-type-icon.image {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.file-type-icon.pdf {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: white;
+}
+
+.file-type-icon.excel {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  color: white;
+}
+
+/* Mobile-specific file upload improvements */
+@media (max-width: 768px) {
+  .mobile-file-upload {
+    margin-bottom: 1rem;
+  }
+  
+  .file-upload-buttons {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .file-upload-button {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  /* Larger touch targets for mobile */
+  .file-upload-remove-btn {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  
+  /* Better spacing for mobile */
+  .file-upload-preview {
+    margin: 1rem 0;
+  }
+  
+  .file-upload-info {
+    padding: 1rem;
+    text-align: center;
+  }
+}
+
+/* Accessibility improvements */
+.file-upload-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Focus states for file upload */
+.file-upload-button:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.file-upload-area:focus-within {
+  border-color: var(--color-primary-500);
+  box-shadow: 0 0 0 3px rgba(var(--color-primary-500), 0.1);
+}
+
+/* Responsive image utilities */
+.responsive-image-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.responsive-image {
+  transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+}
+
+.responsive-image:hover {
+  transform: scale(1.05);
+}
+
+.responsive-image.loading {
+  opacity: 0;
+}
+
+.responsive-image.loaded {
+  opacity: 1;
+}
+
+.responsive-image.error {
+  filter: grayscale(100%);
+  opacity: 0.5;
+}
+
+/* Image gallery utilities */
+.responsive-image-gallery {
+  width: 100%;
+}
+
+.gallery-item {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.gallery-item img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Masonry layout */
+.masonry-gallery {
+  column-fill: balance;
+}
+
+/* Lightbox styles */
+.lightbox-overlay {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.lightbox-image {
+  max-width: 90vw;
+  max-height: 90vh;
+  object-fit: contain;
+}
+
+/* Image loading states */
+.image-skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Responsive image grid */
+.image-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+}
+
+@media (max-width: 640px) {
+  .image-grid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.5rem;
+  }
+}
+
+/* Image aspect ratio utilities */
+.aspect-square {
+  aspect-ratio: 1 / 1;
+}
+
+.aspect-video {
+  aspect-ratio: 16 / 9;
+}
+
+.aspect-photo {
+  aspect-ratio: 4 / 3;
+}
+
+.aspect-portrait {
+  aspect-ratio: 3 / 4;
+}
+
+/* High DPI image optimization */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .high-dpi-image {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+}
+
+/* Print styles for images */
+@media print {
+  .responsive-image {
+    max-width: 100% !important;
+    height: auto !important;
+  }
+  
+  .lightbox-overlay {
+    display: none !important;
+  }
 }
