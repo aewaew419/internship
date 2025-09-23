@@ -66,4 +66,15 @@ export const PROTECTED_PATH = {
   NOTIFICATIONS_PUSH_UNSUBSCRIBE: "/notifications/push/unsubscribe",
   NOTIFICATIONS_TEST: "/notifications/test",
   NOTIFICATIONS_STATS: "/notifications/stats",
+  
+  // Notification engagement analytics endpoints
+  NOTIFICATIONS_ENGAGEMENT_EVENTS: "/notifications/engagement/events",
+  NOTIFICATIONS_ENGAGEMENT_REPORT: "/notifications/engagement/report",
+  NOTIFICATIONS_ENGAGEMENT_USERS: "/notifications/engagement/users",
+  NOTIFICATIONS_ENGAGEMENT_TYPES: "/notifications/engagement/types",
+  NOTIFICATIONS_ENGAGEMENT_OPTIMIZE: "/notifications/engagement/optimize",
+  NOTIFICATIONS_ENGAGEMENT_AB_TESTS: "/notifications/engagement/ab-tests",
+  NOTIFICATIONS_ENGAGEMENT_HEATMAP: "/notifications/engagement/heatmap",
+  NOTIFICATIONS_ENGAGEMENT_EXPORT: "/notifications/engagement/export",
+  NOTIFICATIONS_ENGAGEMENT_REALTIME: "/notifications/engagement/realtime",
 } as const;

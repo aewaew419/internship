@@ -4,6 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { NavItem } from "@/types/navigation";
 import { PROTECTED_PATH } from "@/constants/navigation";
+import { NotificationBell } from "./NotificationBell/NotificationBell";
 import Image from "next/image";
 
 interface DesktopNavbarProps {
@@ -35,14 +36,27 @@ export const DesktopNavbar = ({ navItems }: DesktopNavbarProps) => {
       <div className="container">
         {/* Logo Section */}
         <div className="py-5 mx-5 border-b-2 border-text-200">
-          <Image
-            src="/logo.png"
-            alt="Internship Management System"
-            width={64}
-            height={64}
-            className="h-16 w-auto"
-            priority
-          />
+          <div className="flex items-center justify-between">
+            <Image
+              src="/logo.png"
+              alt="Internship Management System"
+              width={64}
+              height={64}
+              className="h-16 w-auto"
+              priority
+            />
+            {/* Notification Bell */}
+            <NotificationBell
+              size="md"
+              showBadge={true}
+              animate={true}
+              mobileOptimized={false}
+              showDropdown={true}
+              dropdownPosition="right"
+              maxDropdownItems={5}
+              className="text-text-600 hover:text-text-900"
+            />
+          </div>
         </div>
 
         {/* Navigation Items */}

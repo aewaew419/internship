@@ -7,6 +7,7 @@ import { ResponsiveNavigation } from "./ResponsiveNavigation";
 import { ResponsiveBreadcrumb } from "./ResponsiveBreadcrumb";
 import { BottomNavigation } from "./BottomNavigation";
 import { QuickActions } from "./QuickActions";
+import { MobileNotificationBar } from "./MobileNotificationBar/MobileNotificationBar";
 import { InstallPrompt } from "@/components/ui/InstallPrompt";
 import { OfflineIndicator } from "@/components/ui/OfflineIndicator";
 import { LoadingScreen } from "@/components/ui/LoadingSpinner";
@@ -53,6 +54,14 @@ export const Layout = ({ children }: LayoutProps) => {
 
       {/* Mobile Bottom Navigation */}
       <BottomNavigation />
+
+      {/* Mobile Notification Bar */}
+      <MobileNotificationBar
+        maxVisible={3}
+        autoHide={true}
+        hideDelay={5000}
+        swipeToAction={true}
+      />
 
       {/* Quick Actions Menu */}
       <QuickActions />
