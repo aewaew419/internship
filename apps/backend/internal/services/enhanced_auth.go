@@ -1,0 +1,360 @@
+package services
+
+import (
+	"errors"
+	"fmt"
+	"time"
+
+	"backend-go/internal/models"
+	"gorm.io/gorm"
+)
+
+// EnhancedAuthService handles authentication operations with enhanced security
+type EnhancedAuthService struct {
+	db                      *gorm.DB
+	jwtService              *JWTService
+	passwordSecurityService *PasswordSecurityService
+}
+
+// NewEnhancedAuthService creates a new enhanced authentication service instance
+func NewEnhancedAuthService(db *gorm.DB, jwtService *JWTService, passwordSecurityService *PasswordSecurityService) *EnhancedAuthService {
+	return &EnhancedAuthService{
+		db:                      db,
+		jwtService:              jwtService,
+		passwordSecurityService: passwordSecurityService,
+	}
+}
+
+// StudentLoginRequest represents the student login request with student_id
+type StudentLoginRequest struct {
+	StudentID string `json:"student_id" validate:"required"`
+	Password  string `json:"password" validate:"required"`
+	RememberMe bool  `json:"remember_me,omitempty"`
+}
+
+// StudentRegistrationRequest represents the student registration request
+type StudentRegistrationRequest struct {
+	StudentID       string `json:"student_id" validate:"required"`
+	Email           string `json:"email" validate:"required,email"`
+	Password        string `json:"password" validate:"required"`
+	ConfirmPassword string `json:"confirm_password" validate:"required"`
+	FullName        string `json:"full_name" validate:"required"`
+}
+
+// SuperAdminLoginRequest represents the super admin login request
+type SuperAdminLoginRequest struct {
+	Email          string `json:"email" validate:"required,email"`
+	Password       string `json:"password" validate:"required"`
+	TwoFactorCode  string `json:"two_factor_code,omitempty"`
+}
+
+// AuthenticationResponse represents the authentication response
+type AuthenticationResponse struct {
+	AccessToken  string                 `json:"access_token"`
+	RefreshToken string                 `json:"refresh_token"`
+	TokenType    string                 `json:"token_type"`
+	ExpiresIn    int                    `json:"expires_in"`
+	User         interface{}            `json:"user"` // Can be User or SuperAdmin
+	Permissions  []string               `json:"permissions"`
+	Message      string                 `json:"message,omitempty"`
+}
+
+// PasswordValidationResponse represents password validation result
+type PasswordValidationResponse struct {
+	IsValid      bool     `json:"is_valid"`
+	Score        int      `json:"score"`
+	Feedback     []string `json:"feedback"`
+	Requirements map[string]bool `json:"requirements"`
+}
+
+// StudentLogin authenticates a student using student_id and password
+func (a *EnhancedAuthService) StudentLogin(req StudentLoginRequest) (*AuthenticationResponse, error) {
+	// Find user by student_id
+	var user models.User
+	err := a.db.Where("student_id = ?", req.StudentID).First(&user).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New("รหัสนักศึกษาหรือรหัสผ่านไม่ถูกต้อง")
+		}
+		return nil, fmt.Errorf("database error: %w", err)
+	}
+
+	// Check if user is active
+	if !user.IsActive() {
+		return nil, errors.New("บัญชีผู้ใช้ถูกระงับหรือไม่ได้เปิดใช้งาน")
+	}
+
+	// Verify password using enhanced security service
+	isValid, err := a.passwordSecurityService.VerifyPassword(req.Password, user.Password)
+	if err != nil {
+		return nil, fmt.Errorf("password verification error: %w", err)
+	}
+	if !isValid {
+		return nil, errors.New("รหัสนักศึกษาหรือรหัสผ่านไม่ถูกต้อง")
+	}
+
+	// Update last login
+	err = user.UpdateLastLogin(a.db)
+	if err != nil {
+		// Log error but don't fail login
+		fmt.Printf("Failed to update last login for user %s: %v\n", user.StudentID, err)
+	}
+
+	// Generate tokens
+	expiresIn := 24 * 60 * 60 // 24 hours
+	if req.RememberMe {
+		expiresIn = 30 * 24 * 60 * 60 // 30 days
+	}
+
+	accessToken, err := a.jwtService.GenerateToken(uint(0), user.Email, uint(0)) // Adjust based on your JWT service
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate access token: %w", err)
+	}
+
+	refreshToken, err := a.jwtService.GenerateRefreshToken(uint(0), user.Email, uint(0))
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate refresh token: %w", err)
+	}
+
+	// Remove password from response
+	user.Password = ""
+
+	return &AuthenticationResponse{
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+		TokenType:    "Bearer",
+		ExpiresIn:    expiresIn,
+		User:         user,
+		Permissions:  []string{"student"}, // Basic student permissions
+		Message:      "เข้าสู่ระบบสำเร็จ",
+	}, nil
+}
+
+// StudentRegister registers a new student with enhanced password validation
+func (a *EnhancedAuthService) StudentRegister(req StudentRegistrationRequest) (*models.User, error) {
+	// Validate password confirmation
+	if req.Password != req.ConfirmPassword {
+		return nil, errors.New("รหัสผ่านและการยืนยันรหัสผ่านไม่ตรงกัน")
+	}
+
+	// Validate password strength
+	strengthResult := a.passwordSecurityService.ValidatePasswordStrength(req.Password)
+	if !strengthResult.IsValid {
+		return nil, fmt.Errorf("รหัสผ่านไม่ปลอดภัยเพียงพอ: %s", 
+			fmt.Sprintf("%v", strengthResult.Feedback))
+	}
+
+	// Check if student_id already exists
+	var existingUser models.User
+	err := a.db.Where("student_id = ?", req.StudentID).First(&existingUser).Error
+	if err == nil {
+		return nil, errors.New("รหัสนักศึกษานี้ถูกใช้งานแล้ว")
+	}
+	if !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, fmt.Errorf("database error: %w", err)
+	}
+
+	// Check if email already exists
+	err = a.db.Where("email = ?", req.Email).First(&existingUser).Error
+	if err == nil {
+		return nil, errors.New("อีเมลนี้ถูกใช้งานแล้ว")
+	}
+	if !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, fmt.Errorf("database error: %w", err)
+	}
+
+	// Hash password using enhanced security service
+	hashedPassword, err := a.passwordSecurityService.HashPassword(req.Password)
+	if err != nil {
+		return nil, fmt.Errorf("failed to hash password: %w", err)
+	}
+
+	// Create new user
+	user := models.User{
+		StudentID: req.StudentID,
+		Email:     req.Email,
+		Password:  hashedPassword,
+		FullName:  req.FullName,
+		Status:    models.UserStatusActive,
+	}
+
+	err = a.db.Create(&user).Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to create user: %w", err)
+	}
+
+	// Remove password from response
+	user.Password = ""
+
+	return &user, nil
+}
+
+// ValidatePasswordStrength validates password strength for client-side feedback
+func (a *EnhancedAuthService) ValidatePasswordStrength(password string) PasswordValidationResponse {
+	result := a.passwordSecurityService.ValidatePasswordStrength(password)
+	
+	// Convert requirements to map for easier JSON handling
+	requirements := map[string]bool{
+		"min_length":        result.Requirements.MinLength,
+		"max_length":        result.Requirements.MaxLength,
+		"has_uppercase":     result.Requirements.HasUppercase,
+		"has_lowercase":     result.Requirements.HasLowercase,
+		"has_numbers":       result.Requirements.HasNumbers,
+		"has_special_chars": result.Requirements.HasSpecialChars,
+		"no_forbidden_words": result.Requirements.NoForbiddenWords,
+		"unique_characters": result.Requirements.UniqueCharacters,
+		"no_repeating_chars": result.Requirements.NoRepeatingChars,
+	}
+
+	return PasswordValidationResponse{
+		IsValid:      result.IsValid,
+		Score:        result.Score,
+		Feedback:     result.Feedback,
+		Requirements: requirements,
+	}
+}
+
+// GenerateSecurePassword generates a secure password for users
+func (a *EnhancedAuthService) GenerateSecurePassword(length int) (string, error) {
+	options := PasswordGenerationOptions{
+		Length:              length,
+		IncludeUppercase:    true,
+		IncludeLowercase:    true,
+		IncludeNumbers:      true,
+		IncludeSpecialChars: true,
+		ExcludeSimilar:      true,
+		ExcludeAmbiguous:    true,
+	}
+
+	if length == 0 {
+		options.Length = 16 // Default length
+	}
+
+	return a.passwordSecurityService.GenerateSecurePassword(options)
+}
+
+// ChangePassword changes user password with enhanced validation
+func (a *EnhancedAuthService) ChangePassword(studentID, currentPassword, newPassword, confirmPassword string) error {
+	// Validate password confirmation
+	if newPassword != confirmPassword {
+		return errors.New("รหัสผ่านใหม่และการยืนยันรหัสผ่านไม่ตรงกัน")
+	}
+
+	// Get user
+	var user models.User
+	err := a.db.Where("student_id = ?", studentID).First(&user).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return errors.New("ไม่พบผู้ใช้")
+		}
+		return fmt.Errorf("database error: %w", err)
+	}
+
+	// Verify current password
+	isValid, err := a.passwordSecurityService.VerifyPassword(currentPassword, user.Password)
+	if err != nil {
+		return fmt.Errorf("password verification error: %w", err)
+	}
+	if !isValid {
+		return errors.New("รหัสผ่านปัจจุบันไม่ถูกต้อง")
+	}
+
+	// Validate new password strength
+	strengthResult := a.passwordSecurityService.ValidatePasswordStrength(newPassword)
+	if !strengthResult.IsValid {
+		return fmt.Errorf("รหัสผ่านใหม่ไม่ปลอดภัยเพียงพอ: %s", 
+			fmt.Sprintf("%v", strengthResult.Feedback))
+	}
+
+	// Hash new password
+	hashedPassword, err := a.passwordSecurityService.HashPassword(newPassword)
+	if err != nil {
+		return fmt.Errorf("failed to hash new password: %w", err)
+	}
+
+	// Update password
+	user.Password = hashedPassword
+	err = a.db.Save(&user).Error
+	if err != nil {
+		return fmt.Errorf("failed to update password: %w", err)
+	}
+
+	return nil
+}
+
+// RequestPasswordReset initiates password reset with enhanced security
+func (a *EnhancedAuthService) RequestPasswordReset(email string) error {
+	// Check if user exists
+	var user models.User
+	err := a.db.Where("email = ?", email).First(&user).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			// Don't reveal if email exists for security
+			return nil
+		}
+		return fmt.Errorf("database error: %w", err)
+	}
+
+	// Generate password reset token (valid for 1 hour)
+	resetToken, err := a.jwtService.GeneratePasswordResetToken(uint(0), user.Email) // Adjust based on your JWT service
+	if err != nil {
+		return fmt.Errorf("failed to generate reset token: %w", err)
+	}
+
+	// TODO: Send email with reset token
+	// For now, we'll just log it (in production, this should send an email)
+	fmt.Printf("Password reset token for %s: %s\n", user.Email, resetToken)
+
+	return nil
+}
+
+// ResetPassword resets password using reset token with enhanced validation
+func (a *EnhancedAuthService) ResetPassword(token, newPassword, confirmPassword string) error {
+	// Validate password confirmation
+	if newPassword != confirmPassword {
+		return errors.New("รหัสผ่านใหม่และการยืนยันรหัสผ่านไม่ตรงกัน")
+	}
+
+	// Validate reset token
+	claims, err := a.jwtService.ValidateToken(token)
+	if err != nil {
+		return errors.New("โทเค็นรีเซ็ตรหัสผ่านไม่ถูกต้องหรือหมดอายุ")
+	}
+
+	// Validate new password strength
+	strengthResult := a.passwordSecurityService.ValidatePasswordStrength(newPassword)
+	if !strengthResult.IsValid {
+		return fmt.Errorf("รหัสผ่านใหม่ไม่ปลอดภัยเพียงพอ: %s", 
+			fmt.Sprintf("%v", strengthResult.Feedback))
+	}
+
+	// Get user
+	var user models.User
+	err = a.db.Where("student_id = ?", claims.UserID).First(&user).Error // Adjust based on your JWT claims
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return errors.New("ไม่พบผู้ใช้")
+		}
+		return fmt.Errorf("database error: %w", err)
+	}
+
+	// Hash new password
+	hashedPassword, err := a.passwordSecurityService.HashPassword(newPassword)
+	if err != nil {
+		return fmt.Errorf("failed to hash new password: %w", err)
+	}
+
+	// Update password
+	user.Password = hashedPassword
+	err = a.db.Save(&user).Error
+	if err != nil {
+		return fmt.Errorf("failed to update password: %w", err)
+	}
+
+	return nil
+}
+
+// GetPasswordSecurityConfig returns the current password security configuration
+func (a *EnhancedAuthService) GetPasswordSecurityConfig() PasswordSecurityConfig {
+	return a.passwordSecurityService.config
+}
