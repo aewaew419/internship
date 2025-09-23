@@ -1,0 +1,40 @@
+{
+  "name": "@internship/ui-components",
+  "version": "1.0.0",
+  "description": "Shared React UI components",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "rollup -c",
+    "dev": "rollup -c --watch",
+    "clean": "rm -rf dist",
+    "type-check": "tsc --noEmit",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
+  },
+  "dependencies": {
+    "@internship/shared-types": "workspace:*",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^25.0.0",
+    "@rollup/plugin-node-resolve": "^15.0.0",
+    "@rollup/plugin-typescript": "^11.0.0",
+    "@storybook/addon-essentials": "^7.0.0",
+    "@storybook/react": "^7.0.0",
+    "@storybook/react-vite": "^7.0.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "rollup": "^3.20.0",
+    "storybook": "^7.0.0",
+    "typescript": "^5.1.0"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
+  },
+  "files": [
+    "dist"
+  ]
+}

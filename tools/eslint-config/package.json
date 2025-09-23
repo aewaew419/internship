@@ -1,0 +1,14 @@
+{
+  "name": "@internship/eslint-config",
+  "version": "1.0.0",
+  "description": "Shared ESLint configuration",
+  "main": "index.js",
+  "dependencies": {
+    "eslint": "^8.45.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint-config-prettier": "^8.8.0",
+    "eslint-plugin-react": "^7.33.0",
+    "eslint-plugin-react-hooks": "^4.6.0"
+  }
+}
