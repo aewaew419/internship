@@ -43,6 +43,10 @@ func AllModels() []interface{} {
 		&VisitorEvaluateCompany{},
 		&StudentEvaluateCompany{},
 		&VisitsPicture{},
+		
+		// Approval and evaluation tracking models
+		&InternshipApproval{},
+		&EvaluationStatusTracker{},
 	}
 }
 

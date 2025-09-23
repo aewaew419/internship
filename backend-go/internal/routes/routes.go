@@ -39,6 +39,13 @@ func Setup(app *fiber.App, db *gorm.DB, cfg *config.Config) {
 	// Setup visitor management routes
 	setupVisitorRoutes(api, db, cfg)
 
+	// Setup PDF generation routes
+	setupPDFRoutes(api, db, cfg)
+
+	// Setup approval and evaluation routes
+	setupApprovalRoutes(api, db, cfg)
+	setupEvaluationRoutes(api, db, cfg)
+
 	// TODO: Add more route groups as they are implemented
 	// etc.
 }
@@ -202,4 +209,84 @@ func setupVisitorRoutes(api fiber.Router, db *gorm.DB, cfg *config.Config) {
 	visitPhotos.Get("/:id", visitorHandler.GetVisitPhoto)                                            // GET /api/v1/visit-photos/:id
 	visitPhotos.Put("/:id", visitorHandler.UpdateVisitPhoto)                                         // PUT /api/v1/visit-photos/:id
 	visitPhotos.Delete("/:id", visitorHandler.DeleteVisitPhoto)                                      // DELETE /api/v1/visit-photos/:id
+}
+
+// setupPDFRoutes sets up PDF generation routes
+func setupPDFRoutes(api fiber.Router, db *gorm.DB, cfg *config.Config) {
+	// Initialize services
+	jwtService := services.NewJWTService(cfg.JWTSecret)
+	pdfService := services.NewPDFService("uploads/pdf")
+	pdfHandler := handlers.NewPDFHandler(db, pdfService)
+
+	// Authentication middleware
+	authMiddleware := middleware.AuthMiddleware(jwtService)
+
+	// PDF generation routes (all require authentication)
+	pdf := api.Group("/pdf", authMiddleware)
+	
+	// Report generation
+	pdf.Post("/reports", pdfHandler.GenerateReport)           // POST /api/v1/pdf/reports
+	
+	// Letter generation
+	pdf.Post("/letters", pdfHandler.GenerateLetter)           // POST /api/v1/pdf/letters
+	
+	// File management
+	pdf.Get("/list", pdfHandler.ListPDFs)                     // GET /api/v1/pdf/list
+	pdf.Get("/download/:filename", pdfHandler.DownloadPDF)    // GET /api/v1/pdf/download/:filename
+	pdf.Delete("/:filename", pdfHandler.DeletePDF)            // DELETE /api/v1/pdf/:filename
+}
+
+// setupApprovalRoutes sets up internship approval workflow routes
+func setupApprovalRoutes(api fiber.Router, db *gorm.DB, cfg *config.Config) {
+	// Initialize services
+	jwtService := services.NewJWTService(cfg.JWTSecret)
+	approvalHandler := handlers.NewApprovalHandler(db)
+
+	// Authentication middleware
+	authMiddleware := middleware.AuthMiddleware(jwtService)
+
+	// Approval routes (all require authentication)
+	approvals := api.Group("/approvals", authMiddleware)
+	
+	// Status and information routes
+	approvals.Get("/status/:studentEnrollId", approvalHandler.GetApprovalStatus)           // GET /api/v1/approvals/status/:studentEnrollId
+	approvals.Get("/committee-voting/:studentEnrollId", approvalHandler.GetCommitteeVotingData) // GET /api/v1/approvals/committee-voting/:studentEnrollId
+	approvals.Get("/statuses", approvalHandler.GetApprovalStatuses)                       // GET /api/v1/approvals/statuses
+	approvals.Get("/", approvalHandler.GetApprovalsByStatus)                              // GET /api/v1/approvals?status=registered&page=1&limit=10
+	
+	// Action routes
+	approvals.Post("/", approvalHandler.CreateApprovalRecord)                             // POST /api/v1/approvals
+	approvals.Post("/advisor/:studentEnrollId", approvalHandler.AdvisorApproval)          // POST /api/v1/approvals/advisor/:studentEnrollId
+	approvals.Post("/committee-vote/:studentEnrollId", approvalHandler.CommitteeMemberVote) // POST /api/v1/approvals/committee-vote/:studentEnrollId
+	approvals.Put("/status/:studentEnrollId", approvalHandler.UpdateApprovalStatus)       // PUT /api/v1/approvals/status/:studentEnrollId
+}
+
+// setupEvaluationRoutes sets up evaluation status tracking routes
+func setupEvaluationRoutes(api fiber.Router, db *gorm.DB, cfg *config.Config) {
+	// Initialize services
+	jwtService := services.NewJWTService(cfg.JWTSecret)
+	evaluationHandler := handlers.NewEvaluationHandler(db)
+
+	// Authentication middleware
+	authMiddleware := middleware.AuthMiddleware(jwtService)
+
+	// Evaluation routes (all require authentication)
+	evaluations := api.Group("/evaluations", authMiddleware)
+	
+	// Information and status routes
+	evaluations.Get("/summary/:studentTrainingId", evaluationHandler.GetEvaluationSummary)     // GET /api/v1/evaluations/summary/:studentTrainingId
+	evaluations.Get("/", evaluationHandler.GetEvaluationsByType)                              // GET /api/v1/evaluations?type=student_company&status=pending&page=1&limit=10
+	evaluations.Get("/overdue", evaluationHandler.GetOverdueEvaluations)                      // GET /api/v1/evaluations/overdue
+	evaluations.Get("/stats", evaluationHandler.GetEvaluationStats)                          // GET /api/v1/evaluations/stats
+	evaluations.Get("/student/:studentTrainingId/status", evaluationHandler.CheckStudentEvaluationStatus) // GET /api/v1/evaluations/student/:studentTrainingId/status
+	evaluations.Get("/instructor/:instructorId/assignments", evaluationHandler.GetInstructorAssignments) // GET /api/v1/evaluations/instructor/:instructorId/assignments
+	evaluations.Get("/types", evaluationHandler.GetEvaluationTypes)                          // GET /api/v1/evaluations/types
+	evaluations.Get("/statuses", evaluationHandler.GetEvaluationStatuses)                    // GET /api/v1/evaluations/statuses
+	
+	// Action routes
+	evaluations.Post("/trackers", evaluationHandler.CreateEvaluationTrackers)               // POST /api/v1/evaluations/trackers
+	evaluations.Post("/complete", evaluationHandler.MarkEvaluationCompleted)                // POST /api/v1/evaluations/complete
+	evaluations.Post("/update-overdue", evaluationHandler.UpdateOverdueEvaluations)         // POST /api/v1/evaluations/update-overdue
+	evaluations.Put("/:id/status", evaluationHandler.UpdateEvaluationStatus)               // PUT /api/v1/evaluations/:id/status
+	evaluations.Put("/:id/assign", evaluationHandler.AssignEvaluator)                      // PUT /api/v1/evaluations/:id/assign
 }

@@ -321,7 +321,7 @@ func (h *UploadHandler) UploadChunk(c *fiber.Ctx) error {
 // DeleteFile handles file deletion
 // DELETE /api/v1/upload/:fileId
 func (h *UploadHandler) DeleteFile(c *fiber.Ctx) error {
-	fileID := c.Params("fileId")
+	_ = c.Params("fileId") // fileID
 	
 	// TODO: Get file info from database and delete
 	// var fileRecord FileUpload

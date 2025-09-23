@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"backend-go/internal/config"
-	"database/sql"
 	"fmt"
 	"runtime"
 	"time"
@@ -245,7 +244,7 @@ func (h *HealthHandler) checkDatabase() DatabaseHealth {
 		InUse:   stats.InUse,
 		Idle:    stats.Idle,
 		MaxOpen: stats.MaxOpenConnections,
-		MaxIdle: stats.MaxIdleConnections,
+		MaxIdle: 0, // Not available in sql.DBStats
 	}
 	
 	return DatabaseHealth{

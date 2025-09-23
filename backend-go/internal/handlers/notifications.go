@@ -96,7 +96,7 @@ func (h *NotificationHandler) RegisterToken(c *fiber.Ctx) error {
 	}
 
 	// TODO: Save to database
-	deviceToken := DeviceToken{
+	_ = DeviceToken{
 		UserID:   userID.(uint),
 		Token:    req.Token,
 		Platform: req.Platform,
@@ -379,7 +379,7 @@ func (h *NotificationHandler) MarkAsRead(c *fiber.Ctx) error {
 		})
 	}
 
-	notificationID := c.Params("id")
+	_ = c.Params("id") // notificationID
 
 	// TODO: Update notification status in database
 	// err := h.db.Model(&NotificationHistory{}).
