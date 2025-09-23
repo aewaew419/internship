@@ -57,3 +57,42 @@ export {
 
 // Re-export notification service
 export { notificationService, NotificationService } from '../api/services/notification.service';
+
+// Export error monitoring
+export {
+  NotificationErrorMonitor,
+  notificationErrorMonitor,
+  trackNotificationError,
+  trackSubscriptionError,
+  trackDeliveryError,
+  trackApiError,
+  startErrorMonitoring,
+  stopErrorMonitoring,
+  getErrorMetrics,
+  getPerformanceMetrics,
+  getActiveAlerts,
+  type NotificationError,
+  type ErrorMetrics,
+  type PerformanceMetrics,
+  type Alert,
+  type AlertRule,
+  NotificationErrorType,
+  NotificationErrorCategory,
+  ErrorSeverity,
+} from './error-monitoring';
+
+// Export service worker error monitoring
+export {
+  ServiceWorkerErrorMonitor,
+  serviceWorkerErrorMonitor,
+  setupServiceWorkerErrorMonitoring,
+  createMonitoredPushHandler,
+  createMonitoredNotificationClickHandler,
+  createMonitoredSyncHandler,
+  trackServiceWorkerError,
+  trackPushError,
+  trackNotificationDisplayError,
+  trackNotificationActionError,
+  trackSyncError,
+  type ServiceWorkerError,
+} from './service-worker-error-monitoring';

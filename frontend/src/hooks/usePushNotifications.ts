@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { PushNotificationManager } from '../lib/push-notifications';
 import { notificationService } from '../lib/api/services/notification.service';
 import { useAuth } from './useAuth';
+import { useNotificationErrorTracking } from './useNotificationErrorMonitoring';
+import { NotificationErrorType } from '../lib/notifications/error-monitoring';
 import type {
   PushSubscriptionData,
   DeviceTokenRegistration,
@@ -39,6 +41,7 @@ export interface UsePushNotificationsReturn extends PushNotificationState, PushN
  */
 export function usePushNotifications(): UsePushNotificationsReturn {
   const { user } = useAuth();
+  const { trackError, trackSubscriptionError, trackApiError } = useNotificationErrorTracking();
   const pushManagerRef = useRef<PushNotificationManager>(PushNotificationManager.getInstance());
   
   const [state, setState] = useState<PushNotificationState>({
@@ -108,6 +111,22 @@ export function usePushNotifications(): UsePushNotificationsReturn {
       return true;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to initialize push notifications';
+      
+      // Track initialization error
+      trackError(
+        NotificationErrorType.SERVICE_WORKER_ERROR,
+        errorMessage,
+        {
+          initializationFailed: true,
+          vapidKeyProvided: !!vapidKey,
+          browserInfo: {
+            userAgent: navigator.userAgent,
+            pushSupported: 'PushManager' in window,
+            serviceWorkerSupported: 'serviceWorker' in navigator
+          }
+        }
+      );
+      
       setError(errorMessage);
       return false;
     }
@@ -137,6 +156,18 @@ export function usePushNotifications(): UsePushNotificationsReturn {
       return permission;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to request permission';
+      
+      // Track permission error
+      trackError(
+        NotificationErrorType.PUSH_PERMISSION_DENIED,
+        errorMessage,
+        {
+          permissionRequest: true,
+          currentPermission: Notification.permission,
+          browserSupported: pushManager.isSupported()
+        }
+      );
+      
       setError(errorMessage);
       return 'denied';
     }
@@ -195,6 +226,9 @@ export function usePushNotifications(): UsePushNotificationsReturn {
       const pushManager = pushManagerRef.current;
       const pushError = pushManager.handleError(error);
       
+      // Track subscription error with detailed context
+      trackSubscriptionError(pushError, error);
+      
       let errorMessage = 'Failed to subscribe to push notifications';
       switch (pushError) {
         case 'permission_denied':
@@ -235,6 +269,15 @@ export function usePushNotifications(): UsePushNotificationsReturn {
           await notificationService.unsubscribeFromPush(currentSubscription.endpoint);
         } catch (error) {
           console.warn('Failed to unregister from backend:', error);
+          
+          // Track API error for unsubscription
+          trackApiError(
+            '/api/notifications/unsubscribe',
+            'DELETE',
+            error?.status || 500,
+            error
+          );
+          
           // Continue with local unsubscription even if backend fails
         }
 
@@ -256,6 +299,18 @@ export function usePushNotifications(): UsePushNotificationsReturn {
       return true;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to unsubscribe from push notifications';
+      
+      // Track unsubscription error
+      trackError(
+        NotificationErrorType.PUSH_SUBSCRIPTION_FAILED,
+        errorMessage,
+        {
+          unsubscriptionFailed: true,
+          hadSubscription: !!currentSubscription,
+          endpoint: currentSubscription?.endpoint
+        }
+      );
+      
       setError(errorMessage);
       return false;
     }
@@ -312,6 +367,17 @@ export function usePushNotifications(): UsePushNotificationsReturn {
       return await subscribe();
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to resubscribe to push notifications';
+      
+      // Track resubscription error
+      trackError(
+        NotificationErrorType.PUSH_SUBSCRIPTION_FAILED,
+        errorMessage,
+        {
+          resubscriptionFailed: true,
+          wasSubscribed: state.isSubscribed
+        }
+      );
+      
       setError(errorMessage);
       return false;
     }
@@ -336,6 +402,14 @@ export function usePushNotifications(): UsePushNotificationsReturn {
       updateState({ isLoading: false });
       console.log('Test notification sent');
     } catch (error) {
+      // Track API error for test notification
+      trackApiError(
+        '/api/notifications/test',
+        'POST',
+        error?.status || 500,
+        error
+      );
+      
       // Fallback to local test notification
       try {
         const pushManager = pushManagerRef.current;
@@ -346,6 +420,18 @@ export function usePushNotifications(): UsePushNotificationsReturn {
         updateState({ isLoading: false });
       } catch (localError) {
         const errorMessage = error instanceof Error ? error.message : 'Failed to send test notification';
+        
+        // Track local test notification error
+        trackError(
+          NotificationErrorType.NOTIFICATION_DISPLAY_FAILED,
+          errorMessage,
+          {
+            testNotificationFailed: true,
+            fallbackAttempted: true,
+            localError: localError?.toString()
+          }
+        );
+        
         setError(errorMessage);
       }
     }

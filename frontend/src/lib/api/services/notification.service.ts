@@ -2,6 +2,7 @@
 
 import { apiClient } from '../client';
 import { PROTECTED_PATH } from '../../../constants/api-routes';
+import { trackApiError, trackNotificationError, NotificationErrorType } from '../../notifications/error-monitoring';
 import type {
   Notification,
   NotificationListResponse,
@@ -36,6 +37,14 @@ export class NotificationService {
 
       return response.data;
     } catch (error) {
+      // Track API error
+      trackApiError(
+        PROTECTED_PATH.NOTIFICATIONS,
+        'GET',
+        error?.response?.status || 500,
+        error
+      );
+      
       throw this.handleApiError(error, 'Failed to fetch notifications');
     }
   }
@@ -56,6 +65,14 @@ export class NotificationService {
         `${PROTECTED_PATH.NOTIFICATIONS_MARK_READ}/${notificationId}`
       );
     } catch (error) {
+      // Track API error
+      trackApiError(
+        `${PROTECTED_PATH.NOTIFICATIONS_MARK_READ}/${notificationId}`,
+        'PATCH',
+        error?.response?.status || 500,
+        error
+      );
+      
       throw this.handleApiError(error, 'Failed to mark notification as read');
     }
   }
@@ -171,6 +188,14 @@ export class NotificationService {
         subscription
       );
     } catch (error) {
+      // Track push subscription API error
+      trackApiError(
+        PROTECTED_PATH.NOTIFICATIONS_PUSH_SUBSCRIBE,
+        'POST',
+        error?.response?.status || 500,
+        error
+      );
+      
       throw this.handleApiError(error, 'Failed to subscribe to push notifications');
     }
   }
@@ -198,6 +223,14 @@ export class NotificationService {
         PROTECTED_PATH.NOTIFICATIONS_TEST
       );
     } catch (error) {
+      // Track test notification API error
+      trackApiError(
+        PROTECTED_PATH.NOTIFICATIONS_TEST,
+        'POST',
+        error?.response?.status || 500,
+        error
+      );
+      
       throw this.handleApiError(error, 'Failed to send test notification');
     }
   }
