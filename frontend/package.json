@@ -28,6 +28,8 @@
     "test:mobile": "npm run test:responsive && npm run test:cross-device",
     "build:production": "node scripts/build-production.js",
     "deploy": "node scripts/deploy.js",
+    "deploy:notifications": "node scripts/deploy-notifications.js",
+    "prepare:production": "npm run deploy:notifications && npm run build:production",
     "deploy:vercel": "DEPLOYMENT_TARGET=vercel node scripts/deploy.js",
     "deploy:netlify": "DEPLOYMENT_TARGET=netlify node scripts/deploy.js",
     "deploy:docker": "DEPLOYMENT_TARGET=docker node scripts/deploy.js",

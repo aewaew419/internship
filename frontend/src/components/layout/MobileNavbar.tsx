@@ -6,6 +6,7 @@ import { useAuth } from "@/components/providers/AuthProvider";
 import { NavItem } from "@/types/navigation";
 import { PROTECTED_PATH } from "@/constants/navigation";
 import { useSwipeGesture } from "@/hooks/useSwipeGesture";
+import { NotificationBell } from "./NotificationBell/NotificationBell";
 import Image from "next/image";
 
 interface MobileNavbarProps {
@@ -108,8 +109,22 @@ export const MobileNavbar = ({ navItems }: MobileNavbarProps) => {
             </span>
           </div>
 
-          {/* Hamburger Menu Button */}
-          <button
+          {/* Right side actions */}
+          <div className="flex items-center gap-2">
+            {/* Notification Bell */}
+            <NotificationBell
+              size="md"
+              showBadge={true}
+              animate={true}
+              mobileOptimized={true}
+              showDropdown={true}
+              dropdownPosition="left"
+              maxDropdownItems={3}
+              className="text-text-600 hover:text-text-900"
+            />
+
+            {/* Hamburger Menu Button */}
+            <button
             onClick={() => isOpen ? handleCloseMenu() : handleOpenMenu()}
             className="btn-touch p-2 rounded-lg hover:bg-gray-100 transition-colors"
             aria-label="เปิด/ปิดเมนู"

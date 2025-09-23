@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useReducer, useEffect, useCallback, useRef } from 'react';
+import { useAuth } from '../../hooks/useAuth';
 import { notificationService } from '../../lib/api/services/notification.service';
 import { offlineNotificationManager } from '../../lib/notifications/offline-queue';
 import { offlineNotificationStorage } from '../../lib/notifications/offline-storage';
@@ -16,6 +17,7 @@ import type {
   BulkNotificationOperation,
   BulkOperationResult,
 } from '../../types/notifications';
+import type { UserInterface } from '../../types/user';
 
 // Notification Context State Interface
 export interface NotificationContextState {
@@ -28,6 +30,8 @@ export interface NotificationContextState {
   lastFetch: number | null;
   hasMore: boolean;
   currentPage: number;
+  userRoles: string[];
+  isAuthenticated: boolean;
 }
 
 // Notification Context Actions Interface
@@ -58,7 +62,12 @@ export interface NotificationContextActions {
   getNotificationById: (id: string) => Notification | undefined;
   getNotificationsByType: (type: NotificationType) => Notification[];
   getNotificationsByCategory: (category: NotificationCategory) => Notification[];
+  getFilteredNotificationsByRole: () => Notification[];
   clearError: () => void;
+  
+  // Authentication integration
+  syncUserPreferences: () => Promise<void>;
+  cleanupOnLogout: () => void;
 }
 
 // Combined Context Type
@@ -82,7 +91,10 @@ type NotificationAction =
   | { type: 'UPDATE_UNREAD_COUNT'; payload: number }
   | { type: 'BULK_MARK_AS_READ'; payload: string[] }
   | { type: 'BULK_DELETE'; payload: string[] }
-  | { type: 'BULK_ARCHIVE'; payload: string[] };
+  | { type: 'BULK_ARCHIVE'; payload: string[] }
+  | { type: 'SET_USER_ROLES'; payload: string[] }
+  | { type: 'SET_AUTHENTICATED'; payload: boolean }
+  | { type: 'RESET_STATE' };
 
 // Initial State
 const initialState: NotificationContextState = {
@@ -95,6 +107,8 @@ const initialState: NotificationContextState = {
   lastFetch: null,
   hasMore: true,
   currentPage: 1,
+  userRoles: [],
+  isAuthenticated: false,
 };
 
 // Notification Reducer
@@ -223,6 +237,15 @@ function notificationReducer(state: NotificationContextState, action: Notificati
         unreadCount: unreadAfterArchive,
       };
     
+    case 'SET_USER_ROLES':
+      return { ...state, userRoles: action.payload };
+    
+    case 'SET_AUTHENTICATED':
+      return { ...state, isAuthenticated: action.payload };
+    
+    case 'RESET_STATE':
+      return { ...initialState };
+    
     default:
       return state;
   }
@@ -262,11 +285,108 @@ export function NotificationProvider({
   fetchInterval = 30000, // 30 seconds
 }: NotificationProviderProps) {
   const [state, dispatch] = useReducer(notificationReducer, initialState);
+  const { user, isAuthenticated, logout } = useAuth();
   const eventSourceRef = useRef<EventSource | null>(null);
   const fetchIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const retryCount = useRef(0);
   const maxRetries = 3;
+
+  // Role-based notification filtering
+  const getRoleBasedNotificationTypes = useCallback((userRoles: string[]): NotificationType[] => {
+    const allowedTypes: NotificationType[] = [];
+    
+    // System announcements are visible to all authenticated users
+    allowedTypes.push(NotificationType.SYSTEM_ANNOUNCEMENT);
+    
+    // Role-specific notification types
+    if (userRoles.includes('student')) {
+      allowedTypes.push(
+        NotificationType.ASSIGNMENT_CHANGE,
+        NotificationType.GRADE_UPDATE,
+        NotificationType.SCHEDULE_REMINDER,
+        NotificationType.DOCUMENT_UPDATE,
+        NotificationType.DEADLINE_REMINDER
+      );
+    }
+    
+    if (userRoles.includes('instructor') || userRoles.includes('courseInstructor')) {
+      allowedTypes.push(
+        NotificationType.ASSIGNMENT_CHANGE,
+        NotificationType.EVALUATION_REQUEST,
+        NotificationType.DOCUMENT_UPDATE,
+        NotificationType.DEADLINE_REMINDER
+      );
+    }
+    
+    if (userRoles.includes('visitor')) {
+      allowedTypes.push(
+        NotificationType.VISIT_SCHEDULED,
+        NotificationType.SCHEDULE_REMINDER,
+        NotificationType.EVALUATION_REQUEST
+      );
+    }
+    
+    if (userRoles.includes('committee')) {
+      allowedTypes.push(
+        NotificationType.EVALUATION_REQUEST,
+        NotificationType.DOCUMENT_UPDATE,
+        NotificationType.DEADLINE_REMINDER
+      );
+    }
+    
+    return allowedTypes;
+  }, []);
+
+  const filterNotificationsByRole = useCallback((notifications: Notification[], userRoles: string[]): Notification[] => {
+    if (!userRoles.length) return [];
+    
+    const allowedTypes = getRoleBasedNotificationTypes(userRoles);
+    return notifications.filter(notification => allowedTypes.includes(notification.type));
+  }, [getRoleBasedNotificationTypes]);
+
+  // Authentication integration functions
+  const syncUserPreferences = useCallback(async () => {
+    if (!user || !isAuthenticated) return;
+    
+    try {
+      // Sync notification settings with user preferences
+      const settings = await notificationService.getSettings();
+      dispatch({ type: 'SET_SETTINGS', payload: settings });
+      
+      // Store user-specific settings in cache
+      const userCacheKey = `${STORAGE_KEYS.SETTINGS}_${user.user.id}`;
+      saveToCache(userCacheKey, settings, CACHE_CONFIG.SETTINGS_TTL);
+      
+      console.log('User notification preferences synchronized');
+    } catch (error) {
+      console.warn('Failed to sync user preferences:', error);
+    }
+  }, [user, isAuthenticated]);
+
+  const cleanupOnLogout = useCallback(() => {
+    // Clear all notification data
+    dispatch({ type: 'RESET_STATE' });
+    
+    // Clear user-specific cache
+    if (user?.user.id) {
+      const userCacheKey = `${STORAGE_KEYS.SETTINGS}_${user.user.id}`;
+      localStorage.removeItem(userCacheKey);
+      localStorage.removeItem(`${STORAGE_KEYS.NOTIFICATIONS}_${user.user.id}`);
+    }
+    
+    // Disconnect real-time connection
+    disconnect();
+    
+    // Clear offline storage for the user
+    if (user?.user.id) {
+      offlineNotificationStorage.clearUserData(user.user.id).catch(error => {
+        console.warn('Failed to clear offline user data:', error);
+      });
+    }
+    
+    console.log('Notification system cleaned up on logout');
+  }, [user, disconnect]);
 
   // Cache Management Functions
   const saveToCache = useCallback((key: string, data: any, ttl: number) => {
@@ -306,6 +426,11 @@ export function NotificationProvider({
 
   // Fetch Notifications
   const fetchNotifications = useCallback(async (params?: NotificationQueryParams) => {
+    if (!isAuthenticated || !user) {
+      dispatch({ type: 'SET_ERROR', payload: 'User not authenticated' });
+      return;
+    }
+
     dispatch({ type: 'SET_LOADING', payload: true });
     dispatch({ type: 'SET_ERROR', payload: null });
 
@@ -313,34 +438,43 @@ export function NotificationProvider({
       if (networkStatusManager.isOnline()) {
         const response: NotificationListResponse = await notificationService.getNotificationsWithRetry(params);
         
+        // Filter notifications based on user roles
+        const filteredNotifications = filterNotificationsByRole(response.notifications, state.userRoles);
+        const filteredUnreadCount = filteredNotifications.filter(n => !n.isRead).length;
+        
         dispatch({
           type: 'SET_NOTIFICATIONS',
           payload: {
-            notifications: response.notifications,
-            unreadCount: response.unreadCount,
+            notifications: filteredNotifications,
+            unreadCount: filteredUnreadCount,
             hasMore: response.notifications.length === (params?.limit || 20),
             page: params?.page || 1,
           },
         });
 
-        // Cache the results in localStorage
-        saveToCache(STORAGE_KEYS.NOTIFICATIONS, response.notifications.slice(0, CACHE_CONFIG.MAX_CACHED_NOTIFICATIONS), CACHE_CONFIG.NOTIFICATIONS_TTL);
+        // Cache the results with user-specific key
+        const userCacheKey = `${STORAGE_KEYS.NOTIFICATIONS}_${user.user.id}`;
+        saveToCache(userCacheKey, filteredNotifications.slice(0, CACHE_CONFIG.MAX_CACHED_NOTIFICATIONS), CACHE_CONFIG.NOTIFICATIONS_TTL);
         
         // Store in IndexedDB for offline access
-        await offlineNotificationStorage.storeNotifications(response.notifications);
+        await offlineNotificationStorage.storeNotifications(filteredNotifications, user.user.id);
         
         dispatch({ type: 'SET_LAST_FETCH', payload: Date.now() });
         retryCount.current = 0; // Reset retry count on success
       } else {
         // Load from offline storage when offline
         console.log('Loading notifications from offline storage');
-        const offlineResponse = await offlineNotificationStorage.getNotifications(params);
+        const offlineResponse = await offlineNotificationStorage.getNotifications(params, user.user.id);
+        
+        // Filter offline notifications by role as well
+        const filteredNotifications = filterNotificationsByRole(offlineResponse.notifications, state.userRoles);
+        const filteredUnreadCount = filteredNotifications.filter(n => !n.isRead).length;
         
         dispatch({
           type: 'SET_NOTIFICATIONS',
           payload: {
-            notifications: offlineResponse.notifications,
-            unreadCount: offlineResponse.unreadCount,
+            notifications: filteredNotifications,
+            unreadCount: filteredUnreadCount,
             hasMore: offlineResponse.notifications.length === (params?.limit || 20),
             page: params?.page || 1,
           },
@@ -352,25 +486,28 @@ export function NotificationProvider({
       
       // Try to load from cache on error
       try {
-        const cachedNotifications = loadFromCache(STORAGE_KEYS.NOTIFICATIONS);
+        const userCacheKey = `${STORAGE_KEYS.NOTIFICATIONS}_${user.user.id}`;
+        const cachedNotifications = loadFromCache(userCacheKey);
         if (cachedNotifications) {
+          const filteredNotifications = filterNotificationsByRole(cachedNotifications, state.userRoles);
           dispatch({
             type: 'SET_NOTIFICATIONS',
             payload: {
-              notifications: cachedNotifications,
-              unreadCount: cachedNotifications.filter((n: Notification) => !n.isRead).length,
+              notifications: filteredNotifications,
+              unreadCount: filteredNotifications.filter((n: Notification) => !n.isRead).length,
               hasMore: false,
               page: 1,
             },
           });
         } else {
           // Fallback to offline storage
-          const offlineResponse = await offlineNotificationStorage.getNotifications(params);
+          const offlineResponse = await offlineNotificationStorage.getNotifications(params, user.user.id);
+          const filteredNotifications = filterNotificationsByRole(offlineResponse.notifications, state.userRoles);
           dispatch({
             type: 'SET_NOTIFICATIONS',
             payload: {
-              notifications: offlineResponse.notifications,
-              unreadCount: offlineResponse.unreadCount,
+              notifications: filteredNotifications,
+              unreadCount: filteredNotifications.filter(n => !n.isRead).length,
               hasMore: false,
               page: 1,
             },
@@ -380,7 +517,7 @@ export function NotificationProvider({
         console.error('Failed to load notifications from offline storage:', offlineError);
       }
     }
-  }, [saveToCache, loadFromCache]);
+  }, [saveToCache, loadFromCache, isAuthenticated, user, state.userRoles, filterNotificationsByRole]);
 
   // Load More Notifications
   const loadMoreNotifications = useCallback(async () => {
@@ -674,6 +811,10 @@ export function NotificationProvider({
     return state.notifications.filter(notification => notification.category === category);
   }, [state.notifications]);
 
+  const getFilteredNotificationsByRole = useCallback((): Notification[] => {
+    return filterNotificationsByRole(state.notifications, state.userRoles);
+  }, [state.notifications, state.userRoles, filterNotificationsByRole]);
+
   const clearError = useCallback(() => {
     dispatch({ type: 'SET_ERROR', payload: null });
   }, []);
@@ -760,6 +901,23 @@ export function NotificationProvider({
     }
   }, []);
 
+  // Authentication state management
+  useEffect(() => {
+    dispatch({ type: 'SET_AUTHENTICATED', payload: isAuthenticated });
+    
+    if (isAuthenticated && user) {
+      // Set user roles
+      const userRoles = user.roles?.list || [];
+      dispatch({ type: 'SET_USER_ROLES', payload: userRoles });
+      
+      // Sync user preferences
+      syncUserPreferences();
+    } else {
+      // Clean up on logout
+      cleanupOnLogout();
+    }
+  }, [isAuthenticated, user, syncUserPreferences, cleanupOnLogout]);
+
   // Initialize on mount
   useEffect(() => {
     // Initialize offline storage
@@ -767,16 +925,24 @@ export function NotificationProvider({
       console.warn('Failed to initialize offline storage:', error);
     });
 
-    // Load cached data first
-    const cachedNotifications = loadFromCache(STORAGE_KEYS.NOTIFICATIONS);
-    const cachedSettings = loadFromCache(STORAGE_KEYS.SETTINGS);
+    // Only proceed if user is authenticated
+    if (!isAuthenticated || !user) {
+      return;
+    }
+
+    // Load cached data first (user-specific)
+    const userCacheKey = `${STORAGE_KEYS.NOTIFICATIONS}_${user.user.id}`;
+    const userSettingsKey = `${STORAGE_KEYS.SETTINGS}_${user.user.id}`;
+    const cachedNotifications = loadFromCache(userCacheKey);
+    const cachedSettings = loadFromCache(userSettingsKey);
 
     if (cachedNotifications) {
+      const filteredNotifications = filterNotificationsByRole(cachedNotifications, state.userRoles);
       dispatch({
         type: 'SET_NOTIFICATIONS',
         payload: {
-          notifications: cachedNotifications,
-          unreadCount: cachedNotifications.filter((n: Notification) => !n.isRead).length,
+          notifications: filteredNotifications,
+          unreadCount: filteredNotifications.filter((n: Notification) => !n.isRead).length,
           hasMore: false,
           page: 1,
         },
@@ -795,7 +961,7 @@ export function NotificationProvider({
         offlineNotificationManager.processQueue();
         
         // Refresh notifications to sync with server
-        if (autoFetch) {
+        if (autoFetch && isAuthenticated) {
           fetchNotifications();
         }
       }
@@ -817,7 +983,7 @@ export function NotificationProvider({
       disconnect();
       unsubscribeNetwork();
     };
-  }, [autoFetch, enableRealTime, connect, disconnect, fetchNotifications, fetchSettings, loadFromCache]);
+  }, [autoFetch, enableRealTime, connect, disconnect, fetchNotifications, fetchSettings, loadFromCache, isAuthenticated, user, state.userRoles, filterNotificationsByRole]);
 
   // Handle visibility change for efficient polling
   useEffect(() => {
@@ -855,10 +1021,13 @@ export function NotificationProvider({
     getNotificationById,
     getNotificationsByType,
     getNotificationsByCategory,
+    getFilteredNotificationsByRole,
     clearError,
     bulkMarkAsRead,
     bulkDelete,
     bulkArchive,
+    syncUserPreferences,
+    cleanupOnLogout,
   };
 
   return (

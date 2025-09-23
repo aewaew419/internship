@@ -333,6 +333,41 @@ export class OfflineNotificationStorage {
   }
 
   /**
+   * Clear all data for a specific user (notifications and settings)
+   */
+  async clearUserData(userId: number): Promise<void> {
+    await this.initialize();
+    if (!this.db) throw new Error('Database not initialized');
+
+    return new Promise((resolve, reject) => {
+      const transaction = this.db!.transaction([STORES.NOTIFICATIONS, STORES.SETTINGS], 'readwrite');
+      const notificationStore = transaction.objectStore(STORES.NOTIFICATIONS);
+      const settingsStore = transaction.objectStore(STORES.SETTINGS);
+
+      transaction.oncomplete = () => {
+        console.log(`Cleared all data for user ${userId}`);
+        resolve();
+      };
+      transaction.onerror = () => reject(transaction.error);
+
+      // Clear notifications for the user
+      const notificationIndex = notificationStore.index('userId');
+      const notificationRequest = notificationIndex.openCursor(userId);
+      
+      notificationRequest.onsuccess = (event) => {
+        const cursor = (event.target as IDBRequest).result;
+        if (cursor) {
+          cursor.delete();
+          cursor.continue();
+        }
+      };
+
+      // Clear settings for the user
+      settingsStore.delete(userId);
+    });
+  }
+
+  /**
    * Store notification settings
    */
   async storeSettings(settings: NotificationSettings, userId: number): Promise<void> {
