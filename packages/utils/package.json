@@ -1,0 +1,25 @@
+{
+  "name": "@internship/utils",
+  "version": "1.0.0",
+  "description": "Shared utility functions",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "type-check": "tsc --noEmit",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@internship/shared-types": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.0",
+    "jest": "^29.5.0",
+    "typescript": "^5.1.0"
+  },
+  "files": [
+    "dist"
+  ]
+}

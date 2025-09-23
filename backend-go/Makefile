@@ -201,28 +201,103 @@ test-watch:
 		echo "Example: brew install entr (macOS) or apt-get install entr (Ubuntu)"; \
 	fi
 
+# Enhanced test targets
+.PHONY: test-comprehensive
+test-comprehensive: clean lint test-unit test-integration test-performance coverage-html
+	@echo "Comprehensive test suite completed successfully!"
+
+.PHONY: test-enhanced
+test-enhanced: $(COVERAGE_DIR)
+	@echo "Running enhanced test suite..."
+	./scripts/enhanced_test_runner.sh
+
+.PHONY: test-coverage-threshold
+test-coverage-threshold: test-coverage
+	@echo "Checking coverage threshold..."
+	@COVERAGE=$$(go tool cover -func=$(COVERAGE_FILE) | grep total | awk '{print $$3}' | sed 's/%//'); \
+	echo "Current coverage: $${COVERAGE}%"; \
+	if [ -n "$$COVERAGE" ] && [ "$$(echo "$$COVERAGE >= 70" | bc -l)" -eq 1 ]; then \
+		echo "✓ Coverage meets threshold (70%)"; \
+	else \
+		echo "✗ Coverage below threshold: $${COVERAGE}% < 70%"; \
+		exit 1; \
+	fi
+
+.PHONY: test-parallel
+test-parallel: $(COVERAGE_DIR)
+	@echo "Running tests in parallel..."
+	go test $(RACE_FLAG) -timeout $(TEST_TIMEOUT) -parallel 4 ./...
+
+.PHONY: test-json
+test-json: $(COVERAGE_DIR)
+	@echo "Running tests with JSON output..."
+	go test -timeout $(TEST_TIMEOUT) -json ./... > $(COVERAGE_DIR)/test_results.json
+
+.PHONY: test-report
+test-report: test-coverage
+	@echo "Generating comprehensive test report..."
+	@mkdir -p test-reports
+	@echo "# Test Report - $$(date)" > test-reports/test_report.md
+	@echo "" >> test-reports/test_report.md
+	@echo "## Coverage Summary" >> test-reports/test_report.md
+	@go tool cover -func=$(COVERAGE_FILE) >> test-reports/test_report.md
+	@echo "" >> test-reports/test_report.md
+	@echo "## Test Results" >> test-reports/test_report.md
+	@echo "Test report generated: test-reports/test_report.md"
+
+.PHONY: test-ci
+test-ci: clean lint test-coverage test-coverage-threshold
+	@echo "CI test pipeline completed successfully!"
+
 # Help target
 .PHONY: help
 help:
 	@echo "Available targets:"
+	@echo ""
+	@echo "Basic Testing:"
 	@echo "  test              - Run all tests"
 	@echo "  test-coverage     - Run tests with coverage"
 	@echo "  coverage-html     - Generate HTML coverage report"
 	@echo "  coverage-func     - Show coverage by function"
+	@echo ""
+	@echo "Test Types:"
 	@echo "  test-unit         - Run unit tests only"
 	@echo "  test-integration  - Run integration tests only"
 	@echo "  test-performance  - Run performance tests only"
+	@echo ""
+	@echo "Package Testing:"
 	@echo "  test-services     - Test services package"
 	@echo "  test-handlers     - Test handlers package"
 	@echo "  test-middleware   - Test middleware package"
 	@echo "  test-models       - Test models package"
+	@echo ""
+	@echo "Enhanced Testing:"
+	@echo "  test-comprehensive - Run complete test suite with reports"
+	@echo "  test-enhanced     - Run enhanced test runner script"
+	@echo "  test-coverage-threshold - Check coverage meets minimum threshold"
+	@echo "  test-parallel     - Run tests in parallel"
+	@echo "  test-ci           - Run CI test pipeline"
+	@echo ""
+	@echo "Test Options:"
 	@echo "  test-verbose      - Run tests with verbose output"
 	@echo "  test-short        - Run tests in short mode"
 	@echo "  test-run TEST=X   - Run specific test by name"
-	@echo "  benchmark         - Run benchmark tests"
 	@echo "  test-race         - Run tests with race detection"
+	@echo "  test-json         - Run tests with JSON output"
+	@echo ""
+	@echo "Benchmarking:"
+	@echo "  benchmark         - Run benchmark tests"
+	@echo "  test-mem          - Run tests with memory profiling"
+	@echo "  test-cpu          - Run tests with CPU profiling"
+	@echo ""
+	@echo "Reporting:"
+	@echo "  test-report       - Generate comprehensive test report"
+	@echo "  test-junit        - Generate JUnit test report"
+	@echo "  coverage-badge    - Generate coverage badge"
+	@echo ""
+	@echo "Utilities:"
 	@echo "  lint              - Run linters and formatters"
-	@echo "  test-all          - Run complete test suite"
 	@echo "  test-quick        - Quick test run (unit only)"
+	@echo "  test-watch        - Watch for changes and run tests"
 	@echo "  clean             - Clean coverage files"
 	@echo "  help              - Show this help message"

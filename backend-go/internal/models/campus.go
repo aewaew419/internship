@@ -8,9 +8,14 @@ import (
 
 // Campus represents the campuses table
 type Campus struct {
-	ID           uint   `gorm:"primaryKey;autoIncrement" json:"id"`
-	CampusNameEN string `gorm:"column:campus_name_en;not null" json:"campus_name_en"`
-	CampusNameTH string `gorm:"column:campus_name_th;not null" json:"campus_name_th"`
+	ID           uint      `gorm:"primaryKey;autoIncrement" json:"id"`
+	Name         string    `gorm:"not null" json:"name"`
+	Code         string    `gorm:"uniqueIndex;not null" json:"code"`
+	Address      *string   `json:"address"`
+	Phone        *string   `json:"phone"`
+	Email        *string   `json:"email"`
+	CampusNameEN *string   `gorm:"column:campus_name_en" json:"campus_name_en"`
+	CampusNameTH *string   `gorm:"column:campus_name_th" json:"campus_name_th"`
 	CreatedAt    time.Time `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt    time.Time `gorm:"autoUpdateTime" json:"updated_at"`
 

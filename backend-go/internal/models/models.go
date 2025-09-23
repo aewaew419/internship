@@ -8,7 +8,6 @@ func AllModels() []interface{} {
 		// Core entities
 		&Role{},
 		&Permission{},
-		&RolePermission{},
 		&User{},
 		
 		// Organizational structure
@@ -37,12 +36,16 @@ func AllModels() []interface{} {
 		&StudentTraining{},
 		
 		// Visitor and evaluation system
+		&Visitor{},
 		&VisitorTraining{},
 		&VisitorSchedule{},
 		&VisitorEvaluateStudent{},
 		&VisitorEvaluateCompany{},
 		&StudentEvaluateCompany{},
 		&VisitsPicture{},
+		
+		// Instructor-Course relationship
+		&InstructorCourse{},
 		
 		// Approval and evaluation tracking models
 		&InternshipApproval{},

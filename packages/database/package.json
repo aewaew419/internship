@@ -1,0 +1,29 @@
+{
+  "name": "@internship/database",
+  "version": "1.0.0",
+  "description": "Database schemas and migrations",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "type-check": "tsc --noEmit",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:migrate": "prisma migrate dev",
+    "db:studio": "prisma studio"
+  },
+  "dependencies": {
+    "@internship/shared-types": "workspace:*",
+    "@prisma/client": "^5.0.0"
+  },
+  "devDependencies": {
+    "prisma": "^5.0.0",
+    "typescript": "^5.1.0"
+  },
+  "files": [
+    "dist",
+    "prisma"
+  ]
+}

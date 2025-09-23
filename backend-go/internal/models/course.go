@@ -41,3 +41,31 @@ func (c *Course) BeforeDelete(tx *gorm.DB) error {
 
 	return nil
 }
+
+// CourseResponse represents the response structure for course data
+type CourseResponse struct {
+	ID            uint      `json:"id"`
+	CurriculumID  uint      `json:"curriculum_id"`
+	Code          string    `json:"code"`
+	Name          string    `json:"name"`
+	Credits       int       `json:"credits"`
+	Description   string    `json:"description"`
+	Prerequisites string    `json:"prerequisites"`
+	CreatedAt     time.Time `json:"created_at"`
+	UpdatedAt     time.Time `json:"updated_at"`
+}
+
+// ToResponse converts Course to CourseResponse
+func (c *Course) ToResponse() CourseResponse {
+	return CourseResponse{
+		ID:            c.ID,
+		CurriculumID:  c.CurriculumID,
+		Code:          c.Code,
+		Name:          c.Name,
+		Credits:       c.Credits,
+		Description:   c.Description,
+		Prerequisites: c.Prerequisites,
+		CreatedAt:     c.CreatedAt,
+		UpdatedAt:     c.UpdatedAt,
+	}
+}

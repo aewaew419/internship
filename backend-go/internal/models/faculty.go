@@ -8,17 +8,20 @@ import (
 
 // Faculty represents the faculties table
 type Faculty struct {
-	ID           uint   `gorm:"primaryKey;autoIncrement" json:"id"`
-	FacultyNameEN string `gorm:"column:faculty_name_en;not null" json:"faculty_name_en"`
-	FacultyNameTH string `gorm:"column:faculty_name_th;not null" json:"faculty_name_th"`
-	CampusID     uint   `gorm:"column:campus_id;not null" json:"campus_id"`
-	CreatedAt    time.Time `gorm:"autoCreateTime" json:"created_at"`
-	UpdatedAt    time.Time `gorm:"autoUpdateTime" json:"updated_at"`
+	ID            uint      `gorm:"primaryKey;autoIncrement" json:"id"`
+	Name          string    `gorm:"not null" json:"name"`
+	Code          string    `gorm:"uniqueIndex;not null" json:"code"`
+	Dean          *string   `json:"dean"`
+	FacultyNameEN *string   `gorm:"column:faculty_name_en" json:"faculty_name_en"`
+	FacultyNameTH *string   `gorm:"column:faculty_name_th" json:"faculty_name_th"`
+	CampusID      uint      `gorm:"column:campus_id;not null" json:"campus_id"`
+	CreatedAt     time.Time `gorm:"autoCreateTime" json:"created_at"`
+	UpdatedAt     time.Time `gorm:"autoUpdateTime" json:"updated_at"`
 
 	// Relationships
-	Campus      Campus      `gorm:"foreignKey:CampusID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT" json:"campus,omitempty"`
-	Programs    []Program   `gorm:"foreignKey:FacultyID" json:"programs,omitempty"`
-	Students    []Student   `gorm:"foreignKey:FacultyID" json:"students,omitempty"`
+	Campus      Campus       `gorm:"foreignKey:CampusID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT" json:"campus,omitempty"`
+	Programs    []Program    `gorm:"foreignKey:FacultyID" json:"programs,omitempty"`
+	Students    []Student    `gorm:"foreignKey:FacultyID" json:"students,omitempty"`
 	Instructors []Instructor `gorm:"foreignKey:FacultyID" json:"instructors,omitempty"`
 }
 

@@ -67,3 +67,35 @@ func (i *Instructor) BeforeDelete(tx *gorm.DB) error {
 
 	return nil
 }
+
+// InstructorResponse represents the response structure for instructor data
+type InstructorResponse struct {
+	ID         uint      `json:"id"`
+	UserID     uint      `json:"user_id"`
+	StaffID    string    `json:"staff_id"`
+	Name       string    `json:"name"`
+	MiddleName string    `json:"middle_name"`
+	Surname    string    `json:"surname"`
+	FullName   string    `json:"full_name"`
+	FacultyID  uint      `json:"faculty_id"`
+	ProgramID  uint      `json:"program_id"`
+	CreatedAt  time.Time `json:"created_at"`
+	UpdatedAt  time.Time `json:"updated_at"`
+}
+
+// ToResponse converts Instructor to InstructorResponse
+func (i *Instructor) ToResponse() InstructorResponse {
+	return InstructorResponse{
+		ID:         i.ID,
+		UserID:     i.UserID,
+		StaffID:    i.StaffID,
+		Name:       i.Name,
+		MiddleName: i.MiddleName,
+		Surname:    i.Surname,
+		FullName:   i.GetFullName(),
+		FacultyID:  i.FacultyID,
+		ProgramID:  i.ProgramID,
+		CreatedAt:  i.CreatedAt,
+		UpdatedAt:  i.UpdatedAt,
+	}
+}
