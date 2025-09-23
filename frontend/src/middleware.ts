@@ -114,7 +114,7 @@ export function middleware(request: NextRequest) {
       if (pathname.startsWith(route)) {
         if (!hasRequiredRole(userRoles, requiredRoles)) {
           // Redirect to dashboard if user doesn't have required role
-          return NextResponse.redirect(new URL('/', request.url));
+          return NextResponse.redirect(new URL('/dashboard', request.url));
         }
       }
     }
@@ -122,8 +122,13 @@ export function middleware(request: NextRequest) {
   
   // If accessing login page with valid authentication, redirect to dashboard
   if (isPublicRoute && pathname === '/login' && token && isValidToken && user) {
-    const redirectUrl = request.nextUrl.searchParams.get('redirect') || '/';
+    const redirectUrl = request.nextUrl.searchParams.get('redirect') || '/dashboard';
     return NextResponse.redirect(new URL(redirectUrl, request.url));
+  }
+  
+  // If accessing root path with valid authentication, redirect to dashboard
+  if (pathname === '/' && token && isValidToken && user) {
+    return NextResponse.redirect(new URL('/dashboard', request.url));
   }
   
   // Add security headers

@@ -364,6 +364,25 @@ export function NotificationProvider({
     }
   }, [user, isAuthenticated]);
 
+  const disconnect = useCallback(() => {
+    if (eventSourceRef.current) {
+      eventSourceRef.current.close();
+      eventSourceRef.current = null;
+    }
+
+    if (fetchIntervalRef.current) {
+      clearInterval(fetchIntervalRef.current);
+      fetchIntervalRef.current = null;
+    }
+
+    if (retryTimeoutRef.current) {
+      clearTimeout(retryTimeoutRef.current);
+      retryTimeoutRef.current = null;
+    }
+
+    dispatch({ type: 'SET_CONNECTED', payload: false });
+  }, []);
+
   const cleanupOnLogout = useCallback(() => {
     // Clear all notification data
     dispatch({ type: 'RESET_STATE' });
@@ -778,25 +797,6 @@ export function NotificationProvider({
       dispatch({ type: 'SET_CONNECTED', payload: false });
     }
   }, [enableRealTime, fetchInterval, refreshNotifications]);
-
-  const disconnect = useCallback(() => {
-    if (eventSourceRef.current) {
-      eventSourceRef.current.close();
-      eventSourceRef.current = null;
-    }
-
-    if (fetchIntervalRef.current) {
-      clearInterval(fetchIntervalRef.current);
-      fetchIntervalRef.current = null;
-    }
-
-    if (retryTimeoutRef.current) {
-      clearTimeout(retryTimeoutRef.current);
-      retryTimeoutRef.current = null;
-    }
-
-    dispatch({ type: 'SET_CONNECTED', payload: false });
-  }, []);
 
   // Utility Functions
   const getNotificationById = useCallback((id: string): Notification | undefined => {

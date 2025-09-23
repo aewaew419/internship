@@ -1,32 +1,57 @@
-export default function Dashboard() {
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { LoginForm } from "@/components/forms/LoginForm";
+import { useAuth } from "@/hooks/useAuth";
+
+export default function HomePage() {
+  const { isAuthenticated, isLoading } = useAuth();
+  const router = useRouter();
+
+  // Redirect to dashboard if already authenticated
+  useEffect(() => {
+    if (!isLoading && isAuthenticated) {
+      router.push("/dashboard");
+    }
+  }, [isAuthenticated, isLoading, router]);
+
+  // Show loading while checking authentication
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+      </div>
+    );
+  }
+
+  // Don't render login form if already authenticated
+  if (isAuthenticated) {
+    return null;
+  }
+
   return (
-    <div className="container mx-auto px-4 py-6">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">
-        ระบบจัดการฝึกงาน - Dashboard
-      </h1>
-      
-      <div className="bg-white rounded-lg shadow-sm p-6">
-        <p className="text-gray-600">
-          ยินดีต้อนรับสู่ระบบจัดการฝึกงาน
-        </p>
-        
-        <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-blue-50 p-4 rounded-lg">
-            <h3 className="font-semibold text-blue-900">เอกสารผ่านแล้ว</h3>
-            <p className="text-2xl font-bold text-blue-600">25</p>
-          </div>
-          
-          <div className="bg-yellow-50 p-4 rounded-lg">
-            <h3 className="font-semibold text-yellow-900">รอการพิจารณา</h3>
-            <p className="text-2xl font-bold text-yellow-600">12</p>
-          </div>
-          
-          <div className="bg-green-50 p-4 rounded-lg">
-            <h3 className="font-semibold text-green-900">กำลังเลือกบริษัท</h3>
-            <p className="text-2xl font-bold text-green-600">8</p>
-          </div>
+    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md">
+        <div className="bg-white py-8 px-4 shadow-xl sm:rounded-lg sm:px-10 border border-gray-200">
+          <LoginForm />
         </div>
       </div>
+      
+      {/* Mobile-specific styling */}
+      <style jsx>{`
+        @media (max-width: 640px) {
+          .bg-white {
+            box-shadow: none;
+            border: none;
+            border-radius: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+          }
+        }
+      `}</style>
     </div>
   );
 }
