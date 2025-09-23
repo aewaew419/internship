@@ -1,0 +1,25 @@
+{
+  "name": "internship-management-system",
+  "version": 2,
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/next"
+    }
+  ],
+  "env": {
+    "NEXT_PUBLIC_APP_NAME": "Internship Management System",
+    "NEXT_PUBLIC_APP_ENV": "production",
+    "NEXT_PUBLIC_ENABLE_PUSH_NOTIFICATIONS": "false",
+    "NEXT_PUBLIC_ENABLE_OFFLINE_NOTIFICATIONS": "true",
+    "NEXT_PUBLIC_ENABLE_PWA": "true"
+  },
+  "regions": [
+    "sin1"
+  ],
+  "functions": {
+    "app/api/**/*.js": {
+      "maxDuration": 30
+    }
+  }
+}

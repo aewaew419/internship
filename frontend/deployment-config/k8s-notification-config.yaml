@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: notification-config
+  namespace: internship-system
+data:
+  NEXT_PUBLIC_ENABLE_PUSH_NOTIFICATIONS: "true"
+  NEXT_PUBLIC_ENABLE_OFFLINE_NOTIFICATIONS: "true"
+  NEXT_PUBLIC_ENABLE_NOTIFICATION_ANALYTICS: "true"
+  NEXT_PUBLIC_SW_UPDATE_INTERVAL: "3600000"
+  NEXT_PUBLIC_NOTIFICATION_CACHE_TTL: "300000"
+  NEXT_PUBLIC_MAX_CACHED_NOTIFICATIONS: "100"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: notification-secrets
+  namespace: internship-system
+type: Opaque
+data:
+  # Base64 encoded VAPID keys
+  VAPID_PUBLIC_KEY: # echo -n "your_public_key" | base64
+  VAPID_PRIVATE_KEY: # echo -n "your_private_key" | base64
+  VAPID_SUBJECT: # echo -n "mailto:admin@yourdomain.com" | base64

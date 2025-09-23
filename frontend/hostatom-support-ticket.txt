@@ -1,0 +1,39 @@
+=== HOSTATOM SUPPORT TICKET ===
+
+Title: SSH Key Installation Request - VPS dev.smart-solutions.com
+
+Priority: Normal
+Category: VPS Management
+Service: Cloud VPS SSD2
+
+Description:
+Hello Hostatom Support Team,
+
+I would like to request SSH public key installation for my VPS to enable passwordless authentication.
+
+VPS Details:
+- Server: dev.smart-solutions.com
+- IP: 203.170.129.199
+- User: root
+- Current Password: rp4QkUUvmbi5qBIP
+
+SSH Public Key:
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDFDn20rUHFiJP1R/U2vVIbzmC0m1t5I53nAgk+FOQj1C+zn0SWW3Ks84KD6KzhyxitIhxrQkCBGwWp9mNBLbRU4tNcYncAqOmEhg7tG1q20MBK/lnsx1ozh0Hp9OT5yVyMd4x51Q1cl3hQrj5RwfvaqqaotAhck6Chf10eo0f2KV/NGPgBPjakuq8mQlZBXUs7Aa07Oa85BZkt9DZL64VuefE7DNeu8c5z4kKFsQK0eh5wxNx/Cx0jVoLFTXOUhfuaVfLY+8cFg3EtWzEVAAf1AGhu7uj9i8HM8EFwHe/foXuK6E2Plr+PFn77DdvIhLzNeJ5fWHXFSV+Q/RY0Mcq7es24hBQKcWj0+kedndK6+ufBrjlAaY/qnDi/0vf2KXNAauL2SVtOIRaWUyJN/7/qwXfUkJaH6wUJIYVmRV/70A4YMI+iY+J//6oppo/W5q/w5Kz3jKhExO2YvbKf0wHIjXGoEOVtoYyB/ljifw3Lj9G5C/Gsr77n1icX1Vwcr0omKDvXO5rCXZ5WSxX3bloOQpyf/3P0T1YWsWwqO+46HqlSqvaTMndFkDVI7dho5fMPGYcQpMaZciZ6gWyItjNk/3S42Bd/gDp1dfmdUTtyTqqo0sZGcQVxR+BpIuqFczzAB33SQswqg10PoRP6H9gWZl8SET0c4b2zxWGb8gN0IQ== deployment@Macbooks-MacBook-Pro.local
+
+Installation Commands:
+mkdir -p ~/.ssh
+echo 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDFDn20rUHFiJP1R/U2vVIbzmC0m1t5I53nAgk+FOQj1C+zn0SWW3Ks84KD6KzhyxitIhxrQkCBGwWp9mNBLbRU4tNcYncAqOmEhg7tG1q20MBK/lnsx1ozh0Hp9OT5yVyMd4x51Q1cl3hQrj5RwfvaqqaotAhck6Chf10eo0f2KV/NGPgBPjakuq8mQlZBXUs7Aa07Oa85BZkt9DZL64VuefE7DNeu8c5z4kKFsQK0eh5wxNx/Cx0jVoLFTXOUhfuaVfLY+8cFg3EtWzEVAAf1AGhu7uj9i8HM8EFwHe/foXuK6E2Plr+PFn77DdvIhLzNeJ5fWHXFSV+Q/RY0Mcq7es24hBQKcWj0+kedndK6+ufBrjlAaY/qnDi/0vf2KXNAauL2SVtOIRaWUyJN/7/qwXfUkJaH6wUJIYVmRV/70A4YMI+iY+J//6oppo/W5q/w5Kz3jKhExO2YvbKf0wHIjXGoEOVtoYyB/ljifw3Lj9G5C/Gsr77n1icX1Vwcr0omKDvXO5rCXZ5WSxX3bloOQpyf/3P0T1YWsWwqO+46HqlSqvaTMndFkDVI7dho5fMPGYcQpMaZciZ6gWyItjNk/3S42Bd/gDp1dfmdUTtyTqqo0sZGcQVxR+BpIuqFczzAB33SQswqg10PoRP6H9gWZl8SET0c4b2zxWGb8gN0IQ== deployment@Macbooks-MacBook-Pro.local' >> ~/.ssh/authorized_keys
+chmod 700 ~/.ssh
+chmod 600 ~/.ssh/authorized_keys
+
+Purpose:
+- Learning deployment processes
+- University project preparation
+- Enhanced security for VPS access
+
+Please let me know once this is completed.
+
+Thank you for your assistance.
+
+Best regards,
+VPS Customer

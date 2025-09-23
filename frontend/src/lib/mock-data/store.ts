@@ -1,0 +1,836 @@
+/**
+ * 🗄️ Mock Data Store
+ * ==================
+ * Comprehensive mock data covering all user roles and scenarios
+ * Realistic data that matches database schema for seamless migration
+ */
+
+import type {
+  User,
+  StudentProfile,
+  InstructorProfile,
+  VisitorProfile,
+  AdminProfile,
+  Company,
+  CoopInfo,
+  StudentEvaluateCompany,
+  CompanyEvaluateStudent,
+  VisitorEvaluation,
+  StatusItem,
+  Document,
+  VisitorSchedule,
+  Campus,
+  Faculty,
+  Program,
+  Curriculum,
+  Major,
+  Notification,
+  DashboardStats,
+  CompanyStats,
+} from '../../types/mock';
+
+// Organizational Structure Data
+export const mockCampuses: Campus[] = [
+  {
+    id: '1',
+    name: 'วิทยาเขตหลัก',
+    nameEn: 'Main Campus',
+    address: '123 ถนนมหาวิทยาลัย กรุงเทพฯ 10400',
+    phone: '02-123-4567',
+    email: 'main@university.ac.th',
+    isActive: true,
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
+  },
+  {
+    id: '2',
+    name: 'วิทยาเขตสาขา',
+    nameEn: 'Branch Campus',
+    address: '456 ถนนสาขา นนทบุรี 11000',
+    phone: '02-234-5678',
+    email: 'branch@university.ac.th',
+    isActive: true,
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
+  },
+];
+
+export const mockFaculties: Faculty[] = [
+  {
+    id: '1',
+    campusId: '1',
+    name: 'คณะวิทยาศาสตร์',
+    nameEn: 'Faculty of Science',
+    code: 'SCI',
+    dean: 'ศ.ดร.วิทยา วิทยาศาสตร์',
+    phone: '02-123-4567',
+    email: 'science@university.ac.th',
+    isActive: true,
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
+  },
+  {
+    id: '2',
+    campusId: '1',
+    name: 'คณะวิศวกรรมศาสตร์',
+    nameEn: 'Faculty of Engineering',
+    code: 'ENG',
+    dean: 'ศ.ดร.วิศว กรรมการ',
+    phone: '02-234-5678',
+    email: 'engineering@university.ac.th',
+    isActive: true,
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
+  },
+];
+
+export const mockPrograms: Program[] = [
+  {
+    id: '1',
+    facultyId: '1',
+    name: 'วิทยาการคอมพิวเตอร์',
+    nameEn: 'Computer Science',
+    code: 'CS',
+    degree: 'bachelor',
+    duration: 4,
+    isActive: true,
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
+  },
+  {
+    id: '2',
+    facultyId: '2',
+    name: 'วิศวกรรมซอฟต์แวร์',
+    nameEn: 'Software Engineering',
+    code: 'SE',
+    degree: 'bachelor',
+    duration: 4,
+    isActive: true,
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
+  },
+];
+
+export const mockCurricula: Curriculum[] = [
+  {
+    id: '1',
+    programId: '1',
+    name: 'หลักสูตรวิทยาการคอมพิวเตอร์ 2567',
+    nameEn: 'Computer Science Curriculum 2024',
+    version: '2567',
+    year: 2024,
+    totalCredits: 132,
+    isActive: true,
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
+  },
+  {
+    id: '2',
+    programId: '2',
+    name: 'หลักสูตรวิศวกรรมซอฟต์แวร์ 2567',
+    nameEn: 'Software Engineering Curriculum 2024',
+    version: '2567',
+    year: 2024,
+    totalCredits: 140,
+    isActive: true,
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
+  },
+];
+
+export const mockMajors: Major[] = [
+  {
+    id: '1',
+    curriculumId: '1',
+    name: 'วิทยาการคอมพิวเตอร์',
+    nameEn: 'Computer Science',
+    code: 'CS',
+    requiredCredits: 132,
+    isActive: true,
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
+  },
+  {
+    id: '2',
+    curriculumId: '2',
+    name: 'วิศวกรรมซอฟต์แวร์',
+    nameEn: 'Software Engineering',
+    code: 'SE',
+    requiredCredits: 140,
+    isActive: true,
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
+  },
+];
+
+// User Profiles Data
+export const mockStudentProfiles: StudentProfile[] = [
+  {
+    id: '1',
+    userId: '1',
+    studentId: '65010001',
+    firstName: 'สมชาย',
+    lastName: 'ใจดี',
+    email: 'somchai.s@student.university.ac.th',
+    phone: '081-234-5678',
+    address: '123 ถนนสุขุมวิท กรุงเทพฯ 10110',
+    profileImage: '/images/profiles/student1.jpg',
+    emergencyContact: {
+      name: 'นางสมใจ ใจดี',
+      relationship: 'มารดา',
+      phone: '081-234-5679',
+      email: 'somjai@email.com',
+    },
+    academicInfo: {
+      campusId: '1',
+      facultyId: '1',
+      programId: '1',
+      curriculumId: '1',
+      majorId: '1',
+      year: 3,
+      semester: 1,
+      expectedGraduation: '2025-05-15',
+    },
+    gpax: 3.45,
+    createdAt: '2024-01-15T08:00:00Z',
+    updatedAt: '2024-09-22T10:30:00Z',
+  },
+  {
+    id: '2',
+    userId: '2',
+    studentId: '65010002',
+    firstName: 'มาลี',
+    lastName: 'ขยัน',
+    email: 'malee.k@student.university.ac.th',
+    phone: '082-345-6789',
+    address: '456 ถนนรัชดาภิเษก กรุงเทพฯ 10320',
+    emergencyContact: {
+      name: 'นายสมศักดิ์ ขยัน',
+      relationship: 'บิดา',
+      phone: '082-345-6790',
+    },
+    academicInfo: {
+      campusId: '1',
+      facultyId: '2',
+      programId: '2',
+      curriculumId: '2',
+      majorId: '2',
+      year: 3,
+      semester: 1,
+      expectedGraduation: '2025-05-15',
+    },
+    gpax: 3.78,
+    createdAt: '2024-01-20T09:15:00Z',
+    updatedAt: '2024-09-22T14:20:00Z',
+  },
+];
+
+export const mockInstructorProfiles: InstructorProfile[] = [
+  {
+    id: '1',
+    userId: '3',
+    staffId: 'INS001',
+    firstName: 'ดร.สมหญิง',
+    lastName: 'รักการสอน',
+    email: 'dr.somying@university.ac.th',
+    phone: '02-234-5678',
+    department: 'ภาควิชาวิทยาการคอมพิวเตอร์',
+    position: 'อาจารย์ประจำ',
+    specialization: ['Software Engineering', 'Database Systems', 'Web Development'],
+    facultyId: '1',
+    programId: '1',
+    createdAt: '2024-01-10T07:30:00Z',
+    updatedAt: '2024-09-22T11:45:00Z',
+  },
+  {
+    id: '2',
+    userId: '4',
+    staffId: 'INS002',
+    firstName: 'ผศ.ดร.วิชัย',
+    lastName: 'เก่งมาก',
+    email: 'dr.wichai@university.ac.th',
+    phone: '02-345-6789',
+    department: 'ภาควิชาวิศวกรรมซอฟต์แวร์',
+    position: 'ผู้ช่วยศาสตราจารย์',
+    specialization: ['Machine Learning', 'Data Science', 'AI'],
+    facultyId: '2',
+    programId: '2',
+    createdAt: '2024-01-12T08:00:00Z',
+    updatedAt: '2024-09-22T12:00:00Z',
+  },
+];
+
+export const mockVisitorProfiles: VisitorProfile[] = [
+  {
+    id: '1',
+    userId: '5',
+    staffId: 'VIS001',
+    firstName: 'ศ.ดร.สมศักดิ์',
+    lastName: 'นิเทศดี',
+    email: 'prof.somsak@university.ac.th',
+    phone: '02-345-6789',
+    department: 'ภาควิชาวิทยาการคอมพิวเตอร์',
+    position: 'ศาสตราจารย์',
+    expertise: ['Software Quality Assurance', 'Project Management', 'Industry Relations'],
+    assignedRegions: ['กรุงเทพฯ', 'ปริมณฑล', 'ภาคกลาง'],
+    createdAt: '2024-01-12T08:45:00Z',
+    updatedAt: '2024-09-22T09:15:00Z',
+  },
+];
+
+export const mockAdminProfiles: AdminProfile[] = [
+  {
+    id: '1',
+    userId: '6',
+    firstName: 'ผู้ดูแล',
+    lastName: 'ระบบ',
+    email: 'admin@university.ac.th',
+    phone: '02-123-4567',
+    department: 'ศูนย์เทคโนโลยีสารสนเทศ',
+    permissions: ['user_management', 'system_config', 'reports', 'audit_logs'],
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-09-22T10:00:00Z',
+  },
+];
+
+// Users Data
+export const mockUsers: User[] = [
+  {
+    id: '1',
+    email: 'somchai.s@student.university.ac.th',
+    name: 'สมชาย ใจดี',
+    roles: ['student'],
+    permissions: ['view_profile', 'edit_profile', 'submit_application', 'view_status'],
+    isActive: true,
+    createdAt: '2024-01-15T08:00:00Z',
+    updatedAt: '2024-09-22T10:30:00Z',
+    lastLoginAt: '2024-09-22T14:20:00Z',
+    profile: mockStudentProfiles[0],
+  },
+  {
+    id: '2',
+    email: 'malee.k@student.university.ac.th',
+    name: 'มาลี ขยัน',
+    roles: ['student'],
+    permissions: ['view_profile', 'edit_profile', 'submit_application', 'view_status'],
+    isActive: true,
+    createdAt: '2024-01-20T09:15:00Z',
+    updatedAt: '2024-09-22T14:20:00Z',
+    lastLoginAt: '2024-09-22T16:30:00Z',
+    profile: mockStudentProfiles[1],
+  },
+  {
+    id: '3',
+    email: 'dr.somying@university.ac.th',
+    name: 'ดร.สมหญิง รักการสอน',
+    roles: ['instructor'],
+    permissions: ['view_students', 'approve_applications', 'assign_visitors', 'grade_students'],
+    isActive: true,
+    createdAt: '2024-01-10T07:30:00Z',
+    updatedAt: '2024-09-22T11:45:00Z',
+    lastLoginAt: '2024-09-22T11:45:00Z',
+    profile: mockInstructorProfiles[0],
+  },
+  {
+    id: '4',
+    email: 'dr.wichai@university.ac.th',
+    name: 'ผศ.ดร.วิชัย เก่งมาก',
+    roles: ['instructor'],
+    permissions: ['view_students', 'approve_applications', 'assign_visitors', 'grade_students'],
+    isActive: true,
+    createdAt: '2024-01-12T08:00:00Z',
+    updatedAt: '2024-09-22T12:00:00Z',
+    lastLoginAt: '2024-09-22T12:00:00Z',
+    profile: mockInstructorProfiles[1],
+  },
+  {
+    id: '5',
+    email: 'prof.somsak@university.ac.th',
+    name: 'ศ.ดร.สมศักดิ์ นิเทศดี',
+    roles: ['visitor'],
+    permissions: ['view_assignments', 'conduct_visits', 'submit_evaluations'],
+    isActive: true,
+    createdAt: '2024-01-12T08:45:00Z',
+    updatedAt: '2024-09-22T09:15:00Z',
+    lastLoginAt: '2024-09-22T09:15:00Z',
+    profile: mockVisitorProfiles[0],
+  },
+  {
+    id: '6',
+    email: 'admin@university.ac.th',
+    name: 'ผู้ดูแลระบบ',
+    roles: ['admin'],
+    permissions: ['full_access'],
+    isActive: true,
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-09-22T10:00:00Z',
+    lastLoginAt: '2024-09-22T10:30:00Z',
+    profile: mockAdminProfiles[0],
+  },
+];
+
+// Companies Data
+export const mockCompanies: Company[] = [
+  {
+    id: '1',
+    name: 'บริษัท เทคโนโลยี จำกัด',
+    nameEn: 'Technology Company Limited',
+    type: 'private',
+    industry: 'Software Development',
+    address: {
+      street: '123 ถนนเทคโนโลยี',
+      district: 'ห้วยขวาง',
+      province: 'กรุงเทพฯ',
+      postalCode: '10310',
+      country: 'ไทย',
+      coordinates: { lat: 13.7563, lng: 100.5018 },
+    },
+    contact: {
+      phone: '02-123-4567',
+      email: 'hr@technology.co.th',
+      contactPerson: 'คุณสมชาย ผู้จัดการ',
+      position: 'HR Manager',
+    },
+    website: 'https://technology.co.th',
+    description: 'บริษัทพัฒนาซอฟต์แวร์ชั้นนำของประเทศ เชี่ยวชาญด้านการพัฒนาระบบสารสนเทศ',
+    establishedYear: 2010,
+    employeeCount: 250,
+    isActive: true,
+    rating: 4.5,
+    images: ['/images/companies/tech1.jpg', '/images/companies/tech1-office.jpg'],
+    internshipSlots: 10,
+    currentInterns: 8,
+    createdAt: '2024-01-10T08:00:00Z',
+    updatedAt: '2024-09-22T10:00:00Z',
+  },
+  {
+    id: '2',
+    name: 'กรมพัฒนาดิจิทัล',
+    nameEn: 'Digital Development Department',
+    type: 'government',
+    industry: 'Government',
+    address: {
+      street: '456 ถนนราชดำเนิน',
+      district: 'พระนคร',
+      province: 'กรุงเทพฯ',
+      postalCode: '10200',
+      country: 'ไทย',
+    },
+    contact: {
+      phone: '02-234-5678',
+      email: 'contact@digital.go.th',
+      contactPerson: 'นายสมศักดิ์ ผู้อำนวยการ',
+      position: 'Director',
+    },
+    description: 'หน่วยงานรัฐที่รับผิดชอบการพัฒนาเทคโนโลยีดิจิทัลของประเทศ',
+    establishedYear: 2018,
+    employeeCount: 150,
+    isActive: true,
+    rating: 4.2,
+    images: ['/images/companies/gov1.jpg'],
+    internshipSlots: 15,
+    currentInterns: 12,
+    createdAt: '2024-01-15T09:30:00Z',
+    updatedAt: '2024-09-22T11:00:00Z',
+  },
+  {
+    id: '3',
+    name: 'StartUp Innovation',
+    nameEn: 'StartUp Innovation',
+    type: 'startup',
+    industry: 'FinTech',
+    address: {
+      street: '789 ถนนสีลม',
+      district: 'บางรัก',
+      province: 'กรุงเทพฯ',
+      postalCode: '10500',
+      country: 'ไทย',
+    },
+    contact: {
+      phone: '02-345-6789',
+      email: 'jobs@startup-innovation.com',
+      contactPerson: 'คุณมาลี CEO',
+      position: 'Chief Executive Officer',
+    },
+    website: 'https://startup-innovation.com',
+    description: 'สตาร์ทอัพด้านเทคโนโลยีการเงิน มุ่งเน้นนวัตกรรมและการเติบโตอย่างรวดเร็ว',
+    establishedYear: 2020,
+    employeeCount: 45,
+    isActive: true,
+    rating: 4.8,
+    images: ['/images/companies/startup1.jpg', '/images/companies/startup1-team.jpg'],
+    internshipSlots: 5,
+    currentInterns: 3,
+    createdAt: '2024-02-01T10:15:00Z',
+    updatedAt: '2024-09-22T12:00:00Z',
+  },
+];
+
+// Co-op Information Data
+export const mockCoopInfos: CoopInfo[] = [
+  {
+    id: '1',
+    studentId: '1',
+    companyId: '1',
+    position: 'Software Developer Intern',
+    department: 'Development Team',
+    supervisor: {
+      name: 'คุณวิชัย โปรแกรมเมอร์',
+      position: 'Senior Developer',
+      department: 'Development Team',
+      phone: '02-123-4568',
+      email: 'wichai@technology.co.th',
+    },
+    startDate: '2024-06-01',
+    endDate: '2024-08-31',
+    workingHours: 40,
+    salary: 15000,
+    benefits: ['ประกันสุขภาพ', 'ค่าเดินทาง', 'ค่าอาหารกลางวัน'],
+    jobDescription: 'พัฒนาระบบเว็บแอปพลิเคชันด้วย React และ Node.js',
+    learningObjectives: [
+      'เรียนรู้การพัฒนา Full-stack Web Application',
+      'ฝึกทักษะการทำงานเป็นทีม',
+      'เข้าใจกระบวนการพัฒนาซอฟต์แวร์ในองค์กร',
+    ],
+    status: 'active',
+    documentLanguage: 'th',
+    createdAt: '2024-05-15T10:00:00Z',
+    updatedAt: '2024-06-01T08:00:00Z',
+    approvedBy: '3',
+    approvedAt: '2024-05-20T14:30:00Z',
+  },
+  {
+    id: '2',
+    studentId: '2',
+    companyId: '2',
+    position: 'Data Analyst Intern',
+    department: 'Data Analytics Division',
+    supervisor: {
+      name: 'นางสาวปรีชา วิเคราะห์',
+      position: 'Data Analyst',
+      department: 'Data Analytics Division',
+      phone: '02-234-5679',
+      email: 'preecha@digital.go.th',
+    },
+    startDate: '2024-06-15',
+    endDate: '2024-09-15',
+    workingHours: 35,
+    benefits: ['ประกันสังคม', 'ค่าเดินทาง'],
+    jobDescription: 'วิเคราะห์ข้อมูลและสร้างรายงานเพื่อสนับสนุนการตัดสินใจ',
+    learningObjectives: [
+      'เรียนรู้การวิเคราะห์ข้อมูลขนาดใหญ่',
+      'ฝึกใช้เครื่องมือ Business Intelligence',
+      'เข้าใจกระบวนการทำงานของหน่วยงานรัฐ',
+    ],
+    status: 'active',
+    documentLanguage: 'th',
+    createdAt: '2024-05-20T11:00:00Z',
+    updatedAt: '2024-06-15T09:00:00Z',
+    approvedBy: '4',
+    approvedAt: '2024-05-25T16:00:00Z',
+  },
+];
+
+// Status Items Data
+export const mockStatusItems: StatusItem[] = [
+  {
+    id: '1',
+    type: 'document',
+    title: 'เอกสารใบสมัครฝึกงาน',
+    description: 'รอการอนุมัติเอกสารใบสมัครฝึกงานจากอาจารย์ที่ปรึกษา',
+    status: 'pending',
+    priority: 'high',
+    dueDate: '2024-09-30T23:59:59Z',
+    assignedTo: '3',
+    assignedBy: '1',
+    relatedEntityId: '1',
+    relatedEntityType: 'coop_application',
+    relatedDocuments: ['doc1', 'doc2'],
+    history: [
+      {
+        id: '1',
+        statusItemId: '1',
+        previousStatus: 'pending',
+        newStatus: 'in_progress',
+        changedBy: '3',
+        changedAt: '2024-09-22T10:00:00Z',
+        comment: 'เริ่มตรวจสอบเอกสาร',
+      },
+    ],
+    createdAt: '2024-09-20T08:00:00Z',
+    updatedAt: '2024-09-22T10:00:00Z',
+  },
+  {
+    id: '2',
+    type: 'evaluation',
+    title: 'การประเมินบริษัท',
+    description: 'ประเมินความพึงพอใจต่อบริษัทที่ฝึกงาน',
+    status: 'completed',
+    priority: 'medium',
+    completedAt: '2024-09-21T15:30:00Z',
+    assignedTo: '1',
+    relatedEntityId: '1',
+    relatedEntityType: 'coop_info',
+    relatedDocuments: [],
+    history: [
+      {
+        id: '2',
+        statusItemId: '2',
+        previousStatus: 'pending',
+        newStatus: 'completed',
+        changedBy: '1',
+        changedAt: '2024-09-21T15:30:00Z',
+        comment: 'ประเมินเสร็จสิ้น',
+      },
+    ],
+    createdAt: '2024-09-15T08:00:00Z',
+    updatedAt: '2024-09-21T15:30:00Z',
+  },
+];
+
+// Documents Data
+export const mockDocuments: Document[] = [
+  {
+    id: 'doc1',
+    name: 'ใบสมัครฝึกงาน',
+    type: 'application',
+    fileName: 'internship_application_65010001.pdf',
+    filePath: '/documents/applications/internship_application_65010001.pdf',
+    fileSize: 2048576, // 2MB
+    mimeType: 'application/pdf',
+    uploadedBy: '1',
+    relatedEntityId: '1',
+    relatedEntityType: 'coop_application',
+    status: 'pending',
+    version: 1,
+    isLatest: true,
+    createdAt: '2024-09-20T08:00:00Z',
+    updatedAt: '2024-09-20T08:00:00Z',
+  },
+  {
+    id: 'doc2',
+    name: 'หนังสือตอบรับจากบริษัท',
+    type: 'agreement',
+    fileName: 'company_acceptance_letter.pdf',
+    filePath: '/documents/agreements/company_acceptance_letter.pdf',
+    fileSize: 1024768, // 1MB
+    mimeType: 'application/pdf',
+    uploadedBy: '1',
+    relatedEntityId: '1',
+    relatedEntityType: 'coop_application',
+    status: 'completed',
+    approvedBy: '3',
+    approvedAt: '2024-09-21T10:00:00Z',
+    version: 1,
+    isLatest: true,
+    createdAt: '2024-09-20T09:00:00Z',
+    updatedAt: '2024-09-21T10:00:00Z',
+  },
+];
+
+// Visitor Schedules Data
+export const mockVisitorSchedules: VisitorSchedule[] = [
+  {
+    id: '1',
+    visitorId: '5',
+    studentId: '1',
+    companyId: '1',
+    coopId: '1',
+    scheduledDate: '2024-07-15',
+    scheduledTime: '10:00',
+    duration: 120, // 2 hours
+    purpose: 'ตรวจเยี่ยมและประเมินผลการฝึกงาน',
+    notes: 'นัดหมายกับผู้ดูแลและนักศึกษา',
+    status: 'completed',
+    location: {
+      type: 'company',
+      address: '123 ถนนเทคโนโลยี ห้วยขวาง กรุงเทพฯ 10310',
+    },
+    createdAt: '2024-07-01T08:00:00Z',
+    updatedAt: '2024-07-15T12:00:00Z',
+    completedAt: '2024-07-15T12:00:00Z',
+  },
+];
+
+// Evaluations Data
+export const mockStudentEvaluateCompanies: StudentEvaluateCompany[] = [
+  {
+    id: '1',
+    studentId: '1',
+    companyId: '1',
+    coopId: '1',
+    ratings: {
+      workEnvironment: 4,
+      supervision: 5,
+      learningOpportunity: 4,
+      workload: 3,
+      compensation: 4,
+      overallSatisfaction: 4,
+    },
+    feedback: {
+      positiveAspects: 'ทีมงานเป็นมิตร สภาพแวดล้อมการทำงานดี มีโอกาสเรียนรู้เทคโนโลยีใหม่',
+      improvementAreas: 'ควรมีการอบรมเพิ่มเติมในช่วงแรก',
+      recommendations: 'แนะนำให้เพื่อนๆ มาฝึกงานที่นี่',
+    },
+    wouldRecommend: true,
+    submittedAt: '2024-08-30T16:00:00Z',
+    createdAt: '2024-08-30T16:00:00Z',
+    updatedAt: '2024-08-30T16:00:00Z',
+  },
+];
+
+export const mockCompanyEvaluateStudents: CompanyEvaluateStudent[] = [
+  {
+    id: '1',
+    studentId: '1',
+    companyId: '1',
+    coopId: '1',
+    supervisorId: 'supervisor1',
+    ratings: {
+      workPerformance: 4,
+      professionalism: 5,
+      communication: 4,
+      problemSolving: 4,
+      adaptation: 5,
+      reliability: 4,
+      initiative: 3,
+      overallRating: 4,
+    },
+    feedback: {
+      strengths: 'มีความรับผิดชอบสูง เรียนรู้เร็ว ทำงานเป็นทีมได้ดี',
+      areasForImprovement: 'ควรเพิ่มความมั่นใจในการนำเสนอไอเดีย',
+      recommendations: 'เหมาะสมกับการทำงานด้านพัฒนาซอฟต์แวร์',
+    },
+    wouldHireAgain: true,
+    submittedAt: '2024-08-31T17:00:00Z',
+    createdAt: '2024-08-31T17:00:00Z',
+    updatedAt: '2024-08-31T17:00:00Z',
+  },
+];
+
+export const mockVisitorEvaluations: VisitorEvaluation[] = [
+  {
+    id: '1',
+    visitorId: '5',
+    studentId: '1',
+    companyId: '1',
+    coopId: '1',
+    visitDate: '2024-07-15',
+    studentEvaluation: {
+      workPerformance: 4,
+      professionalism: 5,
+      communication: 4,
+      problemSolving: 4,
+      adaptation: 5,
+      overallRating: 4,
+    },
+    companyEvaluation: {
+      workEnvironment: 5,
+      supervision: 4,
+      facilities: 4,
+      safetyMeasures: 5,
+      cooperationLevel: 5,
+      overallRating: 5,
+    },
+    observations: 'นักศึกษาปรับตัวได้ดี บริษัทให้การดูแลเป็นอย่างดี มีสภาพแวดล้อมที่เอื้อต่อการเรียนรู้',
+    recommendations: 'ควรส่งเสริมให้นักศึกษามีส่วนร่วมในโปรเจกต์ที่ท้าทายมากขึ้น',
+    images: ['/images/visits/visit1_1.jpg', '/images/visits/visit1_2.jpg'],
+    submittedAt: '2024-07-15T18:00:00Z',
+    createdAt: '2024-07-15T18:00:00Z',
+    updatedAt: '2024-07-15T18:00:00Z',
+  },
+];
+
+// Notifications Data
+export const mockNotifications: Notification[] = [
+  {
+    id: '1',
+    userId: '1',
+    type: 'success',
+    title: 'เอกสารได้รับการอนุมัติ',
+    message: 'เอกสารใบสมัครฝึกงานของคุณได้รับการอนุมัติจากอาจารย์ที่ปรึกษาแล้ว',
+    data: { documentId: 'doc1', approvedBy: '3' },
+    isRead: false,
+    createdAt: '2024-09-22T10:30:00Z',
+  },
+  {
+    id: '2',
+    userId: '1',
+    type: 'info',
+    title: 'การนัดหมายเยี่ยมชม',
+    message: 'อาจารย์นิเทศจะมาเยี่ยมชมในวันที่ 25 กันยายน 2567 เวลา 10:00 น.',
+    data: { scheduleId: '1', visitorId: '5' },
+    isRead: true,
+    createdAt: '2024-09-20T14:00:00Z',
+    readAt: '2024-09-21T08:00:00Z',
+  },
+];
+
+// Dashboard Statistics
+export const mockDashboardStats: DashboardStats = {
+  totalStudents: 245,
+  activeInternships: 156,
+  pendingApprovals: 23,
+  completedEvaluations: 89,
+  averageRating: 4.2,
+  monthlyTrends: [
+    { month: '2024-06', applications: 45, approvals: 42, completions: 38 },
+    { month: '2024-07', applications: 52, approvals: 48, completions: 45 },
+    { month: '2024-08', applications: 38, approvals: 35, completions: 32 },
+    { month: '2024-09', applications: 41, approvals: 38, completions: 28 },
+  ],
+};
+
+export const mockCompanyStats: CompanyStats = {
+  totalCompanies: 156,
+  activeCompanies: 142,
+  averageRating: 4.3,
+  topIndustries: [
+    { industry: 'Software Development', count: 45, percentage: 28.8 },
+    { industry: 'Government', count: 32, percentage: 20.5 },
+    { industry: 'FinTech', count: 28, percentage: 17.9 },
+    { industry: 'Manufacturing', count: 25, percentage: 16.0 },
+    { industry: 'Healthcare', count: 18, percentage: 11.5 },
+  ],
+  internshipSlots: {
+    total: 320,
+    occupied: 245,
+    available: 75,
+  },
+};
+
+// Export all mock data as a centralized store
+export const mockDataStore = {
+  // Organizational
+  campuses: mockCampuses,
+  faculties: mockFaculties,
+  programs: mockPrograms,
+  curricula: mockCurricula,
+  majors: mockMajors,
+  
+  // Users and Profiles
+  users: mockUsers,
+  studentProfiles: mockStudentProfiles,
+  instructorProfiles: mockInstructorProfiles,
+  visitorProfiles: mockVisitorProfiles,
+  adminProfiles: mockAdminProfiles,
+  
+  // Companies and Co-ops
+  companies: mockCompanies,
+  coopInfos: mockCoopInfos,
+  
+  // Status and Documents
+  statusItems: mockStatusItems,
+  documents: mockDocuments,
+  
+  // Schedules and Evaluations
+  visitorSchedules: mockVisitorSchedules,
+  studentEvaluateCompanies: mockStudentEvaluateCompanies,
+  companyEvaluateStudents: mockCompanyEvaluateStudents,
+  visitorEvaluations: mockVisitorEvaluations,
+  
+  // Notifications and Stats
+  notifications: mockNotifications,
+  dashboardStats: mockDashboardStats,
+  companyStats: mockCompanyStats,
+};

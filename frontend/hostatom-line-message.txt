@@ -1,0 +1,15 @@
+🔑 SSH Key Setup Request
+
+Server: dev.smart-solutions.com
+IP: 203.170.129.199
+
+ขอความช่วยเหลือติดตั้ง SSH Key ครับ
+
+Key: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDFDn20rUHFiJ...
+
+คำสั่งติดตั้ง:
+mkdir -p ~/.ssh
+echo '[FULL_KEY]' >> ~/.ssh/authorized_keys
+chmod 700 ~/.ssh && chmod 600 ~/.ssh/authorized_keys
+
+ขอบคุณครับ 🙏
