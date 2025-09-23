@@ -6,10 +6,10 @@ import (
 	"backend-go/internal/config"
 	"backend-go/internal/database"
 	"backend-go/internal/routes"
+	"backend-go/internal/services"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
-	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/joho/godotenv"
 )
 
@@ -22,42 +22,82 @@ func main() {
 	// Load configuration
 	cfg := config.Load()
 
+	// Initialize structured logging
+	var loggerConfig services.LoggerConfig
+	if cfg.Environment == "production" {
+		loggerConfig = services.LoggerConfig{
+			Level:        services.INFO,
+			ServiceName:  "backend-go",
+			EnableCaller: false,
+		}
+	} else {
+		loggerConfig = services.LoggerConfig{
+			Level:        services.DEBUG,
+			ServiceName:  "backend-go",
+			EnableCaller: true,
+		}
+	}
+	
+	services.InitGlobalLogger(loggerConfig)
+	logger := services.GetGlobalLogger()
+
+	logger.Info("Starting application", map[string]interface{}{
+		"environment": cfg.Environment,
+		"port":        cfg.Port,
+	})
+
 	// Initialize database
 	db, err := database.Connect(cfg.DatabaseURL)
 	if err != nil {
-		log.Fatal("Failed to connect to database:", err)
+		logger.Fatal("Failed to connect to database", map[string]interface{}{
+			"error": err.Error(),
+		})
 	}
 
-	// Create Fiber app
+	logger.Info("Database connected successfully")
+
+	// Create Fiber app with enhanced error handling
 	app := fiber.New(fiber.Config{
 		ErrorHandler: func(c *fiber.Ctx, err error) error {
 			code := fiber.StatusInternalServerError
+			message := "Internal Server Error"
+			
 			if e, ok := err.(*fiber.Error); ok {
 				code = e.Code
+				message = e.Message
 			}
+
+			// Log the error
+			contextLogger := logger.WithRequestContext(c)
+			contextLogger.Error("Request error", map[string]interface{}{
+				"error":       err.Error(),
+				"status_code": code,
+			})
+
 			return c.Status(code).JSON(fiber.Map{
-				"error": err.Error(),
+				"error":   message,
+				"code":    code,
+				"request_id": c.Get("X-Request-ID"),
 			})
 		},
 	})
 
-	// Middleware
-	app.Use(logger.New())
+	// CORS middleware
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: cfg.AllowedOrigins,
-		AllowHeaders: "Origin, Content-Type, Accept, Authorization",
-		AllowMethods: "GET, POST, PUT, DELETE, OPTIONS",
+		AllowHeaders: "Origin, Content-Type, Accept, Authorization, X-Request-ID",
+		AllowMethods: "GET, POST, PUT, DELETE, OPTIONS, HEAD",
 	}))
 
-	// Health check endpoint
+	// Basic health check endpoint (for load balancers)
 	app.Get("/health", func(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{
-			"status": "ok",
+			"status":  "ok",
 			"message": "Server is running",
 		})
 	})
 
-	// Setup routes
+	// Setup all routes with middleware
 	routes.Setup(app, db, cfg)
 
 	// Start server
@@ -66,6 +106,15 @@ func main() {
 		port = "8080"
 	}
 
-	log.Printf("Server starting on port %s", port)
-	log.Fatal(app.Listen(":" + port))
+	logger.Info("Server starting", map[string]interface{}{
+		"port":        port,
+		"environment": cfg.Environment,
+	})
+
+	if err := app.Listen(":" + port); err != nil {
+		logger.Fatal("Failed to start server", map[string]interface{}{
+			"error": err.Error(),
+			"port":  port,
+		})
+	}
 }

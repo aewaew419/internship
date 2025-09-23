@@ -10,6 +10,27 @@ import (
 )
 
 func Setup(app *fiber.App, db *gorm.DB, cfg *config.Config) {
+	// Initialize logger
+	var logger *services.Logger
+	if cfg.Environment == "production" {
+		logger = services.ProductionLogger()
+	} else {
+		logger = services.DefaultLogger()
+	}
+	
+	// Initialize global logger
+	services.InitGlobalLogger(services.LoggerConfig{
+		Level:        services.INFO,
+		ServiceName:  "backend-go",
+		EnableCaller: cfg.Environment != "production",
+	})
+
+	// Add logging middleware
+	app.Use(middleware.StructuredLogger(logger))
+	app.Use(middleware.SecurityLogger(logger))
+	app.Use(middleware.MetricsLogger(logger))
+	app.Use(middleware.ErrorLogger(logger))
+
 	// API v1 routes
 	api := app.Group("/api/v1")
 
@@ -21,8 +42,8 @@ func Setup(app *fiber.App, db *gorm.DB, cfg *config.Config) {
 		})
 	})
 
-	// Health check endpoints
-	setupHealthRoutes(api, db, cfg)
+	// Health check and monitoring endpoints
+	setupHealthRoutes(api, db, cfg, logger)
 
 	// Setup authentication routes
 	setupAuthRoutes(api, db, cfg)
@@ -50,14 +71,19 @@ func Setup(app *fiber.App, db *gorm.DB, cfg *config.Config) {
 	// etc.
 }
 
-// setupHealthRoutes sets up health check routes
-func setupHealthRoutes(api fiber.Router, db *gorm.DB, cfg *config.Config) {
-	healthHandler := handlers.NewHealthHandler(db, cfg)
+// setupHealthRoutes sets up health check and monitoring routes
+func setupHealthRoutes(api fiber.Router, db *gorm.DB, cfg *config.Config, logger *services.Logger) {
+	healthHandler := handlers.NewHealthHandler(db, cfg, logger)
 
 	// Health check routes (no auth required)
 	api.Get("/health", healthHandler.Health)
 	api.Head("/health", healthHandler.HealthHead)
 	api.Get("/health/detailed", healthHandler.HealthDetailed)
+	
+	// Monitoring endpoints (no auth required for infrastructure)
+	api.Get("/metrics", healthHandler.Metrics)
+	api.Get("/ready", healthHandler.Ready)
+	api.Get("/live", healthHandler.Live)
 }
 
 // setupNotificationRoutes sets up push notification routes

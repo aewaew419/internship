@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"backend-go/internal/services"
 	"fmt"
 	"log"
 	"os"
@@ -60,10 +61,28 @@ func ProductionLogger() fiber.Handler {
 	return Logger(ProductionLoggerConfig())
 }
 
-// StructuredLogger creates a structured logging middleware
-func StructuredLogger() fiber.Handler {
+// StructuredLogger creates a structured logging middleware using the logging service
+func StructuredLogger(logger *services.Logger) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		start := time.Now()
+
+		// Generate request ID if not present
+		requestID := c.Get("X-Request-ID")
+		if requestID == "" {
+			requestID = generateRequestID()
+			c.Set("X-Request-ID", requestID)
+		}
+		c.Locals("request_id", requestID)
+
+		// Get user information if available
+		userID, _ := GetUserID(c)
+		userEmail, _ := GetUserEmail(c)
+		
+		// Store user info in context for logger
+		if userID > 0 {
+			c.Locals("user_id", userID)
+			c.Locals("user_email", userEmail)
+		}
 
 		// Process request
 		err := c.Next()
@@ -71,44 +90,9 @@ func StructuredLogger() fiber.Handler {
 		// Calculate latency
 		latency := time.Since(start)
 
-		// Get user information if available
-		userID, _ := GetUserID(c)
-		userEmail, _ := GetUserEmail(c)
-
-		// Create structured log entry
-		logEntry := map[string]interface{}{
-			"timestamp":    start.Format(time.RFC3339),
-			"method":       c.Method(),
-			"path":         c.Path(),
-			"query":        c.Context().QueryArgs().String(),
-			"status":       c.Response().StatusCode(),
-			"latency":      latency.String(),
-			"latency_ms":   latency.Milliseconds(),
-			"ip":           c.IP(),
-			"user_agent":   c.Get("User-Agent"),
-			"content_type": c.Get("Content-Type"),
-			"size":         len(c.Response().Body()),
-		}
-
-		// Add user information if authenticated
-		if userID > 0 {
-			logEntry["user_id"] = userID
-			logEntry["user_email"] = userEmail
-		}
-
-		// Add error information if present
-		if err != nil {
-			logEntry["error"] = err.Error()
-		}
-
-		// Log based on status code
-		if c.Response().StatusCode() >= 500 {
-			log.Printf("ERROR: %+v", logEntry)
-		} else if c.Response().StatusCode() >= 400 {
-			log.Printf("WARN: %+v", logEntry)
-		} else {
-			log.Printf("INFO: %+v", logEntry)
-		}
+		// Create context logger and log the request
+		contextLogger := logger.WithRequestContext(c)
+		contextLogger.LogRequest(c.Response().StatusCode(), latency, err)
 
 		return err
 	}
@@ -150,35 +134,106 @@ func RequestIDLogger() fiber.Handler {
 }
 
 // SecurityLogger creates a middleware that logs security-related events
-func SecurityLogger() fiber.Handler {
+func SecurityLogger(logger *services.Logger) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		start := time.Now()
 		err := c.Next()
 
-		// Log security events
 		status := c.Response().StatusCode()
+		contextLogger := logger.WithRequestContext(c)
+
+		// Log authentication/authorization failures
 		if status == 401 || status == 403 {
-			userID, _ := GetUserID(c)
-			log.Printf("SECURITY: %s %s - Status: %d - User: %d - IP: %s - UA: %s - Time: %v",
-				c.Method(),
-				c.Path(),
-				status,
-				userID,
-				c.IP(),
-				c.Get("User-Agent"),
-				time.Since(start),
-			)
+			event := "authentication_failure"
+			if status == 403 {
+				event = "authorization_failure"
+			}
+			
+			contextLogger.LogSecurity(event, map[string]interface{}{
+				"status_code": status,
+				"latency":     time.Since(start).String(),
+			})
 		}
 
 		// Log failed login attempts
 		if c.Path() == "/api/v1/login" && c.Method() == "POST" && status != 200 {
-			log.Printf("SECURITY: Failed login attempt - IP: %s - UA: %s - Time: %v",
-				c.IP(),
-				c.Get("User-Agent"),
-				time.Since(start),
-			)
+			contextLogger.LogSecurity("failed_login_attempt", map[string]interface{}{
+				"status_code": status,
+				"latency":     time.Since(start).String(),
+			})
 		}
 
+		// Log suspicious activity patterns
+		if status == 429 { // Rate limit exceeded
+			contextLogger.LogSecurity("rate_limit_exceeded", map[string]interface{}{
+				"status_code": status,
+			})
+		}
+
+		return err
+	}
+}
+
+// MetricsLogger creates a middleware that logs performance metrics
+func MetricsLogger(logger *services.Logger) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		start := time.Now()
+		
+		// Process request
+		err := c.Next()
+		
+		latency := time.Since(start)
+		
+		// Log slow requests (> 1 second)
+		if latency > time.Second {
+			contextLogger := logger.WithRequestContext(c)
+			contextLogger.Warn("Slow request detected", map[string]interface{}{
+				"latency_ms":   latency.Milliseconds(),
+				"status_code":  c.Response().StatusCode(),
+				"response_size": len(c.Response().Body()),
+			})
+		}
+		
+		// Log large responses (> 1MB)
+		responseSize := len(c.Response().Body())
+		if responseSize > 1024*1024 {
+			contextLogger := logger.WithRequestContext(c)
+			contextLogger.Warn("Large response detected", map[string]interface{}{
+				"response_size": responseSize,
+				"latency_ms":    latency.Milliseconds(),
+			})
+		}
+		
+		return err
+	}
+}
+
+// ErrorLogger creates a middleware that logs application errors
+func ErrorLogger(logger *services.Logger) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		err := c.Next()
+		
+		if err != nil {
+			contextLogger := logger.WithRequestContext(c)
+			
+			// Determine error severity
+			statusCode := fiber.StatusInternalServerError
+			if e, ok := err.(*fiber.Error); ok {
+				statusCode = e.Code
+			}
+			
+			fields := map[string]interface{}{
+				"error_type":  fmt.Sprintf("%T", err),
+				"status_code": statusCode,
+			}
+			
+			if statusCode >= 500 {
+				contextLogger.Error("Application error", fields)
+			} else if statusCode >= 400 {
+				contextLogger.Warn("Client error", fields)
+			}
+		}
+		
 		return err
 	}
 }

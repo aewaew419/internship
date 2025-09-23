@@ -13,6 +13,7 @@ type MiddlewareConfig struct {
 	DB             *gorm.DB
 	Environment    string
 	AllowedOrigins []string
+	Logger         *services.Logger
 }
 
 // SetupMiddleware configures all middleware for the Fiber app
@@ -40,10 +41,12 @@ func SetupMiddleware(app *fiber.App, config MiddlewareConfig) {
 	}
 
 	// Structured logging for important events
-	app.Use(StructuredLogger())
-
-	// Security logging
-	app.Use(SecurityLogger())
+	if config.Logger != nil {
+		app.Use(StructuredLogger(config.Logger))
+		app.Use(SecurityLogger(config.Logger))
+		app.Use(MetricsLogger(config.Logger))
+		app.Use(ErrorLogger(config.Logger))
+	}
 }
 
 // AuthGroup creates a route group with authentication middleware

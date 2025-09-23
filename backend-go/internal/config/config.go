@@ -10,6 +10,8 @@ type Config struct {
 	JWTSecret      string
 	AllowedOrigins string
 	Environment    string
+	LogLevel       string
+	LogFormat      string
 }
 
 func Load() *Config {
@@ -19,6 +21,8 @@ func Load() *Config {
 		JWTSecret:      getEnv("JWT_SECRET", "your-secret-key"),
 		AllowedOrigins: getEnv("ALLOWED_ORIGINS", "*"),
 		Environment:    getEnv("ENVIRONMENT", "development"),
+		LogLevel:       getEnv("LOG_LEVEL", "info"),
+		LogFormat:      getEnv("LOG_FORMAT", "json"),
 	}
 }
 

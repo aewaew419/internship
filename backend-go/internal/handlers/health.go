@@ -2,7 +2,9 @@ package handlers
 
 import (
 	"backend-go/internal/config"
+	"backend-go/internal/services"
 	"fmt"
+	"os"
 	"runtime"
 	"time"
 
@@ -12,15 +14,17 @@ import (
 
 // HealthHandler handles health check endpoints
 type HealthHandler struct {
-	db  *gorm.DB
-	cfg *config.Config
+	db     *gorm.DB
+	cfg    *config.Config
+	logger *services.Logger
 }
 
 // NewHealthHandler creates a new health handler
-func NewHealthHandler(db *gorm.DB, cfg *config.Config) *HealthHandler {
+func NewHealthHandler(db *gorm.DB, cfg *config.Config, logger *services.Logger) *HealthHandler {
 	return &HealthHandler{
-		db:  db,
-		cfg: cfg,
+		db:     db,
+		cfg:    cfg,
+		logger: logger,
 	}
 }
 
@@ -289,30 +293,191 @@ func (h *HealthHandler) getMemoryMetrics() MemoryMetrics {
 	}
 }
 
-// checkDiskSpace checks available disk space
+// checkDiskSpace checks available disk space (cross-platform implementation)
 func (h *HealthHandler) checkDiskSpace() map[string]interface{} {
-	// TODO: Implement actual disk space check
-	// For now, return healthy status
+	// Get current working directory
+	wd, err := os.Getwd()
+	if err != nil {
+		return map[string]interface{}{
+			"status": "unhealthy",
+			"error":  err.Error(),
+			"metrics": map[string]interface{}{
+				"total":      0,
+				"used":       0,
+				"free":       0,
+				"percentage": 0,
+			},
+		}
+	}
+	
+	// Try to get disk space information
+	// This is a simplified cross-platform approach
+	// For production, consider using a library like github.com/shirou/gopsutil
+	
+	// Check if we can write to the directory as a basic health check
+	testFile := fmt.Sprintf("%s/.health_check_%d", wd, time.Now().Unix())
+	file, err := os.Create(testFile)
+	if err != nil {
+		return map[string]interface{}{
+			"status": "unhealthy",
+			"error":  "Cannot write to disk: " + err.Error(),
+			"metrics": map[string]interface{}{
+				"total":      0,
+				"used":       0,
+				"free":       0,
+				"percentage": 0,
+			},
+		}
+	}
+	file.Close()
+	os.Remove(testFile)
+	
+	// For now, return healthy status with placeholder metrics
+	// In a production environment, you would implement platform-specific disk space checks
 	return map[string]interface{}{
 		"status": "healthy",
 		"metrics": map[string]interface{}{
-			"total":      0,
-			"used":       0,
-			"free":       0,
-			"percentage": 0,
+			"total":      0, // Would be actual total space
+			"used":       0, // Would be actual used space
+			"free":       0, // Would be actual free space
+			"percentage": 0, // Would be actual usage percentage
+			"note":       "Cross-platform disk space monitoring not implemented",
 		},
 	}
 }
 
 // checkExternalServices checks external service dependencies
 func (h *HealthHandler) checkExternalServices() map[string]interface{} {
-	// TODO: Check external services like Redis, file storage, etc.
-	return map[string]interface{}{
-		"status": "healthy",
-		"services": map[string]string{
-			"redis":   "not_configured",
-			"storage": "not_configured",
-			"email":   "not_configured",
-		},
+	services := make(map[string]string)
+	overallStatus := "healthy"
+	
+	// Check file system access (uploads directory)
+	uploadsDir := "uploads"
+	if _, err := os.Stat(uploadsDir); os.IsNotExist(err) {
+		services["file_system"] = "unhealthy"
+		overallStatus = "unhealthy"
+	} else {
+		services["file_system"] = "healthy"
 	}
+	
+	// Check if we can write to uploads directory
+	testFile := fmt.Sprintf("%s/.health_check_%d", uploadsDir, time.Now().Unix())
+	if file, err := os.Create(testFile); err != nil {
+		services["file_write"] = "unhealthy"
+		overallStatus = "unhealthy"
+	} else {
+		file.Close()
+		os.Remove(testFile)
+		services["file_write"] = "healthy"
+	}
+	
+	return map[string]interface{}{
+		"status":   overallStatus,
+		"services": services,
+	}
+}
+
+// Metrics handles application metrics endpoint
+// GET /api/v1/metrics
+func (h *HealthHandler) Metrics(c *fiber.Ctx) error {
+	requestStart := time.Now()
+	
+	// Get runtime metrics
+	var m runtime.MemStats
+	runtime.ReadMemStats(&m)
+	
+	// Get database connection stats
+	sqlDB, err := h.db.DB()
+	var dbStats interface{}
+	if err == nil {
+		stats := sqlDB.Stats()
+		dbStats = map[string]interface{}{
+			"open_connections":     stats.OpenConnections,
+			"in_use":              stats.InUse,
+			"idle":                stats.Idle,
+			"wait_count":          stats.WaitCount,
+			"wait_duration":       stats.WaitDuration.String(),
+			"max_idle_closed":     stats.MaxIdleClosed,
+			"max_idle_time_closed": stats.MaxIdleTimeClosed,
+			"max_lifetime_closed": stats.MaxLifetimeClosed,
+		}
+	}
+	
+	// Calculate response time
+	responseTime := time.Since(requestStart).Milliseconds()
+	
+	metrics := map[string]interface{}{
+		"timestamp":    time.Now().UTC().Format(time.RFC3339),
+		"uptime":       time.Since(startTime).Seconds(),
+		"response_time": responseTime,
+		"memory": map[string]interface{}{
+			"alloc":       m.Alloc / 1024 / 1024,      // MB
+			"total_alloc": m.TotalAlloc / 1024 / 1024, // MB
+			"sys":         m.Sys / 1024 / 1024,        // MB
+			"num_gc":      m.NumGC,
+			"gc_cpu_fraction": m.GCCPUFraction,
+		},
+		"runtime": map[string]interface{}{
+			"version":     runtime.Version(),
+			"goroutines":  runtime.NumGoroutine(),
+			"cgocalls":    runtime.NumCgoCall(),
+			"cpus":        runtime.NumCPU(),
+		},
+		"database": dbStats,
+	}
+	
+	// Set cache headers
+	c.Set("Cache-Control", "no-cache, no-store, must-revalidate")
+	c.Set("X-Response-Time", fmt.Sprintf("%dms", responseTime))
+	
+	return c.JSON(metrics)
+}
+
+// Ready handles readiness probe endpoint
+// GET /api/v1/ready
+func (h *HealthHandler) Ready(c *fiber.Ctx) error {
+	// Check if application is ready to serve requests
+	
+	// Check database connectivity
+	if err := h.quickDBPing(); err != nil {
+		h.logger.Error("Readiness check failed: database not ready", map[string]interface{}{
+			"error": err.Error(),
+		})
+		return c.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{
+			"status": "not_ready",
+			"reason": "database_not_ready",
+			"error":  err.Error(),
+		})
+	}
+	
+	// Check critical directories exist
+	criticalDirs := []string{"uploads", "uploads/pdf", "uploads/visit-photos"}
+	for _, dir := range criticalDirs {
+		if _, err := os.Stat(dir); os.IsNotExist(err) {
+			h.logger.Error("Readiness check failed: critical directory missing", map[string]interface{}{
+				"directory": dir,
+			})
+			return c.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{
+				"status": "not_ready",
+				"reason": "critical_directory_missing",
+				"directory": dir,
+			})
+		}
+	}
+	
+	return c.JSON(fiber.Map{
+		"status":    "ready",
+		"timestamp": time.Now().UTC().Format(time.RFC3339),
+	})
+}
+
+// Live handles liveness probe endpoint
+// GET /api/v1/live
+func (h *HealthHandler) Live(c *fiber.Ctx) error {
+	// Simple liveness check - if we can respond, we're alive
+	return c.JSON(fiber.Map{
+		"status":    "alive",
+		"timestamp": time.Now().UTC().Format(time.RFC3339),
+		"uptime":    time.Since(startTime).Seconds(),
+	})
 }
