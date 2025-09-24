@@ -355,8 +355,10 @@ export function NotificationProvider({
       dispatch({ type: 'SET_SETTINGS', payload: settings });
       
       // Store user-specific settings in cache
-      const userCacheKey = `${STORAGE_KEYS.SETTINGS}_${user.user.id}`;
-      saveToCache(userCacheKey, settings, CACHE_CONFIG.SETTINGS_TTL);
+      if (user?.user?.id) {
+        const userCacheKey = `${STORAGE_KEYS.SETTINGS}_${user.user.id}`;
+        saveToCache(userCacheKey, settings, CACHE_CONFIG.SETTINGS_TTL);
+      }
       
       console.log('User notification preferences synchronized');
     } catch (error) {
@@ -388,7 +390,7 @@ export function NotificationProvider({
     dispatch({ type: 'RESET_STATE' });
     
     // Clear user-specific cache
-    if (user?.user.id) {
+    if (user?.user?.id) {
       const userCacheKey = `${STORAGE_KEYS.SETTINGS}_${user.user.id}`;
       localStorage.removeItem(userCacheKey);
       localStorage.removeItem(`${STORAGE_KEYS.NOTIFICATIONS}_${user.user.id}`);
@@ -398,7 +400,7 @@ export function NotificationProvider({
     disconnect();
     
     // Clear offline storage for the user
-    if (user?.user.id) {
+    if (user?.user?.id) {
       offlineNotificationStorage.clearUserData(user.user.id).catch(error => {
         console.warn('Failed to clear offline user data:', error);
       });
@@ -472,70 +474,77 @@ export function NotificationProvider({
         });
 
         // Cache the results with user-specific key
-        const userCacheKey = `${STORAGE_KEYS.NOTIFICATIONS}_${user.user.id}`;
-        saveToCache(userCacheKey, filteredNotifications.slice(0, CACHE_CONFIG.MAX_CACHED_NOTIFICATIONS), CACHE_CONFIG.NOTIFICATIONS_TTL);
-        
-        // Store in IndexedDB for offline access
-        await offlineNotificationStorage.storeNotifications(filteredNotifications, user.user.id);
+        if (user?.user?.id) {
+          const userCacheKey = `${STORAGE_KEYS.NOTIFICATIONS}_${user.user.id}`;
+          saveToCache(userCacheKey, filteredNotifications.slice(0, CACHE_CONFIG.MAX_CACHED_NOTIFICATIONS), CACHE_CONFIG.NOTIFICATIONS_TTL);
+          
+          // Store in IndexedDB for offline access
+          await offlineNotificationStorage.storeNotifications(filteredNotifications, user.user.id);
+        }
         
         dispatch({ type: 'SET_LAST_FETCH', payload: Date.now() });
         retryCount.current = 0; // Reset retry count on success
       } else {
         // Load from offline storage when offline
         console.log('Loading notifications from offline storage');
-        const offlineResponse = await offlineNotificationStorage.getNotifications(params, user.user.id);
+        if (user?.user?.id) {
+          const offlineResponse = await offlineNotificationStorage.getNotifications(params, user.user.id);
         
-        // Filter offline notifications by role as well
-        const filteredNotifications = filterNotificationsByRole(offlineResponse.notifications, state.userRoles);
-        const filteredUnreadCount = filteredNotifications.filter(n => !n.isRead).length;
-        
-        dispatch({
-          type: 'SET_NOTIFICATIONS',
-          payload: {
-            notifications: filteredNotifications,
-            unreadCount: filteredUnreadCount,
-            hasMore: offlineResponse.notifications.length === (params?.limit || 20),
-            page: params?.page || 1,
-          },
-        });
-      }
+          // Filter offline notifications by role as well
+          const filteredNotifications = filterNotificationsByRole(offlineResponse.notifications, state.userRoles);
+          const filteredUnreadCount = filteredNotifications.filter(n => !n.isRead).length;
+          
+          dispatch({
+            type: 'SET_NOTIFICATIONS',
+            payload: {
+              notifications: filteredNotifications,
+              unreadCount: filteredUnreadCount,
+              hasMore: offlineResponse.notifications.length === (params?.limit || 20),
+              page: params?.page || 1,
+            },
+          });
+        }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to fetch notifications';
       dispatch({ type: 'SET_ERROR', payload: errorMessage });
       
       // Try to load from cache on error
       try {
-        const userCacheKey = `${STORAGE_KEYS.NOTIFICATIONS}_${user.user.id}`;
-        const cachedNotifications = loadFromCache(userCacheKey);
-        if (cachedNotifications) {
-          const filteredNotifications = filterNotificationsByRole(cachedNotifications, state.userRoles);
-          dispatch({
-            type: 'SET_NOTIFICATIONS',
-            payload: {
-              notifications: filteredNotifications,
-              unreadCount: filteredNotifications.filter((n: Notification) => !n.isRead).length,
-              hasMore: false,
-              page: 1,
-            },
-          });
-        } else {
-          // Fallback to offline storage
-          const offlineResponse = await offlineNotificationStorage.getNotifications(params, user.user.id);
-          const filteredNotifications = filterNotificationsByRole(offlineResponse.notifications, state.userRoles);
-          dispatch({
-            type: 'SET_NOTIFICATIONS',
-            payload: {
-              notifications: filteredNotifications,
-              unreadCount: filteredNotifications.filter(n => !n.isRead).length,
-              hasMore: false,
-              page: 1,
-            },
-          });
+        if (user?.user?.id) {
+          const userCacheKey = `${STORAGE_KEYS.NOTIFICATIONS}_${user.user.id}`;
+          const cachedNotifications = loadFromCache(userCacheKey);
+          
+          if (cachedNotifications) {
+            const filteredNotifications = filterNotificationsByRole(cachedNotifications, state.userRoles);
+            dispatch({
+              type: 'SET_NOTIFICATIONS',
+              payload: {
+                notifications: filteredNotifications,
+                unreadCount: filteredNotifications.filter((n: Notification) => !n.isRead).length,
+                hasMore: false,
+                page: 1,
+              },
+            });
+          } else {
+            // Fallback to offline storage
+            const offlineResponse = await offlineNotificationStorage.getNotifications(params, user.user.id);
+            const filteredNotifications = filterNotificationsByRole(offlineResponse.notifications, state.userRoles);
+            dispatch({
+              type: 'SET_NOTIFICATIONS',
+              payload: {
+                notifications: filteredNotifications,
+                unreadCount: filteredNotifications.filter(n => !n.isRead).length,
+                hasMore: false,
+                page: 1,
+              },
+            });
+          }
         }
       } catch (offlineError) {
         console.error('Failed to load notifications from offline storage:', offlineError);
       }
     }
+  }
   }, [saveToCache, loadFromCache, isAuthenticated, user, state.userRoles, filterNotificationsByRole]);
 
   // Load More Notifications
@@ -926,7 +935,7 @@ export function NotificationProvider({
     });
 
     // Only proceed if user is authenticated
-    if (!isAuthenticated || !user) {
+    if (!isAuthenticated || !user?.user?.id) {
       return;
     }
 

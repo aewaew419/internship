@@ -8,7 +8,7 @@ describe('useAuthValidation', () => {
       const { result } = renderHook(() => useAuthValidation());
       
       const validData: StudentLoginDTO = {
-        student_id: '12345678',
+        studentId: '12345678',
         password: 'password123',
       };
 
@@ -21,7 +21,7 @@ describe('useAuthValidation', () => {
       const { result } = renderHook(() => useAuthValidation());
       
       const invalidData: StudentLoginDTO = {
-        student_id: '123', // Too short
+        studentId: '123', // Too short
         password: '123', // Too short
       };
 

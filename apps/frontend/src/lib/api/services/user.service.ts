@@ -20,6 +20,19 @@ export class UserService {
       UNPROTECTED_PATH.LOGIN,
       credentials
     );
+    
+    // Handle demo API response format
+    const data = response.data;
+    if (data.success && data.user && data.token) {
+      return {
+        success: data.success,
+        message: data.message,
+        token: data.token,
+        access_token: data.token,
+        user: data.user
+      } as any;
+    }
+    
     return response.data;
   }
 
@@ -28,9 +41,22 @@ export class UserService {
    */
   async studentLogin(credentials: StudentLoginDTO): Promise<UserInterface> {
     const response = await apiClient.getAxiosInstance().post(
-      UNPROTECTED_PATH.LOGIN,
+      UNPROTECTED_PATH.STUDENT_LOGIN,
       credentials
     );
+    
+    // Handle demo API response format
+    const data = response.data;
+    if (data.success && data.user && data.token) {
+      return {
+        success: data.success,
+        message: data.message,
+        token: data.token,
+        access_token: data.token,
+        user: data.user
+      } as any;
+    }
+    
     return response.data;
   }
 

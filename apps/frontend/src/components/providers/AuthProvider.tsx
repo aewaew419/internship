@@ -108,21 +108,34 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   }, []);
 
   // Set user credentials
-  const setCredential = useCallback((userData: UserInterface) => {
+  const setCredential = useCallback((userData: any) => {
     try {
+      // Handle both demo API response and production API response
+      const token = userData.token || userData.access_token;
+      const user = userData.user || userData;
+      
       // Validate required fields
-      if (!userData.access_token || !userData.user) {
+      if (!token || !user) {
         throw new Error("Invalid user data: missing required fields");
       }
 
-      setUser(userData);
+      // Normalize the data structure
+      const normalizedData = {
+        token,
+        access_token: token,
+        user: user,
+        success: userData.success || true,
+        message: userData.message || "Login successful"
+      };
+
+      setUser(normalizedData);
       
       // Store in localStorage
-      localStorage.setItem("user_account", JSON.stringify(userData));
-      localStorage.setItem("access_token", userData.access_token);
+      localStorage.setItem("user_account", JSON.stringify(normalizedData));
+      localStorage.setItem("access_token", token);
       
       // Set secure cookies for middleware
-      setCookie('auth-token', userData.access_token);
+      setCookie('auth-token', token);
       setCookie('user-data', encodeURIComponent(JSON.stringify(userData)));
       
     } catch (error) {

@@ -1,5 +1,5 @@
 export interface StudentLoginDTO {
-  student_id: string;
+  studentId: string;
   password: string;
 }
 

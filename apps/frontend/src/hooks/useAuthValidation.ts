@@ -64,10 +64,10 @@ export const useAuthValidation = () => {
   // Validate student ID
   const validateStudentId = useCallback((studentId: string): ValidationError | null => {
     if (!studentId.trim()) {
-      return { field: 'student_id', message: errorMessages.required };
+      return { field: 'studentId', message: errorMessages.required };
     }
     if (!patterns.studentId.test(studentId)) {
-      return { field: 'student_id', message: errorMessages.invalidStudentId };
+      return { field: 'studentId', message: errorMessages.invalidStudentId };
     }
     return null;
   }, []);
@@ -115,7 +115,7 @@ export const useAuthValidation = () => {
   const validateStudentLogin = useCallback((data: StudentLoginDTO): ValidationResult => {
     const errors: ValidationError[] = [];
 
-    const studentIdError = validateStudentId(data.student_id);
+    const studentIdError = validateStudentId(data.studentId);
     if (studentIdError) errors.push(studentIdError);
 
     const passwordError = validatePassword(data.password);
@@ -147,7 +147,7 @@ export const useAuthValidation = () => {
   const validateRegistration = useCallback((data: RegistrationDTO): ValidationResult => {
     const errors: ValidationError[] = [];
 
-    const studentIdError = validateStudentId(data.student_id);
+    const studentIdError = validateStudentId(data.studentId);
     if (studentIdError) errors.push(studentIdError);
 
     const emailError = validateEmail(data.email);
@@ -187,7 +187,7 @@ export const useAuthValidation = () => {
         case 'email':
           error = validateEmail(value);
           break;
-        case 'student_id':
+        case 'studentId':
           error = validateStudentId(value);
           break;
         case 'password':

@@ -1,5 +1,6 @@
 export const UNPROTECTED_PATH = {
   LOGIN: "/login",
+  STUDENT_LOGIN: "/auth/student-login",
   ADMIN_LOGIN: "/admin/login",
   REGISTER: "/register",
   CHECK_STUDENT_ID: "/check-student-id",
