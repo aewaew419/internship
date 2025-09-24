@@ -9,7 +9,7 @@ const baiJamjuree = Bai_Jamjuree({
   weight: ["200", "300", "400", "500", "600", "700"],
   variable: "--font-bai-jamjuree",
   display: "swap",
-  preload: true,
+  preload: false, // Disable preload to avoid unused resource warning
 });
 
 export const metadata: Metadata = {
@@ -47,6 +47,8 @@ export default function RootLayout({
         {/* Preconnect to external domains for performance */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        
+        {/* Font optimization - using swap display instead of preload */}
         
         {/* Favicon */}
         <link rel="icon" href="/favicon.ico" />

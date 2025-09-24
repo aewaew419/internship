@@ -24,7 +24,15 @@ interface LegacyAuthContextType {
 }
 
 // Enhanced AuthContext that extends legacy interface
-interface EnhancedAuthContextType extends LegacyAuthContextType, AuthContextValue {}
+interface EnhancedAuthContextType extends LegacyAuthContextType {
+  error: string | null;
+  userType: 'student' | 'admin' | null;
+  login: (credentials: StudentLoginDTO | AdminLoginDTO, userType: 'student' | 'admin') => Promise<void>;
+  register: (data: RegistrationDTO) => Promise<void>;
+  forgotPassword: (email: string) => Promise<void>;
+  resetPassword: (token: string, password: string) => Promise<void>;
+  clearError: () => void;
+}
 
 export const AuthContext = createContext<EnhancedAuthContextType | null>(null);
 
@@ -413,9 +421,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     forgotPassword,
     resetPassword,
     clearError,
-    
-    // AuthUser for new methods (mapped from legacy user)
-    user: authUser,
   };
 
   return (

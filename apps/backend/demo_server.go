@@ -89,11 +89,12 @@ func main() {
 		},
 	})
 
-	// CORS middleware
+	// CORS middleware - Allow all origins for demo
 	app.Use(cors.New(cors.Config{
-		AllowOrigins: "http://localhost:3000,http://localhost:5173",
+		AllowOrigins: "*",
 		AllowHeaders: "Origin, Content-Type, Accept, Authorization, X-Request-ID",
 		AllowMethods: "GET, POST, PUT, DELETE, OPTIONS, HEAD",
+		AllowCredentials: false, // Set to false when using AllowOrigins: "*"
 	}))
 
 	// Basic health check endpoint

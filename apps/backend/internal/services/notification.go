@@ -2,6 +2,7 @@ package services
 
 import (
 	"fmt"
+	"os"
 	"time"
 
 	"backend-go/internal/models"
@@ -10,13 +11,18 @@ import (
 
 // NotificationService handles notification operations
 type NotificationService struct {
-	db *gorm.DB
+	db       *gorm.DB
+	disabled bool
 }
 
 // NewNotificationService creates a new notification service instance
 func NewNotificationService(db *gorm.DB) *NotificationService {
+	// Check if notifications are disabled via environment variable
+	disabled := os.Getenv("DISABLE_NOTIFICATIONS") == "true"
+	
 	return &NotificationService{
-		db: db,
+		db:       db,
+		disabled: disabled,
 	}
 }
 
@@ -69,6 +75,22 @@ type BulkNotificationRequest struct {
 
 // SendNotification creates and sends a notification
 func (s *NotificationService) SendNotification(req NotificationRequest) (*NotificationResponse, error) {
+	// If notifications are disabled, return a dummy response
+	if s.disabled {
+		return &NotificationResponse{
+			ID:        0,
+			UserID:    req.UserID,
+			Type:      req.Type,
+			Title:     req.Title,
+			Message:   req.Message,
+			IsRead:    false,
+			Priority:  req.Priority,
+			ActionURL: req.ActionURL,
+			Metadata:  req.Metadata,
+			CreatedAt: time.Now(),
+		}, nil
+	}
+
 	// Set default priority if not specified
 	if req.Priority == "" {
 		req.Priority = models.NotificationPriorityNormal
@@ -114,6 +136,26 @@ func (s *NotificationService) SendNotification(req NotificationRequest) (*Notifi
 
 // SendBulkNotifications sends notifications to multiple users
 func (s *NotificationService) SendBulkNotifications(req BulkNotificationRequest) ([]NotificationResponse, error) {
+	// If notifications are disabled, return dummy responses
+	if s.disabled {
+		var responses []NotificationResponse
+		for _, userID := range req.UserIDs {
+			responses = append(responses, NotificationResponse{
+				ID:        0,
+				UserID:    userID,
+				Type:      req.Type,
+				Title:     req.Title,
+				Message:   req.Message,
+				IsRead:    false,
+				Priority:  req.Priority,
+				ActionURL: req.ActionURL,
+				Metadata:  req.Metadata,
+				CreatedAt: time.Now(),
+			})
+		}
+		return responses, nil
+	}
+
 	// Set default priority if not specified
 	if req.Priority == "" {
 		req.Priority = models.NotificationPriorityNormal
@@ -159,6 +201,11 @@ func (s *NotificationService) SendBulkNotifications(req BulkNotificationRequest)
 
 // GetUserNotifications retrieves notifications for a user
 func (s *NotificationService) GetUserNotifications(req NotificationListRequest) ([]NotificationResponse, int64, error) {
+	// If notifications are disabled, return empty list
+	if s.disabled {
+		return []NotificationResponse{}, 0, nil
+	}
+
 	// Set defaults
 	if req.Limit <= 0 {
 		req.Limit = 20
@@ -280,6 +327,11 @@ func (s *NotificationService) MarkAllAsRead(userID uint) error {
 
 // GetUnreadCount returns the count of unread notifications for a user
 func (s *NotificationService) GetUnreadCount(userID uint) (int64, error) {
+	// If notifications are disabled, return 0
+	if s.disabled {
+		return 0, nil
+	}
+
 	count, err := models.GetUnreadCount(s.db, userID)
 	if err != nil {
 		return 0, fmt.Errorf("failed to get unread count: %w", err)

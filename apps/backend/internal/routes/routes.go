@@ -51,8 +51,8 @@ func Setup(app *fiber.App, db *gorm.DB, cfg *config.Config) {
 	// Setup student authentication routes
 	setupStudentAuthRoutes(api, db, cfg)
 
-	// Setup notification routes
-	setupNotificationRoutes(api, db, cfg)
+	// Setup notification routes (disabled for now)
+	// setupNotificationRoutes(api, db, cfg)
 
 	// Setup user management routes
 	// setupUserRoutes(api, db, cfg) // Disabled - needs model alignment
