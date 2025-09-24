@@ -102,7 +102,7 @@ func (s *StudentIdValidationService) ValidateFormat(studentId string) Validation
 
 	year := matches[1]
 	faculty := matches[2]
-	department := matches[3]
+	_ = matches[3] // department - not used in current validation
 	sequence := matches[4]
 
 	// Validate year (should be reasonable)

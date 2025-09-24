@@ -66,6 +66,21 @@ type ChangePasswordRequest struct {
 	ConfirmPassword string `json:"confirm_password" validate:"required"`
 }
 
+// StudentLoginRequest represents the student login request payload
+type StudentLoginRequest struct {
+	StudentID string `json:"student_id" validate:"required"`
+	Password  string `json:"password" validate:"required,min=6"`
+}
+
+// StudentRegisterRequest represents the student registration request
+type StudentRegisterRequest struct {
+	StudentID       string `json:"student_id" validate:"required"`
+	Email           string `json:"email" validate:"required,email"`
+	Password        string `json:"password" validate:"required,min=8"`
+	ConfirmPassword string `json:"confirm_password" validate:"required"`
+	FullName        string `json:"full_name" validate:"required"`
+}
+
 // Login authenticates a user and returns JWT tokens
 func (a *AuthService) Login(req LoginRequest) (*LoginResponse, error) {
 	var user models.User
@@ -191,7 +206,7 @@ func (a *AuthService) RefreshToken(refreshToken string) (*LoginResponse, error) 
 }
 
 // ChangePassword changes the user's password
-func (a *AuthService) ChangePassword(userID uint, req ChangePasswordRequest) error {
+func (a *AuthService) ChangePassword(userID string, req ChangePasswordRequest) error {
 	// Validate password confirmation
 	if req.NewPassword != req.ConfirmPassword {
 		return errors.New("passwords do not match")
@@ -199,7 +214,7 @@ func (a *AuthService) ChangePassword(userID uint, req ChangePasswordRequest) err
 
 	// Get user
 	var user models.User
-	err := a.db.First(&user, userID).Error
+	err := a.db.Where("student_id = ?", userID).First(&user).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return errors.New("user not found")
@@ -236,7 +251,7 @@ func (a *AuthService) RequestPasswordReset(req PasswordResetRequest) error {
 	}
 
 	// Generate password reset token (valid for 1 hour)
-	resetToken, err := a.jwtService.GeneratePasswordResetToken(user.ID, user.Email)
+	resetToken, err := a.jwtService.GeneratePasswordResetToken(user.StudentID, "User", user.Email)
 	if err != nil {
 		return fmt.Errorf("failed to generate reset token: %w", err)
 	}
@@ -282,14 +297,124 @@ func (a *AuthService) ResetPassword(req PasswordResetConfirmRequest) error {
 }
 
 // GetUserByID retrieves a user by ID
-func (a *AuthService) GetUserByID(userID uint) (*models.User, error) {
+func (a *AuthService) GetUserByID(userID string) (*models.User, error) {
 	var user models.User
-	err := a.db.Preload("Role").First(&user, userID).Error
+	err := a.db.Where("student_id = ?", userID).First(&user).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, errors.New("user not found")
 		}
 		return nil, fmt.Errorf("database error: %w", err)
+	}
+
+	// Remove password from response
+	user.Password = ""
+
+	return &user, nil
+}
+
+// StudentLogin authenticates a student using student_id and returns JWT tokens
+func (a *AuthService) StudentLogin(req StudentLoginRequest) (*LoginResponse, error) {
+	var user models.User
+	
+	// Find user by student_id
+	err := a.db.Where("student_id = ?", req.StudentID).First(&user).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New("invalid credentials")
+		}
+		return nil, fmt.Errorf("database error: %w", err)
+	}
+
+	// Check if user is active
+	if !user.IsActive() {
+		if user.Status == models.UserStatusInactive {
+			return nil, errors.New("user inactive")
+		}
+		if user.Status == models.UserStatusSuspended {
+			return nil, errors.New("user suspended")
+		}
+	}
+
+	// Check password
+	if !user.CheckPassword(req.Password) {
+		return nil, errors.New("invalid credentials")
+	}
+
+	// Update last login timestamp
+	err = user.UpdateLastLogin(a.db)
+	if err != nil {
+		// Log error but don't fail the login
+		fmt.Printf("Failed to update last login for user %s: %v\n", user.StudentID, err)
+	}
+
+	// Generate tokens
+	accessToken, err := a.jwtService.GenerateTokenForUser(&user, TokenTypeAccess, []string{}, false, "")
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate access token: %w", err)
+	}
+
+	refreshToken, err := a.jwtService.GenerateTokenForUser(&user, TokenTypeRefresh, []string{}, false, "")
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate refresh token: %w", err)
+	}
+
+	// Remove password from response
+	user.Password = ""
+
+	return &LoginResponse{
+		AccessToken:  accessToken.Token,
+		RefreshToken: refreshToken.Token,
+		TokenType:    "Bearer",
+		ExpiresIn:    24 * 60 * 60, // 24 hours in seconds
+		User:         user,
+	}, nil
+}
+
+// StudentRegister creates a new student account
+func (a *AuthService) StudentRegister(req StudentRegisterRequest) (*models.User, error) {
+	// Validate password confirmation
+	if req.Password != req.ConfirmPassword {
+		return nil, errors.New("passwords do not match")
+	}
+
+	// Check if user already exists by student_id
+	var existingUser models.User
+	err := a.db.Where("student_id = ?", req.StudentID).First(&existingUser).Error
+	if err == nil {
+		return nil, errors.New("user with this student_id already exists")
+	}
+	if !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, fmt.Errorf("database error checking student_id: %w", err)
+	}
+
+	// Check if user already exists by email
+	err = a.db.Where("email = ?", req.Email).First(&existingUser).Error
+	if err == nil {
+		return nil, errors.New("user with this email already exists")
+	}
+	if !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, fmt.Errorf("database error checking email: %w", err)
+	}
+
+	// Create new user
+	user := models.User{
+		StudentID: req.StudentID,
+		Email:     req.Email,
+		Password:  req.Password, // Will be hashed by BeforeCreate hook
+		FullName:  req.FullName,
+		Status:    models.UserStatusActive,
+	}
+
+	err = a.db.Create(&user).Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to create user: %w", err)
+	}
+
+	// Load user information
+	err = a.db.First(&user, "student_id = ?", user.StudentID).Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to load user data: %w", err)
 	}
 
 	// Remove password from response

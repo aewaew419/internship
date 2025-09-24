@@ -12,6 +12,7 @@ type Config struct {
 	Environment    string
 	LogLevel       string
 	LogFormat      string
+	TwoFactor      *TwoFactorConfig
 }
 
 func Load() *Config {
@@ -23,6 +24,7 @@ func Load() *Config {
 		Environment:    getEnv("ENVIRONMENT", "development"),
 		LogLevel:       getEnv("LOG_LEVEL", "info"),
 		LogFormat:      getEnv("LOG_FORMAT", "json"),
+		TwoFactor:      LoadTwoFactorConfig(),
 	}
 }
 

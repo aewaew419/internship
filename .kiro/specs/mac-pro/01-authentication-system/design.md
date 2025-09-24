@@ -2,7 +2,7 @@
 
 ## Overview
 
-การออกแบบระบบ authentication ที่ปรับปรุงให้รองรับการใช้ student_id เป็น primary identifier สำหรับนักศึกษา พร้อมระบบ Super Admin แยกต่างหาก โดยใช้ AdonisJS framework และ MySQL database พร้อมการรักษาความปลอดภัยที่แข็งแกร่ง
+การออกแบบระบบ authentication ที่ปรับปรุงให้รองรับการใช้ student_id เป็น primary identifier สำหรับนักศึกษา พร้อมระบบ Super Admin แยกต่างหาก โดยใช้ Node.js + Express.js + TypeScript และ MySQL database พร้อมการรักษาความปลอดภัยที่แข็งแกร่ง
 
 ## Architecture
 

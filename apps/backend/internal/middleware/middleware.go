@@ -55,36 +55,36 @@ func AuthGroup(app *fiber.App, prefix string, jwtService *services.JWTService) f
 }
 
 // AdminGroup creates a route group with admin-only access
-func AdminGroup(app *fiber.App, prefix string, jwtService *services.JWTService, db *gorm.DB) fiber.Router {
-	return app.Group(prefix, 
-		AuthMiddleware(jwtService),
-		AdminOnly(db),
-	)
-}
+// func AdminGroup(app *fiber.App, prefix string, jwtService *services.JWTService, db *gorm.DB) fiber.Router {
+// 	return app.Group(prefix, 
+// 		AuthMiddleware(jwtService),
+// 		AdminOnly(db),
+// 	)
+// }
 
 // InstructorGroup creates a route group with instructor or admin access
-func InstructorGroup(app *fiber.App, prefix string, jwtService *services.JWTService, db *gorm.DB) fiber.Router {
-	return app.Group(prefix,
-		AuthMiddleware(jwtService),
-		InstructorOrAdmin(db),
-	)
-}
+// func InstructorGroup(app *fiber.App, prefix string, jwtService *services.JWTService, db *gorm.DB) fiber.Router {
+// 	return app.Group(prefix,
+// 		AuthMiddleware(jwtService),
+// 		InstructorOrAdmin(db),
+// 	)
+// }
 
 // StaffGroup creates a route group with staff or admin access
-func StaffGroup(app *fiber.App, prefix string, jwtService *services.JWTService, db *gorm.DB) fiber.Router {
-	return app.Group(prefix,
-		AuthMiddleware(jwtService),
-		StaffOrAdmin(db),
-	)
-}
+// func StaffGroup(app *fiber.App, prefix string, jwtService *services.JWTService, db *gorm.DB) fiber.Router {
+// 	return app.Group(prefix,
+// 		AuthMiddleware(jwtService),
+// 		StaffOrAdmin(db),
+// 	)
+// }
 
 // StudentGroup creates a route group with student or above access
-func StudentGroup(app *fiber.App, prefix string, jwtService *services.JWTService, db *gorm.DB) fiber.Router {
-	return app.Group(prefix,
-		AuthMiddleware(jwtService),
-		StudentOrAbove(db),
-	)
-}
+// func StudentGroup(app *fiber.App, prefix string, jwtService *services.JWTService, db *gorm.DB) fiber.Router {
+// 	return app.Group(prefix,
+// 		AuthMiddleware(jwtService),
+// 		StudentOrAbove(db),
+// 	)
+// }
 
 // PublicGroup creates a route group without authentication
 func PublicGroup(app *fiber.App, prefix string) fiber.Router {

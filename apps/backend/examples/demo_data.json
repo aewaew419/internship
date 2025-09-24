@@ -1,0 +1,398 @@
+{
+  "demo_users": {
+    "admin": {
+      "email": "admin001@university.ac.th",
+      "password": "password123",
+      "role": "admin",
+      "name": "ปิ๊ก001 นามสกุลปิ๊ก001"
+    },
+    "instructor": {
+      "email": "instructor001@university.ac.th", 
+      "password": "password123",
+      "role": "instructor",
+      "name": "ประจำวิชา001 นามสกุลประจำวิชา001"
+    },
+    "student": {
+      "email": "u6800001@student.university.ac.th",
+      "password": "password123", 
+      "role": "student",
+      "name": "สมศรี001 ดีเด่น001",
+      "student_id": "u6800001"
+    }
+  },
+  "api_endpoints": {
+    "auth": {
+      "login": {
+        "method": "POST",
+        "url": "/api/v1/auth/login",
+        "body": {
+          "email": "admin001@university.ac.th",
+          "password": "password123"
+        }
+      }
+    },
+    "dashboard": {
+      "student_dashboard": {
+        "method": "GET",
+        "url": "/api/v1/dashboard/student/1",
+        "description": "Get student dashboard data"
+      },
+      "instructor_dashboard": {
+        "method": "GET", 
+        "url": "/api/v1/dashboard/instructor/1",
+        "description": "Get instructor dashboard data"
+      },
+      "admin_dashboard": {
+        "method": "GET",
+        "url": "/api/v1/dashboard/admin",
+        "description": "Get admin dashboard data"
+      }
+    },
+    "students": {
+      "list_students": {
+        "method": "GET",
+        "url": "/api/v1/students",
+        "query_params": {
+          "page": 1,
+          "limit": 10,
+          "search": "",
+          "major_id": ""
+        }
+      },
+      "get_student": {
+        "method": "GET",
+        "url": "/api/v1/students/1",
+        "description": "Get specific student details"
+      },
+      "create_student": {
+        "method": "POST",
+        "url": "/api/v1/students",
+        "body": {
+          "email": "new.student@student.university.ac.th",
+          "password": "password123",
+          "first_name": "นักศึกษาใหม่",
+          "last_name": "ทดสอบ",
+          "student_id": "u6800999",
+          "major_id": 1,
+          "year": 1,
+          "semester": 1
+        }
+      }
+    },
+    "trainings": {
+      "list_trainings": {
+        "method": "GET",
+        "url": "/api/v1/trainings",
+        "query_params": {
+          "page": 1,
+          "limit": 10,
+          "status": "approved"
+        }
+      },
+      "get_training": {
+        "method": "GET",
+        "url": "/api/v1/trainings/1",
+        "description": "Get specific training details"
+      },
+      "create_training": {
+        "method": "POST",
+        "url": "/api/v1/trainings",
+        "body": {
+          "student_id": 1,
+          "company_name": "บริษัท ทดสอบ จำกัด",
+          "position": "Software Developer Intern",
+          "start_date": "2024-06-01T00:00:00Z",
+          "end_date": "2024-10-31T00:00:00Z",
+          "supervisor": "คุณทดสอบ ระบบ",
+          "description": "ฝึกงานพัฒนาซอฟต์แวร์"
+        }
+      },
+      "update_training_status": {
+        "method": "PUT",
+        "url": "/api/v1/trainings/1/status",
+        "body": {
+          "status": "approved",
+          "notes": "อนุมัติการฝึกงาน"
+        }
+      }
+    },
+    "evaluations": {
+      "visitor_evaluate_student": {
+        "method": "POST",
+        "url": "/api/v1/evaluations/visitor-student",
+        "body": {
+          "visitor_id": 1,
+          "student_id": 1,
+          "score": 85.5,
+          "comments": "นักศึกษาทำงานได้ดี มีความรับผิดชอบ",
+          "criteria": {
+            "technical_skills": 85,
+            "communication": 80,
+            "teamwork": 90,
+            "problem_solving": 85,
+            "punctuality": 95
+          }
+        }
+      },
+      "student_evaluate_company": {
+        "method": "POST",
+        "url": "/api/v1/evaluations/student-company",
+        "body": {
+          "student_id": 1,
+          "company_name": "บริษัท เทคโนโลยี จำกัด",
+          "score": 90.0,
+          "comments": "บริษัทให้โอกาสเรียนรู้ดี สภาพแวดล้อมดี",
+          "criteria": {
+            "learning_opportunity": 95,
+            "supervision": 90,
+            "work_environment": 88,
+            "facilities": 85,
+            "overall_satisfaction": 92
+          }
+        }
+      }
+    },
+    "visitors": {
+      "list_visitors": {
+        "method": "GET",
+        "url": "/api/v1/visitors",
+        "query_params": {
+          "page": 1,
+          "limit": 10,
+          "company": ""
+        }
+      },
+      "create_visitor": {
+        "method": "POST",
+        "url": "/api/v1/visitors",
+        "body": {
+          "name": "คุณทดสอบ ระบบ",
+          "email": "test@company.com",
+          "phone": "081-234-5678",
+          "company": "บริษัท ทดสอบ จำกัด",
+          "position": "Senior Developer",
+          "expertise": "Full Stack Development"
+        }
+      }
+    },
+    "analytics": {
+      "internship_stats": {
+        "method": "GET",
+        "url": "/api/v1/analytics/internship-stats",
+        "query_params": {
+          "year": 2024,
+          "semester": 1
+        }
+      },
+      "approval_stats": {
+        "method": "GET",
+        "url": "/api/v1/analytics/approval-stats",
+        "query_params": {
+          "start_date": "2024-01-01",
+          "end_date": "2024-12-31"
+        }
+      },
+      "company_stats": {
+        "method": "GET",
+        "url": "/api/v1/analytics/company-stats",
+        "description": "Get company partnership statistics"
+      }
+    }
+  },
+  "sample_responses": {
+    "student_dashboard": {
+      "student_info": {
+        "id": 1,
+        "student_id": "u6800001",
+        "name": "สมศรี001 ดีเด่น001",
+        "major": "วิศวกรรมคอมพิวเตอร์",
+        "year": 4,
+        "semester": 1,
+        "gpa": 3.75
+      },
+      "current_training": {
+        "id": 1,
+        "company_name": "บริษัท เทคโนโลยี จำกัด",
+        "position": "Software Developer Intern",
+        "status": "approved",
+        "start_date": "2024-06-01",
+        "end_date": "2024-10-31",
+        "supervisor": "คุณสมชาย ใจดี"
+      },
+      "recent_activities": [
+        {
+          "type": "evaluation",
+          "message": "ได้รับการประเมินจากพี่เลี้ยง",
+          "date": "2024-09-15",
+          "score": 85.5
+        },
+        {
+          "type": "training_update",
+          "message": "อัพเดทความคืบหน้าการฝึกงาน",
+          "date": "2024-09-10"
+        }
+      ],
+      "notifications": [
+        {
+          "id": 1,
+          "type": "evaluation_reminder",
+          "title": "แจ้งเตือนประเมินบริษัท",
+          "message": "กรุณาประเมินบริษัทที่ฝึกงานภายในวันที่ 31 ตุลาคม 2024",
+          "is_read": false,
+          "created_at": "2024-09-20"
+        }
+      ]
+    },
+    "instructor_dashboard": {
+      "instructor_info": {
+        "id": 1,
+        "instructor_id": "t6800001",
+        "name": "ประจำวิชา001 นามสกุลประจำวิชา001",
+        "department": "วิศวกรรมคอมพิวเตอร์",
+        "position": "อาจารย์"
+      },
+      "supervised_students": [
+        {
+          "id": 1,
+          "name": "สมศรี001 ดีเด่น001",
+          "student_id": "u6800001",
+          "company": "บริษัท เทคโนโลยี จำกัด",
+          "status": "approved",
+          "evaluation_score": 85.5
+        },
+        {
+          "id": 2,
+          "name": "สมศรี002 ดีเด่น002", 
+          "student_id": "u6800002",
+          "company": "บริษัท ดิจิทัล โซลูชั่น จำกัด",
+          "status": "approved",
+          "evaluation_score": 88.0
+        }
+      ],
+      "pending_approvals": [
+        {
+          "id": 6,
+          "student_name": "สมศรี006 ดีเด่น006",
+          "company_name": "บริษัท เอไอ อินโนเวชั่น จำกัด",
+          "submitted_date": "2024-09-20"
+        }
+      ],
+      "statistics": {
+        "total_students": 12,
+        "approved_trainings": 10,
+        "pending_approvals": 2,
+        "completed_evaluations": 5
+      }
+    },
+    "admin_dashboard": {
+      "overview_stats": {
+        "total_students": 20,
+        "active_trainings": 7,
+        "total_companies": 5,
+        "pending_approvals": 2
+      },
+      "chart_data": {
+        "training_by_major": [
+          {"major": "วิศวกรรมคอมพิวเตอร์", "count": 4},
+          {"major": "วิศวกรรมไฟฟ้า", "count": 2},
+          {"major": "วิทยาการคอมพิวเตอร์", "count": 1}
+        ],
+        "training_by_status": [
+          {"status": "approved", "count": 5},
+          {"status": "pending", "count": 2},
+          {"status": "completed", "count": 0}
+        ],
+        "monthly_applications": [
+          {"month": "มิ.ย.", "count": 3},
+          {"month": "ก.ค.", "count": 2},
+          {"month": "ส.ค.", "count": 2}
+        ]
+      }
+    }
+  },
+  "test_scenarios": {
+    "authentication": {
+      "valid_login": {
+        "description": "Test successful login",
+        "endpoint": "/api/v1/auth/login",
+        "method": "POST",
+        "body": {
+          "email": "admin001@university.ac.th",
+          "password": "password123"
+        },
+        "expected_status": 200
+      },
+      "invalid_login": {
+        "description": "Test failed login",
+        "endpoint": "/api/v1/auth/login", 
+        "method": "POST",
+        "body": {
+          "email": "admin001@university.ac.th",
+          "password": "wrongpassword"
+        },
+        "expected_status": 401
+      }
+    },
+    "student_management": {
+      "create_student_success": {
+        "description": "Successfully create new student",
+        "endpoint": "/api/v1/students",
+        "method": "POST",
+        "body": {
+          "email": "test.student@student.university.ac.th",
+          "password": "password123",
+          "first_name": "ทดสอบ",
+          "last_name": "ระบบ",
+          "student_id": "u6800999",
+          "major_id": 1,
+          "year": 1,
+          "semester": 1
+        },
+        "expected_status": 201
+      },
+      "duplicate_student_id": {
+        "description": "Test duplicate student ID error",
+        "endpoint": "/api/v1/students",
+        "method": "POST", 
+        "body": {
+          "email": "duplicate@student.university.ac.th",
+          "password": "password123",
+          "first_name": "ซ้ำ",
+          "last_name": "ระบบ",
+          "student_id": "u6800001",
+          "major_id": 1,
+          "year": 1,
+          "semester": 1
+        },
+        "expected_status": 409
+      }
+    },
+    "training_workflow": {
+      "submit_training_application": {
+        "description": "Student submits training application",
+        "endpoint": "/api/v1/trainings",
+        "method": "POST",
+        "body": {
+          "student_id": 11,
+          "company_name": "บริษัท ใหม่ จำกัด",
+          "position": "Developer Intern",
+          "start_date": "2024-11-01T00:00:00Z",
+          "end_date": "2025-03-31T00:00:00Z",
+          "supervisor": "คุณใหม่ ทดสอบ",
+          "description": "ฝึกงานพัฒนาซอฟต์แวร์"
+        },
+        "expected_status": 201
+      },
+      "approve_training": {
+        "description": "Instructor approves training",
+        "endpoint": "/api/v1/trainings/1/status",
+        "method": "PUT",
+        "body": {
+          "status": "approved",
+          "notes": "อนุมัติการฝึกงาน เงื่อนไขเหมาะสม"
+        },
+        "expected_status": 200
+      }
+    }
+  }
+}

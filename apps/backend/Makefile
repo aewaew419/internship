@@ -249,6 +249,34 @@ test-report: test-coverage
 test-ci: clean lint test-coverage test-coverage-threshold
 	@echo "CI test pipeline completed successfully!"
 
+# Database and Seeding
+.PHONY: seed
+seed:
+	@echo "Running database seed..."
+	go run cmd/seed/main.go
+
+.PHONY: seed-sql
+seed-sql:
+	@echo "Running SQL seed script..."
+	@if [ -f "internship.db" ]; then \
+		sqlite3 internship.db < scripts/enhanced_seed_demo_data.sql; \
+		echo "SQL seed completed successfully!"; \
+	else \
+		echo "Database file not found. Please ensure the database is created first."; \
+		exit 1; \
+	fi
+
+.PHONY: db-reset
+db-reset:
+	@echo "Resetting database and running seed..."
+	@rm -f internship.db
+	@echo "Database reset. Run 'make seed' to populate with demo data."
+
+.PHONY: demo-data
+demo-data: seed
+	@echo "Demo data setup completed!"
+	@echo "You can now test the API with realistic data."
+
 # Help target
 .PHONY: help
 help:
@@ -294,6 +322,12 @@ help:
 	@echo "  test-report       - Generate comprehensive test report"
 	@echo "  test-junit        - Generate JUnit test report"
 	@echo "  coverage-badge    - Generate coverage badge"
+	@echo ""
+	@echo "Database & Seeding:"
+	@echo "  seed              - Run Go seed script to populate database"
+	@echo "  seed-sql          - Run SQL seed script directly"
+	@echo "  db-reset          - Reset database (removes all data)"
+	@echo "  demo-data         - Setup complete demo data for testing"
 	@echo ""
 	@echo "Utilities:"
 	@echo "  lint              - Run linters and formatters"

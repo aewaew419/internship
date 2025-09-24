@@ -44,7 +44,6 @@ type StudentListResponse struct {
 
 // CreateStudentRequest represents the request for creating a student
 type CreateStudentRequest struct {
-	UserID       uint    `json:"user_id" validate:"required"`
 	Name         string  `json:"name" validate:"required"`
 	MiddleName   string  `json:"middle_name"`
 	Surname      string  `json:"surname" validate:"required"`
@@ -201,30 +200,11 @@ func (s *StudentService) GetStudentByID(id uint) (*models.Student, error) {
 
 // CreateStudent creates a new student
 func (s *StudentService) CreateStudent(req CreateStudentRequest) (*models.Student, error) {
-	// Check if user exists
-	var user models.User
-	err := s.db.First(&user, req.UserID).Error
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, errors.New("user not found")
-		}
-		return nil, fmt.Errorf("database error: %w", err)
-	}
-
 	// Check if student ID already exists
 	var existingStudent models.Student
-	err = s.db.Where("student_id = ?", req.StudentID).First(&existingStudent).Error
+	err := s.db.Where("student_id = ?", req.StudentID).First(&existingStudent).Error
 	if err == nil {
 		return nil, errors.New("student with this student ID already exists")
-	}
-	if !errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, fmt.Errorf("database error: %w", err)
-	}
-
-	// Check if user is already a student
-	err = s.db.Where("user_id = ?", req.UserID).First(&existingStudent).Error
-	if err == nil {
-		return nil, errors.New("user is already a student")
 	}
 	if !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, fmt.Errorf("database error: %w", err)
@@ -287,7 +267,6 @@ func (s *StudentService) CreateStudent(req CreateStudentRequest) (*models.Studen
 
 	// Create new student
 	student := models.Student{
-		UserID:       req.UserID,
 		Name:         req.Name,
 		MiddleName:   req.MiddleName,
 		Surname:      req.Surname,
@@ -605,49 +584,230 @@ func (s *StudentService) GetStudentEnrollments(studentID uint) ([]models.Student
 	return enrollments, nil
 }
 
-// GetStudentStats returns student statistics
-func (s *StudentService) GetStudentStats() (map[string]interface{}, error) {
+// BulkDeleteStudentsRequest represents the request for bulk deleting students
+type BulkDeleteStudentsRequest struct {
+	StudentIDs []uint `json:"student_ids" validate:"required,min=1"`
+}
+
+// BulkCreateFromExcelRequest represents the request for bulk creating students from Excel
+type BulkCreateFromExcelRequest struct {
+	FilePath string `json:"file_path" validate:"required"`
+}
+
+// StudentSearchRequest represents advanced search request
+type StudentSearchRequest struct {
+	Query        string   `json:"query"`
+	MajorIDs     []uint   `json:"major_ids"`
+	FacultyIDs   []uint   `json:"faculty_ids"`
+	ProgramIDs   []uint   `json:"program_ids"`
+	CampusIDs    []uint   `json:"campus_ids"`
+	GPAXMin      *float64 `json:"gpax_min"`
+	GPAXMax      *float64 `json:"gpax_max"`
+	HasTraining  *bool    `json:"has_training"`
+	TrainingYear *int     `json:"training_year"`
+}
+
+// BulkDeleteStudents deletes multiple students
+func (s *StudentService) BulkDeleteStudents(req BulkDeleteStudentsRequest) error {
+	// Check if any students have active trainings
+	var trainingCount int64
+	err := s.db.Table("student_trainings").
+		Joins("JOIN student_enrolls ON student_trainings.student_enroll_id = student_enrolls.id").
+		Where("student_enrolls.student_id IN ?", req.StudentIDs).
+		Count(&trainingCount).Error
+	if err != nil {
+		return fmt.Errorf("failed to check student trainings: %w", err)
+	}
+
+	if trainingCount > 0 {
+		return errors.New("cannot delete students with active trainings")
+	}
+
+	// Delete students
+	err = s.db.Where("id IN ?", req.StudentIDs).Delete(&models.Student{}).Error
+	if err != nil {
+		return fmt.Errorf("failed to bulk delete students: %w", err)
+	}
+
+	return nil
+}
+
+// AdvancedSearch performs advanced search with multiple filters
+func (s *StudentService) AdvancedSearch(req StudentSearchRequest) ([]models.Student, error) {
+	query := s.db.Model(&models.Student{}).
+		Preload("User").
+		Preload("Major").
+		Preload("Program").
+		Preload("Faculty").
+		Preload("Campus")
+
+	// Text search
+	if req.Query != "" {
+		searchTerm := "%" + req.Query + "%"
+		query = query.Where("name LIKE ? OR surname LIKE ? OR student_id LIKE ? OR email LIKE ?",
+			searchTerm, searchTerm, searchTerm, searchTerm)
+	}
+
+	// Filter by majors
+	if len(req.MajorIDs) > 0 {
+		query = query.Where("major_id IN ?", req.MajorIDs)
+	}
+
+	// Filter by faculties
+	if len(req.FacultyIDs) > 0 {
+		query = query.Where("faculty_id IN ?", req.FacultyIDs)
+	}
+
+	// Filter by programs
+	if len(req.ProgramIDs) > 0 {
+		query = query.Where("program_id IN ?", req.ProgramIDs)
+	}
+
+	// Filter by campuses
+	if len(req.CampusIDs) > 0 {
+		query = query.Where("campus_id IN ?", req.CampusIDs)
+	}
+
+	// Filter by GPAX range
+	if req.GPAXMin != nil {
+		query = query.Where("gpax >= ?", *req.GPAXMin)
+	}
+	if req.GPAXMax != nil {
+		query = query.Where("gpax <= ?", *req.GPAXMax)
+	}
+
+	// Filter by training status
+	if req.HasTraining != nil {
+		if *req.HasTraining {
+			query = query.Joins("JOIN student_enrolls ON students.id = student_enrolls.student_id").
+				Joins("JOIN student_trainings ON student_enrolls.id = student_trainings.student_enroll_id")
+		} else {
+			query = query.Where("id NOT IN (SELECT DISTINCT student_enrolls.student_id FROM student_enrolls JOIN student_trainings ON student_enrolls.id = student_trainings.student_enroll_id)")
+		}
+	}
+
+	// Filter by training year
+	if req.TrainingYear != nil {
+		query = query.Joins("JOIN student_enrolls ON students.id = student_enrolls.student_id").
+			Joins("JOIN student_trainings ON student_enrolls.id = student_trainings.student_enroll_id").
+			Where("YEAR(student_trainings.start_date) = ?", *req.TrainingYear)
+	}
+
+	var students []models.Student
+	err := query.Find(&students).Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to perform advanced search: %w", err)
+	}
+
+	return students, nil
+}
+
+// GetStudentAnalytics returns detailed student analytics
+func (s *StudentService) GetStudentAnalytics() (map[string]interface{}, error) {
+	analytics := make(map[string]interface{})
+
+	// Basic counts
 	var totalStudents int64
 	err := s.db.Model(&models.Student{}).Count(&totalStudents).Error
 	if err != nil {
 		return nil, fmt.Errorf("failed to count total students: %w", err)
 	}
+	analytics["total_students"] = totalStudents
 
-	// Count students by major
+	// Students with active trainings
+	var activeTrainings int64
+	err = s.db.Table("students").
+		Joins("JOIN student_enrolls ON students.id = student_enrolls.student_id").
+		Joins("JOIN student_trainings ON student_enrolls.id = student_trainings.student_enroll_id").
+		Where("student_trainings.end_date > NOW()").
+		Count(&activeTrainings).Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to count active trainings: %w", err)
+	}
+	analytics["active_trainings"] = activeTrainings
+
+	// GPAX distribution
+	var gpaxStats []struct {
+		Range string `json:"range"`
+		Count int64  `json:"count"`
+	}
+	err = s.db.Raw(`
+		SELECT 
+			CASE 
+				WHEN gpax >= 3.5 THEN 'Excellent (3.5-4.0)'
+				WHEN gpax >= 3.0 THEN 'Good (3.0-3.49)'
+				WHEN gpax >= 2.5 THEN 'Fair (2.5-2.99)'
+				WHEN gpax >= 2.0 THEN 'Poor (2.0-2.49)'
+				ELSE 'Very Poor (<2.0)'
+			END as range,
+			COUNT(*) as count
+		FROM students 
+		WHERE gpax > 0
+		GROUP BY range
+		ORDER BY MIN(gpax) DESC
+	`).Scan(&gpaxStats).Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to get GPAX statistics: %w", err)
+	}
+	analytics["gpax_distribution"] = gpaxStats
+
+	// Students by major
 	var majorStats []struct {
 		MajorID   *uint  `json:"major_id"`
 		MajorName string `json:"major_name"`
 		Count     int64  `json:"count"`
 	}
-
 	err = s.db.Table("students").
 		Select("students.major_id, majors.name as major_name, COUNT(*) as count").
 		Joins("LEFT JOIN majors ON students.major_id = majors.id").
 		Group("students.major_id, majors.name").
+		Order("count DESC").
 		Scan(&majorStats).Error
 	if err != nil {
 		return nil, fmt.Errorf("failed to get major statistics: %w", err)
 	}
+	analytics["by_major"] = majorStats
 
-	// Count students by faculty
+	// Students by faculty
 	var facultyStats []struct {
 		FacultyID   *uint  `json:"faculty_id"`
 		FacultyName string `json:"faculty_name"`
 		Count       int64  `json:"count"`
 	}
-
 	err = s.db.Table("students").
 		Select("students.faculty_id, faculties.name as faculty_name, COUNT(*) as count").
 		Joins("LEFT JOIN faculties ON students.faculty_id = faculties.id").
 		Group("students.faculty_id, faculties.name").
+		Order("count DESC").
 		Scan(&facultyStats).Error
 	if err != nil {
 		return nil, fmt.Errorf("failed to get faculty statistics: %w", err)
 	}
+	analytics["by_faculty"] = facultyStats
 
-	return map[string]interface{}{
-		"total_students": totalStudents,
-		"by_major":       majorStats,
-		"by_faculty":     facultyStats,
-	}, nil
+	// Monthly enrollment trends (last 12 months)
+	var enrollmentTrends []struct {
+		Month string `json:"month"`
+		Count int64  `json:"count"`
+	}
+	err = s.db.Raw(`
+		SELECT 
+			DATE_FORMAT(created_at, '%Y-%m') as month,
+			COUNT(*) as count
+		FROM students 
+		WHERE created_at >= DATE_SUB(NOW(), INTERVAL 12 MONTH)
+		GROUP BY DATE_FORMAT(created_at, '%Y-%m')
+		ORDER BY month
+	`).Scan(&enrollmentTrends).Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to get enrollment trends: %w", err)
+	}
+	analytics["enrollment_trends"] = enrollmentTrends
+
+	return analytics, nil
+}
+
+// GetStudentStats returns student statistics (legacy method)
+func (s *StudentService) GetStudentStats() (map[string]interface{}, error) {
+	return s.GetStudentAnalytics()
 }

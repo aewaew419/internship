@@ -1,0 +1,1019 @@
+{
+	"info": {
+		"_postman_id": "12345678-1234-1234-1234-123456789012",
+		"name": "Student Internship Management API",
+		"description": "Complete API collection for testing the Student Internship Management System",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Admin Login",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"admin001@university.ac.th\",\n  \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Instructor Login",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"instructor001@university.ac.th\",\n  \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Student Login",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"u6800001@student.university.ac.th\",\n  \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Dashboard",
+			"item": [
+				{
+					"name": "Student Dashboard",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/dashboard/student/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"dashboard",
+								"student",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Instructor Dashboard",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/dashboard/instructor/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"dashboard",
+								"instructor",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin Dashboard",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/dashboard/admin",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"dashboard",
+								"admin"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Student Management",
+			"item": [
+				{
+					"name": "List Students",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/students?page=1&limit=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"students"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Student Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/students/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"students",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Student",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"new.student@student.university.ac.th\",\n  \"password\": \"password123\",\n  \"first_name\": \"นักศึกษาใหม่\",\n  \"last_name\": \"ทดสอบ\",\n  \"student_id\": \"u6800999\",\n  \"major_id\": 1,\n  \"year\": 1,\n  \"semester\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/students",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"students"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Student",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"first_name\": \"นักศึกษาแก้ไข\",\n  \"last_name\": \"ทดสอบ\",\n  \"year\": 2,\n  \"semester\": 1,\n  \"gpa\": 3.50\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/students/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"students",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Search Students",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/students?search=สมศรี&major_id=1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"students"
+							],
+							"query": [
+								{
+									"key": "search",
+									"value": "สมศรี"
+								},
+								{
+									"key": "major_id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Training Management",
+			"item": [
+				{
+					"name": "List Trainings",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/trainings?page=1&limit=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"trainings"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Training Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/trainings/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"trainings",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Training Application",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"student_id\": 11,\n  \"company_name\": \"บริษัท ทดสอบ จำกัด\",\n  \"position\": \"Software Developer Intern\",\n  \"start_date\": \"2024-11-01T00:00:00Z\",\n  \"end_date\": \"2025-03-31T00:00:00Z\",\n  \"supervisor\": \"คุณทดสอบ ระบบ\",\n  \"description\": \"ฝึกงานพัฒนาซอฟต์แวร์\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/trainings",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"trainings"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Training Status",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"approved\",\n  \"notes\": \"อนุมัติการฝึกงาน เงื่อนไขเหมาะสม\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/trainings/1/status",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"trainings",
+								"1",
+								"status"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Filter Trainings by Status",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/trainings?status=approved",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"trainings"
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "approved"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Evaluation System",
+			"item": [
+				{
+					"name": "Visitor Evaluate Student",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"visitor_id\": 1,\n  \"student_id\": 1,\n  \"score\": 85.5,\n  \"comments\": \"นักศึกษาทำงานได้ดี มีความรับผิดชอบสูง\",\n  \"criteria\": {\n    \"technical_skills\": 85,\n    \"communication\": 80,\n    \"teamwork\": 90,\n    \"problem_solving\": 85,\n    \"punctuality\": 95\n  }\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/evaluations/visitor-student",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"evaluations",
+								"visitor-student"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Student Evaluate Company",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"student_id\": 1,\n  \"company_name\": \"บริษัท เทคโนโลยี จำกัด\",\n  \"score\": 90.0,\n  \"comments\": \"บริษัทให้โอกาสเรียนรู้ดี สภาพแวดล้อมการทำงานดี\",\n  \"criteria\": {\n    \"learning_opportunity\": 95,\n    \"supervision\": 90,\n    \"work_environment\": 88,\n    \"facilities\": 85,\n    \"overall_satisfaction\": 92\n  }\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/evaluations/student-company",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"evaluations",
+								"student-company"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Student Evaluations",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/evaluations/student/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"evaluations",
+								"student",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Company Evaluations",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/evaluations/company/บริษัท เทคโนโลยี จำกัด",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"evaluations",
+								"company",
+								"บริษัท เทคโนโลยี จำกัด"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Visitor Management",
+			"item": [
+				{
+					"name": "List Visitors",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/visitors?page=1&limit=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"visitors"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Visitor",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"คุณทดสอบ ระบบ\",\n  \"email\": \"test@company.com\",\n  \"phone\": \"081-234-5678\",\n  \"company\": \"บริษัท ทดสอบ จำกัด\",\n  \"position\": \"Senior Developer\",\n  \"expertise\": \"Full Stack Development\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/visitors",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"visitors"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Visitor Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/visitors/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"visitors",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Visitor",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"คุณทดสอบ ระบบแก้ไข\",\n  \"email\": \"test.updated@company.com\",\n  \"phone\": \"081-234-5679\",\n  \"position\": \"Lead Developer\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/visitors/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"visitors",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Analytics & Reports",
+			"item": [
+				{
+					"name": "Internship Statistics",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/analytics/internship-stats?year=2024&semester=1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"analytics",
+								"internship-stats"
+							],
+							"query": [
+								{
+									"key": "year",
+									"value": "2024"
+								},
+								{
+									"key": "semester",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Approval Statistics",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/analytics/approval-stats?start_date=2024-01-01&end_date=2024-12-31",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"analytics",
+								"approval-stats"
+							],
+							"query": [
+								{
+									"key": "start_date",
+									"value": "2024-01-01"
+								},
+								{
+									"key": "end_date",
+									"value": "2024-12-31"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Company Statistics",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/analytics/company-stats",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"analytics",
+								"company-stats"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Generate Report",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"report_type\": \"internship_summary\",\n  \"format\": \"pdf\",\n  \"filters\": {\n    \"year\": 2024,\n    \"semester\": 1,\n    \"major_id\": 1\n  }\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/analytics/reports/generate",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"analytics",
+								"reports",
+								"generate"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Notifications",
+			"item": [
+				{
+					"name": "Get User Notifications",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/notifications?page=1&limit=10&unread_only=false",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"notifications"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								},
+								{
+									"key": "unread_only",
+									"value": "false"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Mark Notification as Read",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/notifications/1/read",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"notifications",
+								"1",
+								"read"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Mark All Notifications as Read",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/notifications/mark-all-read",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"notifications",
+								"mark-all-read"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

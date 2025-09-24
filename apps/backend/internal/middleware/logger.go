@@ -79,7 +79,7 @@ func StructuredLogger(logger *services.Logger) fiber.Handler {
 		userEmail, _ := GetUserEmail(c)
 		
 		// Store user info in context for logger
-		if userID > 0 {
+		if userID != "" {
 			c.Locals("user_id", userID)
 			c.Locals("user_email", userEmail)
 		}

@@ -46,10 +46,10 @@ func AuthMiddleware(jwtService *services.JWTService) fiber.Handler {
 		}
 
 		// Store user information in context for use in handlers
-		c.Locals("user_id", claims.UserID)
-		c.Locals("user_email", claims.Email)
-		c.Locals("role_id", claims.RoleID)
-		c.Locals("claims", claims)
+		c.Locals("user_id", claims.Claims.UserID)
+		c.Locals("user_email", claims.Claims.Email)
+		c.Locals("user_type", claims.Claims.UserType)
+		c.Locals("claims", claims.Claims)
 
 		return c.Next()
 	}
@@ -86,18 +86,18 @@ func OptionalAuthMiddleware(jwtService *services.JWTService) fiber.Handler {
 		}
 
 		// Store user information in context for use in handlers
-		c.Locals("user_id", claims.UserID)
-		c.Locals("user_email", claims.Email)
-		c.Locals("role_id", claims.RoleID)
-		c.Locals("claims", claims)
+		c.Locals("user_id", claims.Claims.UserID)
+		c.Locals("user_email", claims.Claims.Email)
+		c.Locals("user_type", claims.Claims.UserType)
+		c.Locals("claims", claims.Claims)
 
 		return c.Next()
 	}
 }
 
 // GetUserID extracts the user ID from the context
-func GetUserID(c *fiber.Ctx) (uint, bool) {
-	userID, ok := c.Locals("user_id").(uint)
+func GetUserID(c *fiber.Ctx) (string, bool) {
+	userID, ok := c.Locals("user_id").(string)
 	return userID, ok
 }
 
@@ -107,10 +107,10 @@ func GetUserEmail(c *fiber.Ctx) (string, bool) {
 	return email, ok
 }
 
-// GetRoleID extracts the role ID from the context
-func GetRoleID(c *fiber.Ctx) (uint, bool) {
-	roleID, ok := c.Locals("role_id").(uint)
-	return roleID, ok
+// GetUserType extracts the user type from the context
+func GetUserType(c *fiber.Ctx) (services.UserType, bool) {
+	userType, ok := c.Locals("user_type").(services.UserType)
+	return userType, ok
 }
 
 // GetClaims extracts the JWT claims from the context

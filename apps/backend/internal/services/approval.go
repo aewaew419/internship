@@ -10,12 +10,16 @@ import (
 
 // ApprovalService handles internship approval workflow operations
 type ApprovalService struct {
-	db *gorm.DB
+	db                  *gorm.DB
+	notificationService *NotificationService
 }
 
 // NewApprovalService creates a new approval service
 func NewApprovalService(db *gorm.DB) *ApprovalService {
-	return &ApprovalService{db: db}
+	return &ApprovalService{
+		db:                  db,
+		notificationService: NewNotificationService(db),
+	}
 }
 
 // ApprovalStatusResponse represents the response for approval status

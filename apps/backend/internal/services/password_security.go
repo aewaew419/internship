@@ -97,8 +97,13 @@ const (
 	ambiguousChars    = "{}[]()~,;.<>"
 )
 
-// NewPasswordSecurityService creates a new password security service
-func NewPasswordSecurityService(config PasswordSecurityConfig) *PasswordSecurityService {
+// NewPasswordSecurityService creates a new password security service with default config
+func NewPasswordSecurityService() *PasswordSecurityService {
+	return NewPasswordSecurityServiceWithConfig(PasswordSecurityConfig{})
+}
+
+// NewPasswordSecurityServiceWithConfig creates a new password security service with custom config
+func NewPasswordSecurityServiceWithConfig(config PasswordSecurityConfig) *PasswordSecurityService {
 	// Set default values if not provided
 	if config.BcryptCost == 0 {
 		config.BcryptCost = 12 // Higher cost for better security
@@ -201,6 +206,12 @@ func (p *PasswordSecurityService) ValidatePasswordStrength(password string) Pass
 	result.Feedback = p.generatePasswordFeedback(password, result.Requirements, result.Score)
 
 	return result
+}
+
+// ValidatePasswordStrengthSimple validates password strength and returns a simple boolean
+func (p *PasswordSecurityService) ValidatePasswordStrengthSimple(password string) bool {
+	result := p.ValidatePasswordStrength(password)
+	return result.IsValid
 }
 
 // checkPasswordRequirements checks if password meets all requirements

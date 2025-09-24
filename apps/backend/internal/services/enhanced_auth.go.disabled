@@ -25,21 +25,7 @@ func NewEnhancedAuthService(db *gorm.DB, jwtService *JWTService, passwordSecurit
 	}
 }
 
-// StudentLoginRequest represents the student login request with student_id
-type StudentLoginRequest struct {
-	StudentID string `json:"student_id" validate:"required"`
-	Password  string `json:"password" validate:"required"`
-	RememberMe bool  `json:"remember_me,omitempty"`
-}
-
-// StudentRegistrationRequest represents the student registration request
-type StudentRegistrationRequest struct {
-	StudentID       string `json:"student_id" validate:"required"`
-	Email           string `json:"email" validate:"required,email"`
-	Password        string `json:"password" validate:"required"`
-	ConfirmPassword string `json:"confirm_password" validate:"required"`
-	FullName        string `json:"full_name" validate:"required"`
-}
+// Note: StudentLoginRequest and StudentRegistrationRequest are defined in auth.go
 
 // SuperAdminLoginRequest represents the super admin login request
 type SuperAdminLoginRequest struct {

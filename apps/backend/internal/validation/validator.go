@@ -83,13 +83,13 @@ func registerCustomValidators() {
 	validate.RegisterValidation("student_id", validateStudentID)
 	
 	// Register enhanced email validation
-	validate.RegisterValidation("email_enhanced", validateEmailEnhanced)
+	// validate.RegisterValidation("email_enhanced", validateEmailEnhanced) // TODO: Implement
 	
 	// Register Thai name validation
-	validate.RegisterValidation("thai_name", validateThaiName)
+	// validate.RegisterValidation("thai_name", validateThaiName) // TODO: Implement
 	
 	// Register safe input validation (no dangerous content)
-	validate.RegisterValidation("safe_input", validateSafeInput)
+	// validate.RegisterValidation("safe_input", validateSafeInput) // TODO: Implement
 }
 
 // validatePassword validates password strength with enhanced security requirements

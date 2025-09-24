@@ -10,12 +10,16 @@ import (
 
 // EvaluationService handles evaluation status tracking operations
 type EvaluationService struct {
-	db *gorm.DB
+	db                  *gorm.DB
+	notificationService *NotificationService
 }
 
 // NewEvaluationService creates a new evaluation service
 func NewEvaluationService(db *gorm.DB) *EvaluationService {
-	return &EvaluationService{db: db}
+	return &EvaluationService{
+		db:                  db,
+		notificationService: NewNotificationService(db),
+	}
 }
 
 // EvaluationSummary represents a summary of evaluations for a student training
