@@ -22,7 +22,7 @@ const protectedRoutes = [
 ];
 
 // Define public routes
-const publicRoutes = ['/login'];
+const publicRoutes = ['/login', '/admin/login'];
 
 // JWT validation helper
 function validateJWT(token: string): { valid: boolean; payload?: any } {
@@ -120,10 +120,27 @@ export function middleware(request: NextRequest) {
     }
   }
   
-  // If accessing login page with valid authentication, redirect to dashboard
-  if (isPublicRoute && pathname === '/login' && token && isValidToken && user) {
-    const redirectUrl = request.nextUrl.searchParams.get('redirect') || '/dashboard';
-    return NextResponse.redirect(new URL(redirectUrl, request.url));
+  // If accessing login page with valid authentication, redirect appropriately
+  if (isPublicRoute && token && isValidToken && user) {
+    const userRoles = user.roles?.list || [];
+    
+    if (pathname === '/login') {
+      const redirectUrl = request.nextUrl.searchParams.get('redirect') || '/dashboard';
+      return NextResponse.redirect(new URL(redirectUrl, request.url));
+    }
+    
+    if (pathname === '/admin/login') {
+      // Check if user has admin role
+      if (hasRequiredRole(userRoles, ['admin'])) {
+        const redirectUrl = request.nextUrl.searchParams.get('redirect') || '/admin';
+        return NextResponse.redirect(new URL(redirectUrl, request.url));
+      } else {
+        // Not admin, redirect to admin login with access denied
+        const adminLoginUrl = new URL('/admin/login', request.url);
+        adminLoginUrl.searchParams.set('error', 'access_denied');
+        return NextResponse.redirect(adminLoginUrl);
+      }
+    }
   }
   
   // If accessing root path with valid authentication, redirect to dashboard

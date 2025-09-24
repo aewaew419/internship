@@ -1,4 +1,6 @@
 @import "tailwindcss";
+@import "../styles/mobile-optimizations.css";
+@import "../styles/desktop-enhancements.css";
 
 :root {
   font-family: "Bai Jamjuree", sans-serif;

@@ -1,5 +1,11 @@
 export const UNPROTECTED_PATH = {
   LOGIN: "/login",
+  ADMIN_LOGIN: "/admin/login",
+  REGISTER: "/register",
+  CHECK_STUDENT_ID: "/check-student-id",
+  CHECK_EMAIL: "/check-email",
+  FORGOT_PASSWORD: "/forgot-password",
+  RESET_PASSWORD: "/reset-password",
 } as const;
 
 export const PROTECTED_PATH = {

@@ -78,6 +78,11 @@ export interface LoginDTO {
   password: string;
 }
 
+export interface StudentLoginDTO {
+  student_id: string;
+  password: string;
+}
+
 export interface UserListInterface {
   id: number;
   roleId: number;

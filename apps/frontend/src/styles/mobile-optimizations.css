@@ -1,0 +1,291 @@
+/**
+ * Mobile-specific CSS optimizations for authentication forms
+ * These styles enhance the mobile user experience with touch-friendly interactions
+ */
+
+/* Prevent zoom on iOS when input font-size is less than 16px */
+@media screen and (max-width: 768px) {
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="tel"],
+  input[type="number"],
+  textarea,
+  select {
+    font-size: 16px !important;
+    transform: scale(1);
+  }
+}
+
+/* Enhanced touch targets for mobile */
+@media screen and (max-width: 768px) {
+  button,
+  input,
+  select,
+  textarea,
+  [role="button"],
+  [tabindex] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Larger touch targets for primary actions */
+  .btn-primary,
+  .btn-gradient {
+    min-height: 48px;
+    padding: 12px 24px;
+  }
+}
+
+/* Improved focus states for mobile */
+@media screen and (max-width: 768px) {
+  input:focus,
+  textarea:focus,
+  select:focus,
+  button:focus {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+}
+
+/* Enhanced form spacing on mobile */
+@media screen and (max-width: 768px) {
+  .form-container {
+    padding: 16px;
+    gap: 20px;
+  }
+  
+  .form-field {
+    margin-bottom: 20px;
+  }
+  
+  .form-buttons {
+    margin-top: 32px;
+    gap: 16px;
+  }
+}
+
+/* Prevent horizontal scrolling on mobile */
+@media screen and (max-width: 768px) {
+  body {
+    overflow-x: hidden;
+  }
+  
+  .container {
+    max-width: 100%;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}
+
+/* Enhanced modal behavior on mobile */
+@media screen and (max-width: 768px) {
+  .modal {
+    margin: 0;
+    border-radius: 16px 16px 0 0;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  
+  .modal-backdrop {
+    background-color: rgba(0, 0, 0, 0.6);
+  }
+}
+
+/* Improved loading states on mobile */
+@media screen and (max-width: 768px) {
+  .loading-spinner {
+    width: 24px;
+    height: 24px;
+  }
+  
+  .loading-text {
+    font-size: 16px;
+    margin-left: 12px;
+  }
+}
+
+/* Enhanced error states on mobile */
+@media screen and (max-width: 768px) {
+  .error-message {
+    font-size: 16px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+  }
+  
+  .error-icon {
+    width: 20px;
+    height: 20px;
+    margin-right: 8px;
+  }
+}
+
+/* Improved password toggle on mobile */
+@media screen and (max-width: 768px) {
+  .password-toggle {
+    min-width: 48px;
+    min-height: 48px;
+    padding: 12px;
+    border-radius: 8px;
+  }
+  
+  .password-toggle:active {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+}
+
+/* Enhanced progress indicators on mobile */
+@media screen and (max-width: 768px) {
+  .progress-bar {
+    height: 6px;
+    border-radius: 3px;
+  }
+  
+  .progress-step {
+    font-size: 16px;
+    padding: 8px 0;
+  }
+}
+
+/* Improved link styling on mobile */
+@media screen and (max-width: 768px) {
+  .link-button {
+    min-height: 44px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .link-button:active {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+}
+
+/* Safe area handling for devices with notches */
+@supports (padding: max(0px)) {
+  @media screen and (max-width: 768px) {
+    .safe-area-top {
+      padding-top: max(16px, env(safe-area-inset-top));
+    }
+    
+    .safe-area-bottom {
+      padding-bottom: max(16px, env(safe-area-inset-bottom));
+    }
+    
+    .safe-area-left {
+      padding-left: max(16px, env(safe-area-inset-left));
+    }
+    
+    .safe-area-right {
+      padding-right: max(16px, env(safe-area-inset-right));
+    }
+  }
+}
+
+/* Landscape orientation optimizations */
+@media screen and (max-width: 768px) and (orientation: landscape) {
+  .form-container {
+    padding: 8px 16px;
+  }
+  
+  .form-header {
+    margin-bottom: 16px;
+  }
+  
+  .form-logo {
+    height: 48px;
+    margin-bottom: 16px;
+  }
+  
+  .form-buttons {
+    margin-top: 16px;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  input,
+  button,
+  select,
+  textarea {
+    border-width: 2px;
+  }
+  
+  .error-message {
+    border-width: 2px;
+  }
+  
+  .focus-ring {
+    outline-width: 3px;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .loading-spinner {
+    animation: none;
+  }
+}
+
+/* Dark mode optimizations */
+@media (prefers-color-scheme: dark) {
+  @media screen and (max-width: 768px) {
+    .form-container {
+      background-color: #1f2937;
+      color: #f9fafb;
+    }
+    
+    input,
+    textarea,
+    select {
+      background-color: #374151;
+      border-color: #4b5563;
+      color: #f9fafb;
+    }
+    
+    input:focus,
+    textarea:focus,
+    select:focus {
+      border-color: #60a5fa;
+      box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
+    }
+    
+    .error-message {
+      background-color: #7f1d1d;
+      border-color: #dc2626;
+      color: #fecaca;
+    }
+  }
+}
+
+/* Print styles */
+@media print {
+  .form-container {
+    box-shadow: none;
+    border: 1px solid #000;
+  }
+  
+  button,
+  .btn {
+    display: none;
+  }
+  
+  input,
+  textarea,
+  select {
+    border: 1px solid #000;
+    background: transparent;
+  }
+}
