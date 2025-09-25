@@ -1,1 +1,1 @@
-export { AdminLoginForm } from './AdminLoginForm';
+export { default as AdminLoginForm } from './AdminLoginForm';
