@@ -122,9 +122,7 @@ const detectAssignmentConflicts = (
     }
   });
 
-  return conflicts;
-};  // Check i
-ndividual assignments for conflicts
+  // Check individual assignments for conflicts
   assignments.forEach(assignment => {
     const prefix = prefixMap.get(assignment.prefixId);
     const role = roleMap.get(assignment.roleId);

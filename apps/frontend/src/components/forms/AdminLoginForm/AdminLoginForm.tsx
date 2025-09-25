@@ -81,8 +81,9 @@ export const AdminLoginForm = ({ onSubmit }: AdminLoginFormProps) => {
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  };  // 
-Real-time validation for email with debouncing
+  };
+
+  // Real-time validation for email with debouncing
   const validateEmailRealTime = useCallback(
     debounce((email: string) => {
       setIsValidating(prev => ({ ...prev, email: true }));
@@ -412,4 +413,6 @@ const handleInputChange = (field: keyof LoginDTO) => (
       />
     </ResponsiveFormContainer>
   );
-};     
+};
+
+export default AdminLoginForm;

@@ -228,8 +228,9 @@ const RoleManagementMatrix: React.FC<RoleManagementMatrixProps> = ({
   const getModulePermissions = useCallback((moduleId: number): string[] => {
     const module = modules.find(m => m.id === moduleId);
     return module?.availablePermissions || [];
-  }, [modules]);  // Rende
-r permission cell
+  }, [modules]);
+
+  // Render permission cell
   const renderPermissionCell = useCallback((
     role: Role, 
     module: SystemModule, 

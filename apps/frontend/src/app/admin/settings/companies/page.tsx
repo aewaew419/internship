@@ -51,8 +51,9 @@ export default function CompaniesSettingsPage() {
     } finally {
       setLoading(false);
     }
-  };  c
-onst validateForm = (): boolean => {
+  };
+
+  const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
     if (!formData.name.trim()) {
@@ -332,3 +333,6 @@ onst validateForm = (): boolean => {
           </div>
         </div>
       </div>
+    </div>
+  );
+}

@@ -319,7 +319,7 @@ const BulkPrefixModal: React.FC<{
               <p className="text-sm text-yellow-800">
                 <strong>รูปแบบไฟล์ที่ต้องการ:</strong><br/>
                 CSV: thai,english,abbreviation,category,gender<br/>
-                JSON: {"thai": "นาย", "english": "Mr.", "abbreviation": "Mr.", "category": "professional", "gender": "male"}
+                JSON: {`{"thai": "นาย", "english": "Mr.", "abbreviation": "Mr.", "category": "professional", "gender": "male"}`}
               </p>
             </div>
           </div>
