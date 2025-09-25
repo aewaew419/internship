@@ -42,6 +42,11 @@ func Setup(app *fiber.App, db *gorm.DB, cfg *config.Config) {
 		})
 	})
 
+	// Simple authentication endpoints (temporary fix)
+	simpleAuthHandler := handlers.NewSimpleAuthHandler(db)
+	api.Post("/simple-login", simpleAuthHandler.SimpleLogin)
+	api.Post("/simple-register", simpleAuthHandler.SimpleRegister)
+
 	// Health check and monitoring endpoints
 	setupHealthRoutes(api, db, cfg, logger)
 
