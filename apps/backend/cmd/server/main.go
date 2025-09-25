@@ -46,14 +46,18 @@ func main() {
 		"port":        cfg.Port,
 	})
 
-	// Initialize database
-	db, err := database.Connect(cfg.DatabaseURL)
+	// Initialize database with auto-migration
+	dbConfig := database.LoadConfigFromEnv()
+	dbConfig.DSN = cfg.DatabaseURL
+	
+	dbService, err := database.NewService(dbConfig)
 	if err != nil {
 		logger.Fatal("Failed to connect to database", map[string]interface{}{
 			"error": err.Error(),
 		})
 	}
-
+	
+	db := dbService.GORM
 	logger.Info("Database connected successfully")
 
 	// Create Fiber app with enhanced error handling
