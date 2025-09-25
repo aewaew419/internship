@@ -106,7 +106,7 @@ services:
     networks:
       - internship_network
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1/health"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "--no-check-certificate", "https://127.0.0.1/health"]
       interval: 30s
       timeout: 10s
       retries: 3
