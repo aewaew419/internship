@@ -1,4 +1,9 @@
 export { AdminLayout } from "./AdminLayout";
+export { AdminDashboard } from "./AdminDashboard";
+export { DashboardWidget, QuickActionWidget, SystemHealthWidget } from "./DashboardWidget";
+export type { DashboardWidgetProps, QuickActionWidgetProps, SystemHealthWidgetProps } from "./DashboardWidget";
+export { SystemHealthMonitor } from "./SystemHealthMonitor";
+export type { SystemHealthIssue, SystemHealthMetrics, SystemHealthMonitorProps } from "./SystemHealthMonitor";
 export { AdminDataTable } from "./AdminDataTable";
 export type { TableColumn, TableAction, AdminDataTableProps } from "./AdminDataTable";
 export { AdminModal, AdminFormModal } from "./AdminModal";
