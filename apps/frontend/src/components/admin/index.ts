@@ -4,6 +4,12 @@ export { DashboardWidget, QuickActionWidget, SystemHealthWidget } from "./Dashbo
 export type { DashboardWidgetProps, QuickActionWidgetProps, SystemHealthWidgetProps } from "./DashboardWidget";
 export { SystemHealthMonitor } from "./SystemHealthMonitor";
 export type { SystemHealthIssue, SystemHealthMetrics, SystemHealthMonitorProps } from "./SystemHealthMonitor";
+export { BulkRoleOperations } from "./BulkRoleOperations";
+export type { BulkRoleOperationsProps, BulkOperation } from "./BulkRoleOperations";
+export { BulkCalendarOperations } from "./BulkCalendarOperations";
+export type { BulkCalendarOperationsProps, BulkCalendarOperation } from "./BulkCalendarOperations";
+export { BulkPrefixOperations } from "./BulkPrefixOperations";
+export type { BulkPrefixOperationsProps, BulkPrefixOperation } from "./BulkPrefixOperations";
 export { AdminDataTable } from "./AdminDataTable";
 export type { TableColumn, TableAction, AdminDataTableProps } from "./AdminDataTable";
 export { AdminModal, AdminFormModal } from "./AdminModal";
