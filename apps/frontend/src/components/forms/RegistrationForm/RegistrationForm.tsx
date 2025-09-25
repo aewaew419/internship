@@ -7,10 +7,15 @@ import { ResponsiveButton } from "@/components/ui/Button/ResponsiveButton";
 import { Input } from "@/components/ui/Input";
 import { ResponsiveInput } from "@/components/ui/Input/ResponsiveInput";
 import { ResponsiveFormContainer } from "@/components/ui/Form/ResponsiveFormContainer";
+import { FormRestorationPrompt } from "@/components/ui/FormRestorationPrompt";
+import { FormDraftNotification } from "@/components/ui/FormDraftNotification";
 import { validateStudentId, validateEmail, validatePassword, validateName, validateConfirmPassword, debounce } from "@/lib/utils";
 import { VALIDATION_MESSAGES, mapApiErrorToMessage } from "@/lib/validation-messages";
 import { useRegister, useCheckStudentId, useCheckEmail } from "@/hooks/api/useUser";
 import { useAuth } from "@/hooks/useAuth";
+import { useAuthFormPersistence } from "@/hooks/useAuthFormPersistence";
+import { useFormDraftManager } from "@/hooks/useFormDraftManager";
+import { useOfflineDetection } from "@/hooks/useOfflineDetection";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 
 export interface RegistrationDTO {
@@ -63,6 +68,24 @@ export const RegistrationForm = ({ onSubmit, showLoginLink = true }: Registratio
   // Responsive queries for mobile optimizations
   const isMobile = useMediaQuery("(max-width: 768px)");
   const isTablet = useMediaQuery("(min-width: 769px) and (max-width: 1023px)");
+
+  // Offline detection
+  const { isOffline } = useOfflineDetection();
+
+  // Form persistence hooks
+  const formPersistence = useAuthFormPersistence<RegistrationDTO>({
+    formType: 'registration',
+    clearOnSubmit: true,
+    maxAge: 60 * 60 * 1000, // 1 hour for registration forms
+    enableOfflinePersistence: true,
+  });
+
+  const draftManager = useFormDraftManager<RegistrationDTO>({
+    formType: 'registration',
+    autoSaveInterval: 10000, // 10 seconds for registration
+    draftExpiration: 24 * 60 * 60 * 1000, // 24 hours
+    enableNotifications: true,
+  });
 
   // API hooks
   const {
@@ -246,11 +269,22 @@ me validation with debouncing
       value = value.replace(/\D/g, '');
     }
     
+    const newFormData = { ...state.formData, [field]: value };
+    
     setState(prev => ({
       ...prev,
-      formData: { ...prev.formData, [field]: value },
+      formData: newFormData,
       errors: { ...prev.errors, [field]: undefined }
     }));
+    
+    // Save form data for persistence (excluding passwords)
+    const persistData = { ...newFormData };
+    delete persistData.password;
+    delete persistData.confirmPassword;
+    formPersistence.saveFormData(persistData);
+    
+    // Auto-save draft periodically
+    draftManager.saveDraft(persistData, false);
     
     // Clear availability checks when value changes
     if (field === 'student_id' || field === 'email') {
@@ -316,6 +350,50 @@ me validation with debouncing
     setState(prev => ({ ...prev, step: 'personal' }));
   };
 
+  // Handle form restoration
+  const handleAcceptRestoration = useCallback(() => {
+    const restoredData = formPersistence.persistedData;
+    if (restoredData) {
+      setState(prev => ({
+        ...prev,
+        formData: {
+          ...prev.formData,
+          student_id: restoredData.student_id || "",
+          email: restoredData.email || "",
+          firstName: restoredData.firstName || "",
+          lastName: restoredData.lastName || "",
+          // Never restore passwords for security
+        }
+      }));
+    }
+    formPersistence.acceptRestoration();
+  }, [formPersistence]);
+
+  // Handle draft restoration
+  const handleAcceptDraft = useCallback(() => {
+    const draftData = draftManager.loadDraft();
+    if (draftData) {
+      setState(prev => ({
+        ...prev,
+        formData: {
+          ...prev.formData,
+          student_id: draftData.student_id || "",
+          email: draftData.email || "",
+          firstName: draftData.firstName || "",
+          lastName: draftData.lastName || "",
+          // Never restore passwords for security
+        }
+      }));
+    }
+    draftManager.acceptDraft();
+  }, [draftManager]);
+
+  // Clear persistence data on successful submit
+  const handleSuccessfulSubmit = useCallback(() => {
+    formPersistence.clearPersistedData();
+    draftManager.clearDraft();
+  }, [formPersistence, draftManager]);
+
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -340,6 +418,9 @@ me validation with debouncing
         const userData = await register(registrationData);
         setCredential(userData);
       }
+      
+      // Clear persistence data on successful registration
+      handleSuccessfulSubmit();
       
       // Redirect to dashboard or login
       router.push("/?message=registration-success");
@@ -394,8 +475,38 @@ me validation with debouncing
     return null;
   };
 
+  // Get persisted field names for restoration prompt
+  const getPersistedFields = (): string[] => {
+    const fields: string[] = [];
+    const data = formPersistence.persistedData;
+    if (data?.student_id) fields.push('student_id');
+    if (data?.email) fields.push('email');
+    if (data?.firstName) fields.push('firstName');
+    if (data?.lastName) fields.push('lastName');
+    return fields;
+  };
+
   return (
-    <ResponsiveFormContainer variant="default" size="md" mobileOptimized>
+    <>
+      {/* Form Restoration Prompt */}
+      <FormRestorationPrompt
+        isOpen={formPersistence.showRestorationPrompt}
+        onAccept={handleAcceptRestoration}
+        onReject={formPersistence.rejectRestoration}
+        formType="registration"
+        persistedFields={getPersistedFields()}
+      />
+
+      {/* Draft Notification */}
+      <FormDraftNotification
+        isVisible={draftManager.showDraftNotification}
+        onAccept={handleAcceptDraft}
+        onReject={draftManager.rejectDraft}
+        draftAge={draftManager.draftAge}
+        formType="registration"
+      />
+
+      <ResponsiveFormContainer variant="default" size="md" mobileOptimized>
       {/* Header */}
       <div className="text-center mb-6">
         <img 
@@ -568,6 +679,29 @@ me validation with debouncing
                 rightIcon={getValidationIcon("confirmPassword")}
               />
             </div>
+
+            {/* Persistence Status Indicator */}
+            {(isOffline || draftManager.isAutoSaving) && (
+              <div className="flex items-center justify-center gap-2 text-sm text-gray-600 py-2">
+                {draftManager.isAutoSaving && (
+                  <>
+                    <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span>กำลังบันทึกแบบร่าง...</span>
+                  </>
+                )}
+                {isOffline && (
+                  <>
+                    <svg className="w-4 h-4 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                    <span className="text-orange-600">ออฟไลน์ - ข้อมูลจะถูกบันทึกไว้</span>
+                  </>
+                )}
+              </div>
+            )}
 
             {/* Action Buttons */}
             <div className={`flex gap-3 ${isMobile ? 'mt-8' : 'mt-6'}`}>

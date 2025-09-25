@@ -4,6 +4,7 @@ import { ReactNode } from "react";
 import { AuthProvider } from "./AuthProvider";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { ServiceWorkerProvider } from "./ServiceWorkerProvider";
+import { SecurityProvider } from "./SecurityProvider";
 
 interface ProvidersProps {
   children: ReactNode;
@@ -14,7 +15,9 @@ export const Providers = ({ children }: ProvidersProps) => {
     <ErrorBoundary>
       <ServiceWorkerProvider>
         <AuthProvider>
-          {children}
+          <SecurityProvider>
+            {children}
+          </SecurityProvider>
         </AuthProvider>
       </ServiceWorkerProvider>
     </ErrorBoundary>

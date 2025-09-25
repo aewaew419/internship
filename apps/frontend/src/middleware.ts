@@ -148,23 +148,67 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/dashboard', request.url));
   }
   
-  // Add security headers
+  // Add comprehensive security headers
   const response = NextResponse.next();
   
+  // Basic security headers
   response.headers.set('X-Frame-Options', 'DENY');
   response.headers.set('X-Content-Type-Options', 'nosniff');
-  response.headers.set('Referrer-Policy', 'origin-when-cross-origin');
+  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
   response.headers.set('X-XSS-Protection', '1; mode=block');
   
-  // Add CSRF protection header
-  if (request.method === 'POST' || request.method === 'PUT' || request.method === 'DELETE') {
+  // Content Security Policy
+  response.headers.set('Content-Security-Policy', 
+    "default-src 'self'; " +
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+    "font-src 'self' https://fonts.gstatic.com; " +
+    "img-src 'self' data: https:; " +
+    "connect-src 'self' https:; " +
+    "frame-ancestors 'none';"
+  );
+  
+  // Permissions Policy
+  response.headers.set('Permissions-Policy', 
+    'camera=(), microphone=(), geolocation=(), payment=()'
+  );
+  
+  // HSTS (HTTP Strict Transport Security)
+  if (request.nextUrl.protocol === 'https:') {
+    response.headers.set('Strict-Transport-Security', 
+      'max-age=31536000; includeSubDomains; preload'
+    );
+  }
+  
+  // Enhanced CSRF protection
+  if (request.method === 'POST' || request.method === 'PUT' || request.method === 'DELETE' || request.method === 'PATCH') {
     const origin = request.headers.get('origin');
+    const referer = request.headers.get('referer');
     const host = request.headers.get('host');
+    const csrfToken = request.headers.get('x-csrf-token');
     
+    // Check origin/referer
     if (origin && host && !origin.includes(host)) {
-      return new NextResponse('Forbidden', { status: 403 });
+      console.warn('CSRF: Origin mismatch', { origin, host });
+      return new NextResponse('Forbidden - Invalid Origin', { status: 403 });
+    }
+    
+    if (referer && host && !referer.includes(host)) {
+      console.warn('CSRF: Referer mismatch', { referer, host });
+      return new NextResponse('Forbidden - Invalid Referer', { status: 403 });
+    }
+    
+    // For API routes, require CSRF token
+    if (pathname.startsWith('/api/') && !csrfToken) {
+      console.warn('CSRF: Missing token for API request', { pathname });
+      return new NextResponse('Forbidden - Missing CSRF Token', { status: 403 });
     }
   }
+  
+  // Rate limiting headers (informational)
+  response.headers.set('X-RateLimit-Limit', '100');
+  response.headers.set('X-RateLimit-Remaining', '99');
+  response.headers.set('X-RateLimit-Reset', String(Date.now() + 3600000));
   
   return response;
 }

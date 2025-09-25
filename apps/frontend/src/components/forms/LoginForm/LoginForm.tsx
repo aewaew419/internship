@@ -8,15 +8,23 @@ import { Input } from "@/components/ui/Input";
 import { ResponsiveInput } from "@/components/ui/Input/ResponsiveInput";
 import { ResponsiveFormContainer } from "@/components/ui/Form/ResponsiveFormContainer";
 import { ForgotPasswordModal } from "@/components/forms/ForgotPasswordModal";
+import { FormRestorationPrompt } from "@/components/ui/FormRestorationPrompt";
+import { FormDraftNotification } from "@/components/ui/FormDraftNotification";
+import { SessionTimeoutWarning } from "@/components/ui/SessionTimeoutWarning";
 import { 
   FormSubmissionOverlay, 
   InlineFieldLoading,
   FormInitializationSkeleton 
 } from "@/components/ui/LoadingStates";
 import { useAuth } from "@/hooks/useAuth";
+import { useSecureAuth } from "@/hooks/useSecureAuth";
 import { useStudentLogin } from "@/hooks/api/useUser";
 import { useAuthLoadingStates } from "@/hooks/useAuthLoadingStates";
+import { useAuthFormPersistence } from "@/hooks/useAuthFormPersistence";
+import { useFormDraftManager } from "@/hooks/useFormDraftManager";
+import { useOfflineDetection } from "@/hooks/useOfflineDetection";
 import { validateStudentId, validatePassword, debounce } from "@/lib/utils";
+import { sanitizeStudentId, sanitizePassword } from "@/lib/security";
 import { mapApiErrorToMessage, VALIDATION_MESSAGES } from "@/lib/validation-messages";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import type { StudentLoginDTO } from "@/types/api";
@@ -32,9 +40,11 @@ export const LoginForm = ({ onSubmit }: LoginFormProps) => {
   });
   const [errors, setErrors] = useState<Partial<StudentLoginDTO>>({});
   const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [showSessionWarning, setShowSessionWarning] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
 
   const { setCredential } = useAuth();
+  const secureAuth = useSecureAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   
@@ -44,6 +54,22 @@ export const LoginForm = ({ onSubmit }: LoginFormProps) => {
 
   // Enhanced loading state management
   const authLoading = useAuthLoadingStates();
+
+  // Offline detection
+  const { isOffline } = useOfflineDetection();
+
+  // Form persistence hooks
+  const formPersistence = useAuthFormPersistence<StudentLoginDTO>({
+    formType: 'student-login',
+    clearOnSubmit: true,
+    enableOfflinePersistence: true,
+  });
+
+  const draftManager = useFormDraftManager<StudentLoginDTO>({
+    formType: 'student-login',
+    autoSaveInterval: 15000, // 15 seconds for login forms
+    enableNotifications: true,
+  });
 
   // Use the student login mutation hook
   const {
@@ -60,6 +86,43 @@ export const LoginForm = ({ onSubmit }: LoginFormProps) => {
 
     return () => clearTimeout(timer);
   }, []);
+
+  // Monitor session warning
+  useEffect(() => {
+    setShowSessionWarning(secureAuth.isSessionWarningActive);
+  }, [secureAuth.isSessionWarningActive]);
+
+  // Handle form restoration
+  const handleAcceptRestoration = useCallback(() => {
+    const restoredData = formPersistence.persistedData;
+    if (restoredData) {
+      setFormData(prev => ({
+        ...prev,
+        studentId: restoredData.studentId || "",
+        // Never restore password for security
+      }));
+    }
+    formPersistence.acceptRestoration();
+  }, [formPersistence]);
+
+  // Handle draft restoration
+  const handleAcceptDraft = useCallback(() => {
+    const draftData = draftManager.loadDraft();
+    if (draftData) {
+      setFormData(prev => ({
+        ...prev,
+        studentId: draftData.studentId || "",
+        // Never restore password for security
+      }));
+    }
+    draftManager.acceptDraft();
+  }, [draftManager]);
+
+  // Clear persistence data on successful submit
+  const handleSuccessfulSubmit = useCallback(() => {
+    formPersistence.clearPersistedData();
+    draftManager.clearDraft();
+  }, [formPersistence, draftManager]);
 
   const validateForm = (): boolean => {
     const newErrors: Partial<StudentLoginDTO> = {};
@@ -118,6 +181,12 @@ export const LoginForm = ({ onSubmit }: LoginFormProps) => {
 
     if (!validateForm()) return;
 
+    // Check if rate limited
+    if (secureAuth.isRateLimited) {
+      setErrors({ studentId: 'การเข้าสู่ระบบถูกจำกัด กรุณารอสักครู่' });
+      return;
+    }
+
     try {
       await authLoading.submitFormWithProgress(
         'student-login',
@@ -125,27 +194,44 @@ export const LoginForm = ({ onSubmit }: LoginFormProps) => {
           if (onSubmit) {
             return await onSubmit(formData);
           } else {
-            // Use the API service for student login
-            const userData = await studentLogin(formData);
-            setCredential(userData);
-            return userData;
+            // Use secure authentication
+            const result = await secureAuth.secureLogin(formData, 'student');
+            
+            if (!result.success) {
+              if (result.rateLimited) {
+                throw new Error(result.error);
+              }
+              throw new Error(result.error || 'เข้าสู่ระบบไม่สำเร็จ');
+            }
+            
+            return result;
           }
         },
         {
           showProgress: true,
           progressSteps: [
+            'กำลังตรวจสอบความปลอดภัย...',
             'กำลังตรวจสอบข้อมูล...',
             'กำลังเข้าสู่ระบบ...',
             'กำลังโหลดข้อมูลผู้ใช้...',
             'เสร็จสิ้น'
           ],
           onSuccess: () => {
+            // Clear persistence data on successful login
+            handleSuccessfulSubmit();
+            
             // Redirect to intended page or dashboard
             const redirectTo = searchParams.get("redirect") || "/";
             router.push(redirectTo);
           },
           onError: (error) => {
             console.error("Login error:", error);
+            // Show rate limiting info if applicable
+            if (secureAuth.remainingAttempts < 5) {
+              setErrors({ 
+                studentId: `เหลือความพยายามในการเข้าสู่ระบบ ${secureAuth.remainingAttempts} ครั้ง` 
+              });
+            }
           }
         }
       );
@@ -160,10 +246,14 @@ export const LoginForm = ({ onSubmit }: LoginFormProps) => {
   ) => {
     const value = e.target.value;
     
-    // For studentId, only allow numeric input
+    // For studentId, sanitize and only allow numeric input
     if (field === 'studentId') {
-      const numericValue = value.replace(/\D/g, '');
-      setFormData(prev => ({ ...prev, [field]: numericValue }));
+      const sanitizedValue = sanitizeStudentId(value);
+      const newFormData = { ...formData, [field]: sanitizedValue };
+      setFormData(newFormData);
+      
+      // Save form data for persistence (excluding password)
+      formPersistence.saveFormData({ studentId: sanitizedValue, password: "" });
       
       // Clear error when user starts typing
       if (errors[field]) {
@@ -171,11 +261,27 @@ export const LoginForm = ({ onSubmit }: LoginFormProps) => {
       }
       
       // Trigger real-time validation
-      if (numericValue && numericValue.length >= 8) {
-        validateStudentIdRealTime(numericValue);
+      if (sanitizedValue && sanitizedValue.length >= 8) {
+        validateStudentIdRealTime(sanitizedValue);
+      }
+    } else if (field === 'password') {
+      // Sanitize password input
+      const sanitizedValue = sanitizePassword(value);
+      const newFormData = { ...formData, [field]: sanitizedValue };
+      setFormData(newFormData);
+      
+      // Clear error when user starts typing
+      if (errors[field]) {
+        setErrors(prev => ({ ...prev, [field]: undefined }));
       }
     } else {
-      setFormData(prev => ({ ...prev, [field]: value }));
+      const newFormData = { ...formData, [field]: value };
+      setFormData(newFormData);
+      
+      // Save form data for persistence (excluding password for security)
+      if (field !== 'password') {
+        formPersistence.saveFormData({ ...newFormData, password: "" });
+      }
       
       // Clear error when user starts typing
       if (errors[field]) {
@@ -227,8 +333,33 @@ export const LoginForm = ({ onSubmit }: LoginFormProps) => {
   const formState = authLoading.getFormState('student-login');
   const studentIdFieldState = authLoading.getFieldState('studentId');
 
+  // Get persisted field names for restoration prompt
+  const getPersistedFields = (): string[] => {
+    const fields: string[] = [];
+    if (formPersistence.persistedData?.studentId) fields.push('studentId');
+    return fields;
+  };
+
   return (
     <>
+      {/* Form Restoration Prompt */}
+      <FormRestorationPrompt
+        isOpen={formPersistence.showRestorationPrompt}
+        onAccept={handleAcceptRestoration}
+        onReject={formPersistence.rejectRestoration}
+        formType="student-login"
+        persistedFields={getPersistedFields()}
+      />
+
+      {/* Draft Notification */}
+      <FormDraftNotification
+        isVisible={draftManager.showDraftNotification}
+        onAccept={handleAcceptDraft}
+        onReject={draftManager.rejectDraft}
+        draftAge={draftManager.draftAge}
+        formType="student-login"
+      />
+
       <ResponsiveFormContainer variant="default" size="md" mobileOptimized>
         <form onSubmit={handleSubmit} className={`space-y-4 ${isMobile ? 'space-y-5' : 'space-y-4'}`}>
         {/* Logo */}
@@ -253,6 +384,23 @@ export const LoginForm = ({ onSubmit }: LoginFormProps) => {
               <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
             </svg>
             {mapApiErrorToMessage(loginError)}
+          </div>
+        )}
+
+        {/* Security Status */}
+        {(secureAuth.isRateLimited || secureAuth.remainingAttempts < 5) && (
+          <div className={`p-3 text-sm rounded-md flex items-center gap-2 ${
+            secureAuth.isRateLimited 
+              ? 'text-red-600 bg-red-50 border border-red-200' 
+              : 'text-yellow-600 bg-yellow-50 border border-yellow-200'
+          }`}>
+            <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+            </svg>
+            {secureAuth.isRateLimited 
+              ? 'การเข้าสู่ระบบถูกจำกัดชั่วคราว เพื่อความปลอดภัย'
+              : `เหลือความพยายามในการเข้าสู่ระบบ ${secureAuth.remainingAttempts} ครั้ง`
+            }
           </div>
         )}
 
@@ -313,6 +461,29 @@ export const LoginForm = ({ onSubmit }: LoginFormProps) => {
           enableHapticFeedback
         />
 
+        {/* Persistence Status Indicator */}
+        {(isOffline || draftManager.isAutoSaving) && (
+          <div className="flex items-center justify-center gap-2 text-sm text-gray-600 py-2">
+            {draftManager.isAutoSaving && (
+              <>
+                <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span>กำลังบันทึกข้อมูล...</span>
+              </>
+            )}
+            {isOffline && (
+              <>
+                <svg className="w-4 h-4 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+                <span className="text-orange-600">ออฟไลน์ - ข้อมูลจะถูกบันทึกไว้</span>
+              </>
+            )}
+          </div>
+        )}
+
         {/* Submit Button */}
         <ResponsiveButton
           type="submit"
@@ -348,6 +519,15 @@ export const LoginForm = ({ onSubmit }: LoginFormProps) => {
         isOpen={showForgotPassword}
         onClose={() => setShowForgotPassword(false)}
         userType="student"
+      />
+
+      {/* Session Timeout Warning */}
+      <SessionTimeoutWarning
+        isOpen={showSessionWarning}
+        remainingTime={secureAuth.sessionTimeRemaining}
+        onExtend={secureAuth.extendSession}
+        onLogout={() => secureAuth.secureLogout('timeout')}
+        onClose={() => setShowSessionWarning(false)}
       />
     </ResponsiveFormContainer>
 

@@ -1,93 +1,197 @@
 "use client";
 
 import { AdminRoute } from "@/components/auth";
+import { AdminLayout } from "@/components/admin/AdminLayout";
 import { useAuth } from "@/hooks/useAuth";
+import {
+  UserGroupIcon,
+  CalendarIcon,
+  TagIcon,
+  CogIcon,
+  ChartBarIcon,
+  ExclamationTriangleIcon,
+} from "@heroicons/react/24/outline";
 
 export default function AdminDashboardPage() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
+
+  const quickStats = [
+    {
+      name: "Active Roles",
+      value: "12",
+      icon: UserGroupIcon,
+      color: "bg-blue-500",
+    },
+    {
+      name: "Calendar Events",
+      value: "8",
+      icon: CalendarIcon,
+      color: "bg-green-500",
+    },
+    {
+      name: "Title Prefixes",
+      value: "24",
+      icon: TagIcon,
+      color: "bg-purple-500",
+    },
+    {
+      name: "System Alerts",
+      value: "3",
+      icon: ExclamationTriangleIcon,
+      color: "bg-red-500",
+    },
+  ];
+
+  const recentActivities = [
+    {
+      id: 1,
+      action: "Role permissions updated",
+      user: "Admin User",
+      time: "2 minutes ago",
+      type: "role",
+    },
+    {
+      id: 2,
+      action: "New semester added",
+      user: "Calendar Manager",
+      time: "1 hour ago",
+      type: "calendar",
+    },
+    {
+      id: 3,
+      action: "Title prefix modified",
+      user: "System Admin",
+      time: "3 hours ago",
+      type: "prefix",
+    },
+  ];
 
   return (
     <AdminRoute>
-      <div className="min-h-screen bg-gray-50">
-      {/* Admin Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div className="flex items-center">
-              <div className="w-10 h-10 bg-gradient-to-br from-red-600 to-red-800 rounded-full flex items-center justify-center mr-3">
-                <svg
-                  className="w-6 h-6 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-                  />
-                </svg>
-              </div>
-              <div>
-                <h1 className="text-xl font-semibold text-gray-900">
-                  Admin Dashboard
-                </h1>
-                <p className="text-sm text-gray-600">
-                  ระบบจัดการข้อมูลสหกิจและนักศึกษาฝึกงาน
-                </p>
-              </div>
-            </div>
-            
-            <div className="flex items-center space-x-4">
-              <div className="text-right">
-                <p className="text-sm font-medium text-gray-900">
-                  {user?.user?.fullName || user?.user?.email}
-                </p>
-                <p className="text-xs text-gray-600">ผู้ดูแลระบบ</p>
-              </div>
-              <button
-                onClick={() => logout('/admin/login')}
-                className="text-sm text-red-600 hover:text-red-800 transition-colors"
-              >
-                ออกจากระบบ
-              </button>
-            </div>
+      <AdminLayout>
+        <div className="p-6">
+          {/* Page Header */}
+          <div className="mb-8">
+            <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
+            <p className="mt-1 text-sm text-gray-600">
+              ยินดีต้อนรับ {user?.user?.fullName || user?.user?.email} - ระบบจัดการข้อมูลสหกิจและนักศึกษาฝึกงาน
+            </p>
           </div>
-        </div>
-      </header>
 
-      {/* Admin Content */}
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">
-          <div className="border-4 border-dashed border-gray-200 rounded-lg h-96 flex items-center justify-center">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg
-                  className="w-8 h-8 text-red-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-                  />
-                </svg>
+          {/* Quick Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            {quickStats.map((stat) => (
+              <div
+                key={stat.name}
+                className="bg-white overflow-hidden shadow rounded-lg"
+              >
+                <div className="p-5">
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0">
+                      <div className={`w-8 h-8 ${stat.color} rounded-md flex items-center justify-center`}>
+                        <stat.icon className="w-5 h-5 text-white" />
+                      </div>
+                    </div>
+                    <div className="ml-5 w-0 flex-1">
+                      <dl>
+                        <dt className="text-sm font-medium text-gray-500 truncate">
+                          {stat.name}
+                        </dt>
+                        <dd className="text-lg font-medium text-gray-900">
+                          {stat.value}
+                        </dd>
+                      </dl>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <h2 className="text-lg font-medium text-gray-900 mb-2">
-                ยินดีต้อนรับสู่ Admin Dashboard
-              </h2>
-              <p className="text-gray-600">
-                คุณได้เข้าสู่ระบบผู้ดูแลเรียบร้อยแล้ว
-              </p>
+            ))}
+          </div>
+
+          {/* Main Content Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Recent Activities */}
+            <div className="bg-white shadow rounded-lg">
+              <div className="px-4 py-5 sm:p-6">
+                <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
+                  Recent Activities
+                </h3>
+                <div className="flow-root">
+                  <ul className="-mb-8">
+                    {recentActivities.map((activity, activityIdx) => (
+                      <li key={activity.id}>
+                        <div className="relative pb-8">
+                          {activityIdx !== recentActivities.length - 1 ? (
+                            <span
+                              className="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200"
+                              aria-hidden="true"
+                            />
+                          ) : null}
+                          <div className="relative flex space-x-3">
+                            <div>
+                              <span className="h-8 w-8 rounded-full bg-gray-400 flex items-center justify-center ring-8 ring-white">
+                                <ChartBarIcon className="w-4 h-4 text-white" />
+                              </span>
+                            </div>
+                            <div className="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
+                              <div>
+                                <p className="text-sm text-gray-500">
+                                  {activity.action}{" "}
+                                  <span className="font-medium text-gray-900">
+                                    by {activity.user}
+                                  </span>
+                                </p>
+                              </div>
+                              <div className="text-right text-sm whitespace-nowrap text-gray-500">
+                                {activity.time}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="bg-white shadow rounded-lg">
+              <div className="px-4 py-5 sm:p-6">
+                <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
+                  Quick Actions
+                </h3>
+                <div className="grid grid-cols-1 gap-4">
+                  <button className="flex items-center p-3 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+                    <UserGroupIcon className="w-5 h-5 text-gray-400 mr-3" />
+                    <span className="text-sm font-medium text-gray-900">
+                      Manage Roles & Permissions
+                    </span>
+                  </button>
+                  <button className="flex items-center p-3 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+                    <CalendarIcon className="w-5 h-5 text-gray-400 mr-3" />
+                    <span className="text-sm font-medium text-gray-900">
+                      Update Academic Calendar
+                    </span>
+                  </button>
+                  <button className="flex items-center p-3 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+                    <TagIcon className="w-5 h-5 text-gray-400 mr-3" />
+                    <span className="text-sm font-medium text-gray-900">
+                      Configure Title Prefixes
+                    </span>
+                  </button>
+                  <button className="flex items-center p-3 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+                    <CogIcon className="w-5 h-5 text-gray-400 mr-3" />
+                    <span className="text-sm font-medium text-gray-900">
+                      System Settings
+                    </span>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      </main>
-      </div>
+      </AdminLayout>
     </AdminRoute>
   );
 }

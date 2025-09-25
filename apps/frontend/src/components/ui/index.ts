@@ -24,3 +24,7 @@ export { OfflineIndicator } from "./OfflineIndicator";
 export { PullToRefresh } from "./PullToRefresh";
 export { TouchFeedback } from "./TouchFeedback";
 export { MobileSearch } from "./MobileSearch";
+
+// Form Persistence Components
+export { FormRestorationPrompt } from "./FormRestorationPrompt";
+export { FormDraftNotification } from "./FormDraftNotification";
