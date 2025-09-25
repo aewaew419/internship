@@ -17,7 +17,6 @@ type Role struct {
 	DeletedAt   gorm.DeletedAt `json:"deleted_at" gorm:"index"`
 
 	// Relationships
-	Users       []User       `gorm:"foreignKey:RoleID" json:"users,omitempty"`
 	Permissions []Permission `gorm:"many2many:role_permissions;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"permissions,omitempty"`
 }
 

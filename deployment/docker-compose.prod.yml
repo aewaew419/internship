@@ -72,8 +72,8 @@ services:
       context: ..
       dockerfile: apps/frontend/Dockerfile.prod
       args:
-        - NEXT_PUBLIC_API_URL=http://203.170.129.199:8080/api
-        - REACT_APP_API_URL=http://203.170.129.199:8080/api
+        - NEXT_PUBLIC_API_URL=https://${DOMAIN}/api
+        - REACT_APP_API_URL=https://${DOMAIN}/api
         - REACT_APP_ENVIRONMENT=production
     container_name: internship_frontend
     restart: unless-stopped
@@ -94,8 +94,10 @@ services:
       - "8080:80"
       - "8443:443"
     volumes:
-      - ./nginx/nginx-http.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
       - ../logs/nginx:/var/log/nginx
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
     depends_on:
       backend:
         condition: service_healthy
