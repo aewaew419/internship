@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"os"
 )
 
@@ -18,7 +19,7 @@ type Config struct {
 func Load() *Config {
 	return &Config{
 		Port:           getEnv("PORT", "8080"),
-		DatabaseURL:    getEnv("DATABASE_URL", "root:password@tcp(localhost:3306)/internship_db?charset=utf8mb4&parseTime=True&loc=Local"),
+		DatabaseURL:    getDatabaseURL(),
 		JWTSecret:      getEnv("JWT_SECRET", "your-secret-key"),
 		AllowedOrigins: getEnv("ALLOWED_ORIGINS", "*"),
 		Environment:    getEnv("ENVIRONMENT", "development"),
@@ -26,6 +27,24 @@ func Load() *Config {
 		LogFormat:      getEnv("LOG_FORMAT", "json"),
 		TwoFactor:      LoadTwoFactorConfig(),
 	}
+}
+
+func getDatabaseURL() string {
+	// Check if DATABASE_URL is already set
+	if dbURL := os.Getenv("DATABASE_URL"); dbURL != "" {
+		return dbURL
+	}
+
+	// Construct PostgreSQL URL from individual environment variables
+	host := getEnv("DB_HOST", "localhost")
+	port := getEnv("DB_PORT", "5432")
+	user := getEnv("DB_USER", "postgres")
+	password := getEnv("DB_PASSWORD", "password")
+	dbname := getEnv("DB_NAME", "internship_db")
+	sslmode := getEnv("DB_SSLMODE", "disable")
+
+	return fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s", 
+		user, password, host, port, dbname, sslmode)
 }
 
 func getEnv(key, defaultValue string) string {

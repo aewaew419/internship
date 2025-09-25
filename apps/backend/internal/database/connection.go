@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"gorm.io/driver/mysql"
+	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -130,6 +131,9 @@ func ConnectWithConfig(config *DatabaseConfig) (*gorm.DB, error) {
 		// Remove sqlite: prefix for SQLite
 		sqlitePath := strings.TrimPrefix(config.DSN, "sqlite:")
 		dialector = sqlite.Open(sqlitePath)
+	} else if strings.HasPrefix(config.DSN, "postgres://") || strings.HasPrefix(config.DSN, "postgresql://") {
+		// PostgreSQL
+		dialector = postgres.Open(config.DSN)
 	} else {
 		// Default to MySQL
 		dialector = mysql.Open(config.DSN)
