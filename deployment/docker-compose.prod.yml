@@ -71,7 +71,8 @@ services:
       context: ..
       dockerfile: apps/frontend/Dockerfile.prod
       args:
-        - REACT_APP_API_URL=https://${DOMAIN}/api
+        - NEXT_PUBLIC_API_URL=http://203.170.129.199:8080/api
+        - REACT_APP_API_URL=http://203.170.129.199:8080/api
         - REACT_APP_ENVIRONMENT=production
     container_name: internship_frontend
     restart: unless-stopped
