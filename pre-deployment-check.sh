@@ -40,7 +40,7 @@ check_local_requirements() {
     fi
     
     # Check if we're in the right directory
-    if [[ -f "package.json" && -f "go.mod" ]]; then
+    if [[ -d "apps/frontend" && -d "apps/backend" && -f "apps/frontend/package.json" && -f "apps/backend/go.mod" ]]; then
         echo -e "${GREEN}✅ Project Directory: ถูกต้อง${NC}"
     else
         echo -e "${RED}❌ Project Directory: ไม่ใช่ root directory ของโปรเจค${NC}"
