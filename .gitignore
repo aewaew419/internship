@@ -77,3 +77,15 @@ build/
 
 # Kiro specs folder (local development only)
 .kiro/specs/
+
+# Security files
+*.key
+*.pem
+*.p12
+*.jks
+
+# Next.js build cache
+.next/cache/
+
+# Large test files
+test-models

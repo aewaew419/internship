@@ -1,884 +1,296 @@
-# Production Deployment Guide - Hostatom VPS
+# 🚀 คู่มือ Deployment ไปยัง Hostatom VPS
 
-## Overview
+## ข้อกำหนดเบื้องต้น
 
-This guide provides step-by-step instructions for deploying the Internship Management System to a Hostatom VPS with real production data.
+### VPS Requirements
+- **OS**: Ubuntu 20.04+ หรือ Debian 11+
+- **RAM**: อย่างน้อย 2GB (แนะนำ 4GB+)
+- **Storage**: อย่างน้อย 20GB (แนะนำ 50GB+)
+- **CPU**: อย่างน้อย 2 cores
+- **Network**: Public IP และ domain name
 
-## System Requirements
+### Local Requirements
+- SSH key ที่สามารถเข้าถึง VPS ได้
+- Git repository ที่ push ไปยัง `aewaew419/internship` แล้ว
 
-### VPS Specifications (Recommended)
-- **CPU**: 2+ cores
-- **RAM**: 4GB+ (8GB recommended)
-- **Storage**: 50GB+ SSD
-- **OS**: Ubuntu 20.04 LTS or 22.04 LTS
-- **Network**: Public IP with ports 80, 443, 22 open
+## 🔧 การเตรียมความพร้อม
 
-### Software Requirements
-- **Node.js**: 18.x or 20.x LTS
-- **Go**: 1.21+ 
-- **MySQL**: 8.0+
-- **Nginx**: Latest stable
-- **PM2**: Process manager for Node.js
-- **Certbot**: SSL certificate management
-- **Git**: Version control
-
-## Pre-Deployment Checklist
-
-### 1. Domain and DNS Setup
-- [ ] Domain name configured (e.g., `internship.yourdomain.com`)
-- [ ] DNS A record pointing to VPS IP
-- [ ] Subdomain for API (e.g., `api.internship.yourdomain.com`)
-
-### 2. VPS Access
-- [ ] SSH access to VPS
-- [ ] Sudo privileges
-- [ ] Firewall configured (UFW recommended)
-
-### 3. Database Preparation
-- [ ] MySQL server installed and secured
-- [ ] Production database created
-- [ ] Database user with appropriate privileges
-- [ ] Database backup strategy planned
-
-## Step 1: Initial VPS Setup
-
-### Connect to VPS
+### 1. เตรียม SSH Key
 ```bash
-ssh root@your-vps-ip
-# or
-ssh your-username@your-vps-ip
+# สร้าง SSH key (ถ้ายังไม่มี)
+ssh-keygen -t rsa -b 4096 -C "your-email@example.com"
+
+# Copy SSH key ไปยัง VPS
+ssh-copy-id -p 22 root@YOUR_VPS_IP
 ```
 
-### Update System
-```bash
-sudo apt update && sudo apt upgrade -y
-sudo apt install -y curl wget git unzip software-properties-common
-```
+### 2. เตรียม Domain
+- ตั้งค่า DNS A record ให้ชี้ไปยัง IP ของ VPS
+- รอให้ DNS propagate (อาจใช้เวลา 1-24 ชั่วโมง)
 
-### Create Application User
-```bash
-sudo adduser internship
-sudo usermod -aG sudo internship
-sudo su - internship
-```
+## 🚀 การ Deploy
 
-### Configure Firewall
-```bash
-sudo ufw allow OpenSSH
-sudo ufw allow 'Nginx Full'
-sudo ufw allow 3000  # Temporary for setup
-sudo ufw allow 3333  # Temporary for setup
-sudo ufw enable
-```
-
-## Step 2: Install Required Software
-
-### Install Node.js
-```bash
-curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-sudo apt-get install -y nodejs
-
-# Verify installation
-node --version
-npm --version
-```
-
-### Install Go
-```bash
-wget https://go.dev/dl/go1.22.0.linux-amd64.tar.gz
-sudo tar -C /usr/local -xzf go1.22.0.linux-amd64.tar.gz
-
-# Add to PATH
-echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.bashrc
-echo 'export GOPATH=$HOME/go' >> ~/.bashrc
-echo 'export PATH=$PATH:$GOPATH/bin' >> ~/.bashrc
-source ~/.bashrc
-
-# Verify installation
-go version
-```
-
-### Install MySQL
-```bash
-sudo apt install -y mysql-server
-
-# Secure MySQL installation
-sudo mysql_secure_installation
-
-# Create production database
-sudo mysql -u root -p
-```
-
-```sql
-CREATE DATABASE internship_prod CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER 'internship_user'@'localhost' IDENTIFIED BY 'your_secure_password';
-GRANT ALL PRIVILEGES ON internship_prod.* TO 'internship_user'@'localhost';
-FLUSH PRIVILEGES;
-EXIT;
-```
-
-### Install Nginx
-```bash
-sudo apt install -y nginx
-sudo systemctl start nginx
-sudo systemctl enable nginx
-```
-
-### Install PM2
-```bash
-sudo npm install -g pm2
-```
-
-### Install Certbot (SSL)
-```bash
-sudo apt install -y certbot python3-certbot-nginx
-```
-
-## Step 3: Application Deployment
-
-### Clone Repository
-```bash
-cd /home/internship
-git clone https://github.com/your-username/internship.git
-cd internship
-```
-
-### Backend Setup
-
-#### Navigate to Backend
-```bash
-cd apps/backend
-```
-
-#### Configure Environment
-```bash
-cp .env.example .env.production
-nano .env.production
-```
-
-#### Production Environment Variables
-```env
-# Database Configuration
-DATABASE_URL=mysql://internship_user:your_secure_password@localhost:3306/internship_prod
-DB_HOST=localhost
-DB_PORT=3306
-DB_NAME=internship_prod
-DB_USER=internship_user
-DB_PASSWORD=your_secure_password
-
-# Application Configuration
-PORT=3333
-ENVIRONMENT=production
-APP_URL=https://api.internship.yourdomain.com
-
-# Security
-JWT_SECRET=your_very_secure_jwt_secret_key_here_minimum_32_characters
-JWT_EXPIRES_IN=24h
-BCRYPT_ROUNDS=12
-
-# CORS Configuration
-CORS_ORIGIN=https://internship.yourdomain.com
-ALLOWED_ORIGINS=https://internship.yourdomain.com,https://api.internship.yourdomain.com
-
-# File Upload
-UPLOAD_MAX_SIZE=10485760
-UPLOAD_ALLOWED_TYPES=image/jpeg,image/png,image/gif,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document
-
-# Email Configuration (if needed)
-SMTP_HOST=your-smtp-host
-SMTP_PORT=587
-SMTP_USER=your-email@domain.com
-SMTP_PASS=your-email-password
-SMTP_FROM=noreply@yourdomain.com
-
-# Logging
-LOG_LEVEL=info
-LOG_FILE=/var/log/internship/backend.log
-
-# Rate Limiting
-RATE_LIMIT_WINDOW=15
-RATE_LIMIT_MAX=100
-
-# Session Configuration
-SESSION_SECRET=your_session_secret_key_here
-SESSION_MAX_AGE=86400000
-
-# File Storage
-STORAGE_PATH=/home/internship/storage
-TEMP_PATH=/tmp/internship
-
-# Backup Configuration
-BACKUP_PATH=/home/internship/backups
-BACKUP_RETENTION_DAYS=30
-```
-
-#### Build and Install Dependencies
-```bash
-go mod download
-go mod tidy
-
-# Build the application
-go build -o bin/internship-backend ./cmd/server/main.go
-
-# Make executable
-chmod +x bin/internship-backend
-```
-
-#### Create Log Directory
-```bash
-sudo mkdir -p /var/log/internship
-sudo chown internship:internship /var/log/internship
-```
-
-#### Create Storage Directories
-```bash
-mkdir -p /home/internship/storage/{uploads,temp,exports}
-mkdir -p /home/internship/backups
-```
-
-### Frontend Setup
-
-#### Navigate to Frontend
-```bash
-cd ../frontend
-```
-
-#### Configure Environment
-```bash
-cp .env.example .env.production
-nano .env.production
-```
-
-#### Production Environment Variables
-```env
-# Application Configuration
-NEXT_PUBLIC_APP_NAME=Internship Management System
-NEXT_PUBLIC_APP_VERSION=1.0.0
-NEXT_PUBLIC_APP_ENV=production
-
-# API Configuration
-NEXT_PUBLIC_API_URL=https://api.internship.yourdomain.com
-NEXT_PUBLIC_API_TIMEOUT=30000
-
-# Authentication
-NEXT_PUBLIC_JWT_EXPIRES_IN=24h
-NEXT_PUBLIC_SESSION_TIMEOUT=1800000
-
-# File Upload
-NEXT_PUBLIC_MAX_FILE_SIZE=10485760
-NEXT_PUBLIC_ALLOWED_FILE_TYPES=image/*,application/pdf,.doc,.docx
-
-# Features
-NEXT_PUBLIC_ENABLE_NOTIFICATIONS=true
-NEXT_PUBLIC_ENABLE_ANALYTICS=false
-NEXT_PUBLIC_ENABLE_DEBUG=false
-
-# External Services
-NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_google_maps_api_key
-NEXT_PUBLIC_RECAPTCHA_SITE_KEY=your_recaptcha_site_key
-
-# Monitoring
-NEXT_PUBLIC_SENTRY_DSN=your_sentry_dsn
-NEXT_PUBLIC_GA_TRACKING_ID=your_google_analytics_id
-```
-
-#### Install Dependencies and Build
-```bash
-npm install --production
-
-# Build the application
-npm run build
-
-# Verify build
-ls -la .next/
-```
-
-## Step 4: Database Migration and Seeding
-
-### Run Database Migrations
-```bash
-cd /home/internship/internship/apps/backend
-
-# Run migrations (if you have migration files)
-# go run cmd/migrate/main.go
-
-# Or create tables manually using your schema
-mysql -u internship_user -p internship_prod < database/schema.sql
-```
-
-### Seed Production Data
-```bash
-# If you have a seeding script
-# go run cmd/seed/main.go --env=production
-
-# Or import initial data
-mysql -u internship_user -p internship_prod < database/initial_data.sql
-```
-
-## Step 5: Process Management with PM2
-
-### Backend PM2 Configuration
-```bash
-cd /home/internship/internship/apps/backend
-```
-
-Create `ecosystem.config.js`:
-```javascript
-module.exports = {
-  apps: [{
-    name: 'internship-backend',
-    script: './bin/internship-backend',
-    cwd: '/home/internship/internship/apps/backend',
-    env: {
-      NODE_ENV: 'production',
-      PORT: 3333
-    },
-    env_file: '.env.production',
-    instances: 2,
-    exec_mode: 'cluster',
-    max_memory_restart: '1G',
-    error_file: '/var/log/internship/backend-error.log',
-    out_file: '/var/log/internship/backend-out.log',
-    log_file: '/var/log/internship/backend.log',
-    time: true,
-    autorestart: true,
-    watch: false,
-    max_restarts: 10,
-    min_uptime: '10s'
-  }]
-}
-```
-
-### Frontend PM2 Configuration
-```bash
-cd /home/internship/internship/apps/frontend
-```
-
-Create `ecosystem.config.js`:
-```javascript
-module.exports = {
-  apps: [{
-    name: 'internship-frontend',
-    script: 'npm',
-    args: 'start',
-    cwd: '/home/internship/internship/apps/frontend',
-    env: {
-      NODE_ENV: 'production',
-      PORT: 3000
-    },
-    instances: 1,
-    exec_mode: 'fork',
-    max_memory_restart: '1G',
-    error_file: '/var/log/internship/frontend-error.log',
-    out_file: '/var/log/internship/frontend-out.log',
-    log_file: '/var/log/internship/frontend.log',
-    time: true,
-    autorestart: true,
-    watch: false,
-    max_restarts: 10,
-    min_uptime: '10s'
-  }]
-}
-```
-
-### Start Applications
-```bash
-# Start backend
-cd /home/internship/internship/apps/backend
-pm2 start ecosystem.config.js
-
-# Start frontend
-cd /home/internship/internship/apps/frontend
-pm2 start ecosystem.config.js
-
-# Save PM2 configuration
-pm2 save
-
-# Setup PM2 startup
-pm2 startup
-# Follow the instructions provided by the command
-```
-
-## Step 6: Nginx Configuration
-
-### Create Nginx Configuration
-```bash
-sudo nano /etc/nginx/sites-available/internship
-```
-
-```nginx
-# Frontend Configuration
-server {
-    listen 80;
-    server_name internship.yourdomain.com;
-    
-    # Redirect HTTP to HTTPS
-    return 301 https://$server_name$request_uri;
-}
-
-server {
-    listen 443 ssl http2;
-    server_name internship.yourdomain.com;
-    
-    # SSL Configuration (will be configured by Certbot)
-    ssl_certificate /etc/letsencrypt/live/internship.yourdomain.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/internship.yourdomain.com/privkey.pem;
-    
-    # Security Headers
-    add_header X-Frame-Options "SAMEORIGIN" always;
-    add_header X-XSS-Protection "1; mode=block" always;
-    add_header X-Content-Type-Options "nosniff" always;
-    add_header Referrer-Policy "no-referrer-when-downgrade" always;
-    add_header Content-Security-Policy "default-src 'self' http: https: data: blob: 'unsafe-inline'" always;
-    
-    # Gzip Compression
-    gzip on;
-    gzip_vary on;
-    gzip_min_length 1024;
-    gzip_proxied expired no-cache no-store private must-revalidate auth;
-    gzip_types text/plain text/css text/xml text/javascript application/x-javascript application/xml+rss application/javascript;
-    
-    # Frontend Proxy
-    location / {
-        proxy_pass http://localhost:3000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_cache_bypass $http_upgrade;
-        proxy_read_timeout 86400;
-    }
-    
-    # Static files caching
-    location /_next/static {
-        proxy_pass http://localhost:3000;
-        add_header Cache-Control "public, max-age=31536000, immutable";
-    }
-    
-    # File uploads
-    client_max_body_size 10M;
-}
-
-# Backend API Configuration
-server {
-    listen 80;
-    server_name api.internship.yourdomain.com;
-    
-    # Redirect HTTP to HTTPS
-    return 301 https://$server_name$request_uri;
-}
-
-server {
-    listen 443 ssl http2;
-    server_name api.internship.yourdomain.com;
-    
-    # SSL Configuration (will be configured by Certbot)
-    ssl_certificate /etc/letsencrypt/live/api.internship.yourdomain.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/api.internship.yourdomain.com/privkey.pem;
-    
-    # Security Headers
-    add_header X-Frame-Options "SAMEORIGIN" always;
-    add_header X-XSS-Protection "1; mode=block" always;
-    add_header X-Content-Type-Options "nosniff" always;
-    add_header Referrer-Policy "no-referrer-when-downgrade" always;
-    
-    # CORS Headers
-    add_header Access-Control-Allow-Origin "https://internship.yourdomain.com" always;
-    add_header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS" always;
-    add_header Access-Control-Allow-Headers "Origin, X-Requested-With, Content-Type, Accept, Authorization" always;
-    
-    # Handle preflight requests
-    if ($request_method = 'OPTIONS') {
-        add_header Access-Control-Allow-Origin "https://internship.yourdomain.com";
-        add_header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS";
-        add_header Access-Control-Allow-Headers "Origin, X-Requested-With, Content-Type, Accept, Authorization";
-        add_header Access-Control-Max-Age 1728000;
-        add_header Content-Type "text/plain; charset=utf-8";
-        add_header Content-Length 0;
-        return 204;
-    }
-    
-    # API Proxy
-    location / {
-        proxy_pass http://localhost:3333;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_cache_bypass $http_upgrade;
-        proxy_read_timeout 86400;
-    }
-    
-    # File uploads
-    client_max_body_size 10M;
-    
-    # Rate limiting
-    limit_req_zone $binary_remote_addr zone=api:10m rate=10r/s;
-    limit_req zone=api burst=20 nodelay;
-}
-```
-
-### Enable Site
-```bash
-sudo ln -s /etc/nginx/sites-available/internship /etc/nginx/sites-enabled/
-sudo nginx -t
-sudo systemctl reload nginx
-```
-
-## Step 7: SSL Certificate Setup
-
-### Install SSL Certificates
-```bash
-# For main domain
-sudo certbot --nginx -d internship.yourdomain.com
-
-# For API subdomain
-sudo certbot --nginx -d api.internship.yourdomain.com
-
-# Test automatic renewal
-sudo certbot renew --dry-run
-```
-
-### Setup Auto-renewal
-```bash
-sudo crontab -e
-```
-
-Add this line:
-```bash
-0 12 * * * /usr/bin/certbot renew --quiet
-```
-
-## Step 8: Monitoring and Logging
-
-### Setup Log Rotation
-```bash
-sudo nano /etc/logrotate.d/internship
-```
+### วิธีที่ 1: ใช้ Script อัตโนมัติ (แนะนำ)
 
 ```bash
-/var/log/internship/*.log {
-    daily
-    missingok
-    rotate 52
-    compress
-    delaycompress
-    notifempty
-    create 644 internship internship
-    postrotate
-        pm2 reload all
-    endscript
-}
+# รันสคริปต์ deployment
+./deploy-to-hostatom.sh
 ```
 
-### Setup System Monitoring
+สคริปต์จะถามข้อมูลต่อไปนี้:
+- **VPS IP/Domain**: IP หรือ domain ของ VPS
+- **SSH Username**: username สำหรับ SSH (default: root)
+- **SSH Port**: port สำหรับ SSH (default: 22)
+- **Domain**: domain ที่จะใช้สำหรับเว็บไซต์
+
+### วิธีที่ 2: Manual Deployment
+
+#### Step 1: เตรียม VPS
 ```bash
-# Install htop for system monitoring
-sudo apt install -y htop
+# เชื่อมต่อไปยัง VPS
+ssh root@YOUR_VPS_IP
 
-# Monitor PM2 processes
-pm2 monit
+# Update system
+apt update && apt upgrade -y
 
-# Check application logs
-pm2 logs
+# Install Docker
+curl -fsSL https://get.docker.com -o get-docker.sh
+sh get-docker.sh
 
-# Check system resources
-htop
+# Install Docker Compose
+curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+chmod +x /usr/local/bin/docker-compose
 ```
 
-## Step 9: Database Backup Strategy
-
-### Create Backup Script
+#### Step 2: Clone Repository
 ```bash
-nano /home/internship/scripts/backup-database.sh
+# สร้าง directory
+mkdir -p /opt/internship-system
+cd /opt/internship-system
+
+# Clone repository
+git clone https://github.com/aewaew419/internship.git .
 ```
 
+#### Step 3: สร้าง Environment File
 ```bash
-#!/bin/bash
-
-# Database backup script
-DATE=$(date +%Y%m%d_%H%M%S)
-BACKUP_DIR="/home/internship/backups"
-DB_NAME="internship_prod"
-DB_USER="internship_user"
-DB_PASS="your_secure_password"
-
-# Create backup
-mysqldump -u $DB_USER -p$DB_PASS $DB_NAME > $BACKUP_DIR/backup_$DATE.sql
-
-# Compress backup
-gzip $BACKUP_DIR/backup_$DATE.sql
-
-# Remove backups older than 30 days
-find $BACKUP_DIR -name "backup_*.sql.gz" -mtime +30 -delete
-
-echo "Database backup completed: backup_$DATE.sql.gz"
+# สร้างไฟล์ .env.production
+cat > .env.production << EOF
+NODE_ENV=production
+GO_ENV=production
+DOMAIN=your-domain.com
+DB_PASSWORD=$(openssl rand -base64 32)
+JWT_SECRET=$(openssl rand -base64 64)
+REDIS_PASSWORD=$(openssl rand -base64 32)
+# ... (ดูตัวอย่างเพิ่มเติมในไฟล์ deploy script)
+EOF
 ```
 
+#### Step 4: Deploy Application
 ```bash
-chmod +x /home/internship/scripts/backup-database.sh
+# Build และ start containers
+docker-compose -f deployment/docker-compose.prod.yml --env-file .env.production up -d
 ```
 
-### Schedule Backups
+#### Step 5: Setup SSL Certificate
 ```bash
+# Install Certbot
+apt install -y certbot
+
+# Get SSL certificate
+certbot certonly --standalone -d your-domain.com
+
+# Copy certificates
+mkdir -p deployment/nginx/ssl
+cp /etc/letsencrypt/live/your-domain.com/fullchain.pem deployment/nginx/ssl/
+cp /etc/letsencrypt/live/your-domain.com/privkey.pem deployment/nginx/ssl/
+
+# Restart nginx
+docker-compose -f deployment/docker-compose.prod.yml restart nginx
+```
+
+## 🔐 Security Configuration
+
+### Firewall Setup
+```bash
+# Configure UFW
+ufw --force reset
+ufw default deny incoming
+ufw default allow outgoing
+ufw allow ssh
+ufw allow 80/tcp
+ufw allow 443/tcp
+ufw --force enable
+```
+
+### SSL Auto-renewal
+```bash
+# Add to crontab
 crontab -e
+
+# เพิ่มบรรทัดนี้
+0 12 * * * /usr/bin/certbot renew --quiet --deploy-hook 'cd /opt/internship-system && docker-compose -f deployment/docker-compose.prod.yml restart nginx'
 ```
 
-Add:
+## 📊 Monitoring และ Backup
+
+### Database Backup
 ```bash
-0 2 * * * /home/internship/scripts/backup-database.sh
+# สร้าง backup script
+cat > /opt/internship-system/scripts/backup-db.sh << 'EOF'
+#!/bin/bash
+BACKUP_DIR="/opt/internship-system/backups"
+DATE=$(date +%Y%m%d_%H%M%S)
+mkdir -p "$BACKUP_DIR"
+docker exec internship_db pg_dump -U internship_user internship_prod | gzip > "$BACKUP_DIR/db_backup_$DATE.sql.gz"
+find "$BACKUP_DIR" -name "db_backup_*.sql.gz" -mtime +7 -delete
+EOF
+
+chmod +x /opt/internship-system/scripts/backup-db.sh
+
+# เพิ่มใน crontab (backup ทุกวันเวลา 2 AM)
+0 2 * * * /opt/internship-system/scripts/backup-db.sh
 ```
 
-## Step 10: Security Hardening
-
-### Update SSH Configuration
+### Health Monitoring
 ```bash
-sudo nano /etc/ssh/sshd_config
+# สร้าง health check script
+cat > /opt/internship-system/scripts/health-check.sh << 'EOF'
+#!/bin/bash
+if ! curl -f -s https://your-domain.com/health > /dev/null; then
+    echo "Health check failed at $(date)" >> /var/log/internship-health.log
+    # ส่ง notification (email, slack, etc.)
+fi
+EOF
+
+chmod +x /opt/internship-system/scripts/health-check.sh
+
+# เพิ่มใน crontab (check ทุก 5 นาที)
+*/5 * * * * /opt/internship-system/scripts/health-check.sh
 ```
 
-```bash
-# Disable root login
-PermitRootLogin no
+## 🛠️ การจัดการระบบ
 
-# Change default port (optional)
-Port 2222
-
-# Disable password authentication (use SSH keys)
-PasswordAuthentication no
-PubkeyAuthentication yes
-
-# Limit login attempts
-MaxAuthTries 3
-```
-
-```bash
-sudo systemctl restart ssh
-```
-
-### Install Fail2Ban
-```bash
-sudo apt install -y fail2ban
-
-sudo nano /etc/fail2ban/jail.local
-```
-
-```ini
-[DEFAULT]
-bantime = 3600
-findtime = 600
-maxretry = 3
-
-[sshd]
-enabled = true
-port = ssh
-filter = sshd
-logpath = /var/log/auth.log
-maxretry = 3
-
-[nginx-http-auth]
-enabled = true
-filter = nginx-http-auth
-port = http,https
-logpath = /var/log/nginx/error.log
-
-[nginx-limit-req]
-enabled = true
-filter = nginx-limit-req
-port = http,https
-logpath = /var/log/nginx/error.log
-maxretry = 10
-```
+### คำสั่งที่ใช้บ่อย
 
 ```bash
-sudo systemctl enable fail2ban
-sudo systemctl start fail2ban
-```
+# ดู logs
+docker-compose -f deployment/docker-compose.prod.yml logs -f
 
-## Step 11: Final Verification
+# Restart services
+docker-compose -f deployment/docker-compose.prod.yml restart
 
-### Check All Services
-```bash
-# Check PM2 processes
-pm2 status
-
-# Check Nginx status
-sudo systemctl status nginx
-
-# Check MySQL status
-sudo systemctl status mysql
-
-# Check SSL certificates
-sudo certbot certificates
-
-# Test application endpoints
-curl -I https://internship.yourdomain.com
-curl -I https://api.internship.yourdomain.com/health
-```
-
-### Performance Testing
-```bash
-# Test frontend response time
-curl -w "@curl-format.txt" -o /dev/null -s https://internship.yourdomain.com
-
-# Test API response time
-curl -w "@curl-format.txt" -o /dev/null -s https://api.internship.yourdomain.com/api/health
-```
-
-Create `curl-format.txt`:
-```
-     time_namelookup:  %{time_namelookup}\n
-        time_connect:  %{time_connect}\n
-     time_appconnect:  %{time_appconnect}\n
-    time_pretransfer:  %{time_pretransfer}\n
-       time_redirect:  %{time_redirect}\n
-  time_starttransfer:  %{time_starttransfer}\n
-                     ----------\n
-          time_total:  %{time_total}\n
-```
-
-## Troubleshooting
-
-### Common Issues
-
-1. **Application Won't Start**
-   ```bash
-   # Check PM2 logs
-   pm2 logs
-   
-   # Check environment variables
-   pm2 env 0
-   
-   # Restart applications
-   pm2 restart all
-   ```
-
-2. **Database Connection Issues**
-   ```bash
-   # Test database connection
-   mysql -u internship_user -p internship_prod
-   
-   # Check MySQL status
-   sudo systemctl status mysql
-   
-   # Check MySQL logs
-   sudo tail -f /var/log/mysql/error.log
-   ```
-
-3. **SSL Certificate Issues**
-   ```bash
-   # Check certificate status
-   sudo certbot certificates
-   
-   # Renew certificates
-   sudo certbot renew
-   
-   # Check Nginx configuration
-   sudo nginx -t
-   ```
-
-4. **High Memory Usage**
-   ```bash
-   # Check memory usage
-   free -h
-   
-   # Check PM2 memory usage
-   pm2 monit
-   
-   # Restart applications if needed
-   pm2 restart all
-   ```
-
-### Log Locations
-- **Application Logs**: `/var/log/internship/`
-- **Nginx Logs**: `/var/log/nginx/`
-- **MySQL Logs**: `/var/log/mysql/`
-- **System Logs**: `/var/log/syslog`
-
-### Useful Commands
-```bash
-# Monitor system resources
-htop
-
-# Monitor disk usage
-df -h
-
-# Monitor network connections
-netstat -tulpn
-
-# Check open files
-lsof -i :3000
-lsof -i :3333
-
-# Monitor PM2 processes
-pm2 monit
-
-# View real-time logs
-pm2 logs --lines 100
-```
-
-## Maintenance
-
-### Regular Tasks
-- [ ] Update system packages monthly
-- [ ] Monitor disk space usage
-- [ ] Review application logs weekly
-- [ ] Test backup restoration quarterly
-- [ ] Update SSL certificates (automatic)
-- [ ] Monitor application performance
-- [ ] Review security logs
-
-### Update Procedure
-```bash
-# 1. Backup database
-/home/internship/scripts/backup-database.sh
-
-# 2. Pull latest code
-cd /home/internship/internship
+# Update application
+cd /opt/internship-system
 git pull origin main
+docker-compose -f deployment/docker-compose.prod.yml build
+docker-compose -f deployment/docker-compose.prod.yml up -d
 
-# 3. Update backend
-cd apps/backend
-go mod download
-go build -o bin/internship-backend ./cmd/server/main.go
+# ดู status ของ containers
+docker-compose -f deployment/docker-compose.prod.yml ps
 
-# 4. Update frontend
-cd ../frontend
-npm install --production
-npm run build
-
-# 5. Restart applications
-pm2 restart all
-
-# 6. Verify deployment
-curl -I https://internship.yourdomain.com
-curl -I https://api.internship.yourdomain.com/health
+# เข้าไปใน container
+docker exec -it internship_backend bash
+docker exec -it internship_db psql -U internship_user -d internship_prod
 ```
 
-## Support
+### การแก้ไขปัญหา
 
-### Emergency Contacts
-- **System Administrator**: your-email@domain.com
-- **Database Administrator**: dba@domain.com
-- **Development Team**: dev-team@domain.com
+#### ถ้า container ไม่ start
+```bash
+# ดู logs เพื่อหาสาเหตุ
+docker-compose -f deployment/docker-compose.prod.yml logs [service_name]
 
-### Monitoring URLs
-- **Frontend**: https://internship.yourdomain.com
-- **API Health**: https://api.internship.yourdomain.com/health
-- **PM2 Monitoring**: `pm2 monit` (SSH required)
+# Rebuild container
+docker-compose -f deployment/docker-compose.prod.yml build --no-cache [service_name]
+docker-compose -f deployment/docker-compose.prod.yml up -d [service_name]
+```
+
+#### ถ้า database connection error
+```bash
+# ตรวจสอบ database
+docker exec -it internship_db pg_isready -U internship_user
+
+# ดู database logs
+docker-compose -f deployment/docker-compose.prod.yml logs postgres
+```
+
+#### ถ้า SSL certificate หมดอายุ
+```bash
+# Renew certificate manually
+certbot renew --force-renewal
+
+# Copy new certificates
+cp /etc/letsencrypt/live/your-domain.com/fullchain.pem /opt/internship-system/deployment/nginx/ssl/
+cp /etc/letsencrypt/live/your-domain.com/privkey.pem /opt/internship-system/deployment/nginx/ssl/
+
+# Restart nginx
+docker-compose -f deployment/docker-compose.prod.yml restart nginx
+```
+
+## 📈 Performance Optimization
+
+### Database Optimization
+```sql
+-- เข้าไปใน database
+docker exec -it internship_db psql -U internship_user -d internship_prod
+
+-- สร้าง indexes สำหรับ performance
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_students_student_id ON students(student_id);
+CREATE INDEX IF NOT EXISTS idx_internships_status ON internships(status);
+```
+
+### Nginx Optimization
+```nginx
+# เพิ่มใน nginx.conf
+worker_processes auto;
+worker_connections 2048;
+
+# Enable caching
+location ~* \.(jpg|jpeg|png|gif|ico|css|js)$ {
+    expires 1y;
+    add_header Cache-Control "public, immutable";
+}
+```
+
+## 🔄 การ Update ระบบ
+
+### Update Code
+```bash
+cd /opt/internship-system
+git pull origin main
+docker-compose -f deployment/docker-compose.prod.yml build
+docker-compose -f deployment/docker-compose.prod.yml up -d
+```
+
+### Database Migration
+```bash
+# ถ้ามี database migration
+docker exec -it internship_backend ./migrate-db
+```
+
+## 📞 การติดต่อและการสนับสนุน
+
+หากมีปัญหาในการ deployment:
+
+1. ตรวจสอบ logs ก่อน
+2. ดู troubleshooting guide ข้างต้น
+3. ตรวจสอบ system resources (CPU, Memory, Disk)
+4. ติดต่อทีมพัฒนาพร้อมข้อมูล logs
+
+## 📋 Checklist หลัง Deployment
+
+- [ ] เว็บไซต์เข้าถึงได้ผ่าน HTTPS
+- [ ] Health check endpoint ทำงาน
+- [ ] Database connection ปกติ
+- [ ] SSL certificate ติดตั้งแล้ว
+- [ ] Firewall ตั้งค่าแล้ว
+- [ ] Backup script ทำงาน
+- [ ] Health monitoring ทำงาน
+- [ ] Auto-renewal SSL ตั้งค่าแล้ว
+- [ ] Performance test ผ่าน
 
 ---
 
-**Deployment completed successfully!** 🎉
-
-Your Internship Management System is now running in production on Hostatom VPS with:
-- ✅ SSL certificates
-- ✅ Process management
-- ✅ Database backups
-- ✅ Security hardening
-- ✅ Monitoring and logging
+**หมายเหตุ**: คู่มือนี้เป็นแนวทางทั่วไป อาจต้องปรับแต่งตามสภาพแวดล้อมจริงของ VPS
