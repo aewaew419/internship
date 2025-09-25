@@ -20,7 +20,7 @@ VPS_HOST="203.170.129.199"
 VPS_PORT="22"
 APP_NAME="internship-system"
 REMOTE_DIR="/opt/$APP_NAME"
-DOMAIN="internship.dev.smart-solutions.com"  # Subdomain
+DOMAIN="internship.dev.smart-solutions.com"
 MAIN_DOMAIN="dev.smart-solutions.com"
 
 echo -e "${PURPLE}🚀 Internship System Deployment (Alongside Existing System)${NC}"
@@ -173,10 +173,6 @@ SECURITY_HEADERS=true
 # File Upload
 MAX_FILE_SIZE=10MB
 UPLOAD_PATH=/app/uploads
-
-# Database ports (different from main system)
-DB_PORT_EXTERNAL=5433
-REDIS_PORT_EXTERNAL=6380
 EOL
 
 echo "🔒 Setting secure permissions..."
@@ -213,52 +209,6 @@ EOF
     # Copy and run deployment script
     scp -P "$VPS_PORT" /tmp/deploy_internship.sh "$VPS_USER@$VPS_HOST:/tmp/"
     ssh -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" "chmod +x /tmp/deploy_internship.sh && /tmp/deploy_internship.sh"
-}
-
-# Setup subdomain (optional)
-setup_subdomain() {
-    echo -e "${BLUE}🌐 ตั้งค่า subdomain...${NC}"
-    
-    echo "หมายเหตุ: ต้องตั้งค่า DNS A record สำหรับ $DOMAIN ให้ชี้ไปยัง $VPS_HOST"
-    read -p "DNS record ตั้งค่าแล้วหรือไม่? (y/N): " -n 1 -r
-    echo
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        echo "ข้าม subdomain setup ไว้ก่อน"
-        return
-    fi
-    
-    cat > /tmp/setup_subdomain.sh << EOF
-#!/bin/bash
-
-set -e
-
-echo "📋 Creating Nginx config for subdomain..."
-cat > /etc/nginx/sites-available/internship-system << 'EOL'
-server {
-    listen 80;
-    server_name $DOMAIN;
-
-    location / {
-        proxy_pass http://localhost:8080;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-    }
-}
-EOL
-
-echo "🔗 Enabling site..."
-ln -sf /etc/nginx/sites-available/internship-system /etc/nginx/sites-enabled/
-nginx -t
-systemctl reload nginx
-
-echo "✅ Subdomain setup completed!"
-echo "   Access via: http://$DOMAIN"
-EOL
-
-    scp -P "$VPS_PORT" /tmp/setup_subdomain.sh "$VPS_USER@$VPS_HOST:/tmp/"
-    ssh -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" "chmod +x /tmp/setup_subdomain.sh && /tmp/setup_subdomain.sh"
 }
 
 # Final health check
@@ -323,19 +273,11 @@ main() {
     test_ssh_connection
     check_existing_system
     deploy_application
-    
-    echo ""
-    read -p "ต้องการตั้งค่า subdomain หรือไม่? (y/N): " -n 1 -r
-    echo
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-        setup_subdomain
-    fi
-    
     final_health_check
     print_summary
     
     # Cleanup temporary files
-    rm -f /tmp/deploy_internship.sh /tmp/setup_subdomain.sh
+    rm -f /tmp/deploy_internship.sh
 }
 
 # Run main function
