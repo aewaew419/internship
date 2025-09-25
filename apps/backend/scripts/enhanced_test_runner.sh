@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# Enhanced Test Runner Script for Go Backend
-# This script provides comprehensive testing with detailed reporting
+# Enhanced Test Runner Script
+# Comprehensive test execution with reporting and analysis
 
-set -e  # Exit on any error
+set -e
 
 # Colors for output
 RED='\033[0;31m'
@@ -13,395 +13,324 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configuration
-PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-COVERAGE_DIR="${PROJECT_ROOT}/coverage"
-REPORTS_DIR="${PROJECT_ROOT}/test-reports"
+COVERAGE_DIR="coverage"
+REPORTS_DIR="test-reports"
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+LOG_FILE="${REPORTS_DIR}/test_run_${TIMESTAMP}.log"
 
 # Test configuration
-TEST_TIMEOUT="30m"
-COVERAGE_THRESHOLD=70  # Minimum coverage percentage
+UNIT_TEST_TIMEOUT="10m"
+INTEGRATION_TEST_TIMEOUT="20m"
+PERFORMANCE_TEST_TIMEOUT="30m"
+COVERAGE_THRESHOLD=70
 
-# Function to print colored output
-print_status() {
-    echo -e "${BLUE}[INFO]${NC} $1"
+# Create directories
+mkdir -p "${COVERAGE_DIR}"
+mkdir -p "${REPORTS_DIR}"
+
+# Logging function
+log() {
+    echo -e "${1}" | tee -a "${LOG_FILE}"
 }
 
-print_success() {
-    echo -e "${GREEN}[SUCCESS]${NC} $1"
+# Error handling
+handle_error() {
+    log "${RED}❌ Error occurred in test runner${NC}"
+    log "${RED}Check log file: ${LOG_FILE}${NC}"
+    exit 1
 }
 
-print_warning() {
-    echo -e "${YELLOW}[WARNING]${NC} $1"
-}
+trap handle_error ERR
 
-print_error() {
-    echo -e "${RED}[ERROR]${NC} $1"
-}
+# Header
+log "${BLUE}🚀 Enhanced Test Runner - Backend Go${NC}"
+log "${BLUE}================================================${NC}"
+log "Timestamp: $(date)"
+log "Coverage Directory: ${COVERAGE_DIR}"
+log "Reports Directory: ${REPORTS_DIR}"
+log "Log File: ${LOG_FILE}"
+log ""
 
-# Function to create directories
-setup_directories() {
-    print_status "Setting up test directories..."
-    mkdir -p "${COVERAGE_DIR}"
-    mkdir -p "${REPORTS_DIR}"
-    
-    # Create subdirectories for different test types
-    mkdir -p "${COVERAGE_DIR}/unit"
-    mkdir -p "${COVERAGE_DIR}/integration"
-    mkdir -p "${COVERAGE_DIR}/performance"
-    mkdir -p "${COVERAGE_DIR}/packages"
-}
+# Check Go installation
+log "${YELLOW}🔍 Checking Go installation...${NC}"
+if ! command -v go &> /dev/null; then
+    log "${RED}❌ Go is not installed or not in PATH${NC}"
+    exit 1
+fi
 
-# Function to clean previous test artifacts
-clean_previous_runs() {
-    print_status "Cleaning previous test artifacts..."
-    rm -f "${COVERAGE_DIR}"/*.out
-    rm -f "${COVERAGE_DIR}"/*.html
-    rm -f "${COVERAGE_DIR}"/*.xml
-    rm -f "${COVERAGE_DIR}"/*.json
-    go clean -testcache
-}
+GO_VERSION=$(go version)
+log "${GREEN}✅ Go found: ${GO_VERSION}${NC}"
+log ""
 
-# Function to check Go environment
-check_environment() {
-    print_status "Checking Go environment..."
-    
-    if ! command -v go &> /dev/null; then
-        print_error "Go is not installed or not in PATH"
-        exit 1
-    fi
-    
-    GO_VERSION=$(go version | awk '{print $3}')
-    print_status "Go version: ${GO_VERSION}"
-    
-    # Check if we're in the right directory
-    if [ ! -f "${PROJECT_ROOT}/go.mod" ]; then
-        print_error "go.mod not found. Please run this script from the project root."
-        exit 1
-    fi
-    
-    print_success "Environment check passed"
-}
+# Check dependencies
+log "${YELLOW}🔍 Checking test dependencies...${NC}"
+go mod tidy
+go mod download
+log "${GREEN}✅ Dependencies updated${NC}"
+log ""
 
-# Function to run unit tests
-run_unit_tests() {
-    print_status "Running unit tests..."
+# Clean previous results
+log "${YELLOW}🧹 Cleaning previous test results...${NC}"
+rm -rf "${COVERAGE_DIR}"/*
+mkdir -p "${COVERAGE_DIR}"
+log "${GREEN}✅ Cleanup completed${NC}"
+log ""
+
+# Lint and format check
+log "${YELLOW}🔍 Running code quality checks...${NC}"
+if command -v golangci-lint &> /dev/null; then
+    log "Running golangci-lint..."
+    golangci-lint run --timeout=5m --out-format=colored-line-number | tee -a "${LOG_FILE}"
+    log "${GREEN}✅ Linting completed${NC}"
+else
+    log "${YELLOW}⚠️  golangci-lint not found, running basic checks...${NC}"
+    go vet ./... | tee -a "${LOG_FILE}"
+    go fmt ./... | tee -a "${LOG_FILE}"
+    log "${GREEN}✅ Basic checks completed${NC}"
+fi
+log ""
+
+# Unit Tests
+log "${YELLOW}🧪 Running Unit Tests...${NC}"
+log "Timeout: ${UNIT_TEST_TIMEOUT}"
+log "Coverage file: ${COVERAGE_DIR}/unit_coverage.out"
+
+go test -race -timeout "${UNIT_TEST_TIMEOUT}" \
+    -coverprofile="${COVERAGE_DIR}/unit_coverage.out" \
+    -covermode=atomic \
+    -v \
+    ./tests/unit/... 2>&1 | tee -a "${LOG_FILE}"
+
+if [ ${PIPESTATUS[0]} -eq 0 ]; then
+    log "${GREEN}✅ Unit tests passed${NC}"
     
-    local coverage_file="${COVERAGE_DIR}/unit/coverage.out"
-    local report_file="${REPORTS_DIR}/unit_tests_${TIMESTAMP}.txt"
-    
-    # Run unit tests for services, models, and utilities
-    if go test -race -timeout ${TEST_TIMEOUT} \
-        -coverprofile="${coverage_file}" \
-        ./internal/services/... ./internal/models/... \
-        2>&1 | tee "${report_file}"; then
-        print_success "Unit tests passed"
+    # Generate unit test coverage report
+    if [ -f "${COVERAGE_DIR}/unit_coverage.out" ]; then
+        go tool cover -func="${COVERAGE_DIR}/unit_coverage.out" > "${COVERAGE_DIR}/unit_coverage_func.txt"
+        go tool cover -html="${COVERAGE_DIR}/unit_coverage.out" -o "${COVERAGE_DIR}/unit_coverage.html"
         
-        # Generate coverage report
-        if [ -f "${coverage_file}" ]; then
-            go tool cover -func="${coverage_file}" > "${COVERAGE_DIR}/unit/coverage_func.txt"
-            go tool cover -html="${coverage_file}" -o "${COVERAGE_DIR}/unit/coverage.html"
-            
-            # Extract coverage percentage
-            local coverage_pct=$(go tool cover -func="${coverage_file}" | grep total | awk '{print $3}' | sed 's/%//')
-            print_status "Unit test coverage: ${coverage_pct}%"
-        fi
-    else
-        print_error "Unit tests failed"
-        return 1
-    fi
-}
-
-# Function to run integration tests
-run_integration_tests() {
-    print_status "Running integration tests..."
-    
-    local coverage_file="${COVERAGE_DIR}/integration/coverage.out"
-    local report_file="${REPORTS_DIR}/integration_tests_${TIMESTAMP}.txt"
-    
-    # Run integration tests for handlers and API endpoints
-    if go test -race -timeout ${TEST_TIMEOUT} \
-        -coverprofile="${coverage_file}" \
-        ./internal/handlers/... ./tests/... \
-        2>&1 | tee "${report_file}"; then
-        print_success "Integration tests passed"
+        UNIT_COVERAGE=$(go tool cover -func="${COVERAGE_DIR}/unit_coverage.out" | grep total | awk '{print $3}' | sed 's/%//')
+        log "${BLUE}📊 Unit Test Coverage: ${UNIT_COVERAGE}%${NC}"
         
-        # Generate coverage report
-        if [ -f "${coverage_file}" ]; then
-            go tool cover -func="${coverage_file}" > "${COVERAGE_DIR}/integration/coverage_func.txt"
-            go tool cover -html="${coverage_file}" -o "${COVERAGE_DIR}/integration/coverage.html"
-            
-            local coverage_pct=$(go tool cover -func="${coverage_file}" | grep total | awk '{print $3}' | sed 's/%//')
-            print_status "Integration test coverage: ${coverage_pct}%"
-        fi
-    else
-        print_warning "Integration tests had issues (may be expected if database not available)"
-    fi
-}
-
-# Function to run package-specific tests
-run_package_tests() {
-    print_status "Running package-specific tests..."
-    
-    local packages=(
-        "internal/services"
-        "internal/handlers"
-        "internal/middleware"
-        "internal/models"
-    )
-    
-    for package in "${packages[@]}"; do
-        if [ -d "${PROJECT_ROOT}/${package}" ]; then
-            print_status "Testing package: ${package}"
-            
-            local package_name=$(echo "${package}" | sed 's/\//_/g')
-            local coverage_file="${COVERAGE_DIR}/packages/${package_name}_coverage.out"
-            local report_file="${REPORTS_DIR}/${package_name}_tests_${TIMESTAMP}.txt"
-            
-            if go test -race -timeout ${TEST_TIMEOUT} \
-                -coverprofile="${coverage_file}" \
-                "./${package}/..." \
-                2>&1 | tee "${report_file}"; then
-                print_success "Package ${package} tests passed"
-                
-                if [ -f "${coverage_file}" ]; then
-                    go tool cover -func="${coverage_file}" > "${COVERAGE_DIR}/packages/${package_name}_coverage_func.txt"
-                    local coverage_pct=$(go tool cover -func="${coverage_file}" | grep total | awk '{print $3}' | sed 's/%//')
-                    print_status "Package ${package} coverage: ${coverage_pct}%"
-                fi
-            else
-                print_warning "Package ${package} tests had issues"
-            fi
+        if (( $(echo "${UNIT_COVERAGE} >= ${COVERAGE_THRESHOLD}" | bc -l) )); then
+            log "${GREEN}✅ Unit test coverage meets threshold (${COVERAGE_THRESHOLD}%)${NC}"
         else
-            print_warning "Package ${package} not found, skipping"
-        fi
-    done
-}
-
-# Function to generate comprehensive coverage report
-generate_comprehensive_coverage() {
-    print_status "Generating comprehensive coverage report..."
-    
-    local all_coverage_file="${COVERAGE_DIR}/all_coverage.out"
-    local comprehensive_report="${REPORTS_DIR}/comprehensive_coverage_${TIMESTAMP}.txt"
-    
-    # Run all tests with coverage (excluding problematic packages)
-    if go test -race -timeout ${TEST_TIMEOUT} \
-        -coverprofile="${all_coverage_file}" \
-        ./internal/services/... ./internal/models/... ./internal/handlers/...; then
-        
-        # Generate different report formats
-        go tool cover -func="${all_coverage_file}" > "${comprehensive_report}"
-        go tool cover -html="${all_coverage_file}" -o "${COVERAGE_DIR}/comprehensive_coverage.html"
-        
-        # Extract overall coverage
-        local overall_coverage=$(go tool cover -func="${all_coverage_file}" | grep total | awk '{print $3}' | sed 's/%//')
-        
-        print_status "Overall test coverage: ${overall_coverage}%"
-        
-        # Generate coverage summary
-        cat > "${REPORTS_DIR}/coverage_summary_${TIMESTAMP}.txt" << EOF
-Test Coverage Summary - $(date)
-=====================================
-
-Overall Coverage: ${overall_coverage}%
-Coverage Threshold: ${COVERAGE_THRESHOLD}%
-Status: $(if (( $(echo "$overall_coverage >= $COVERAGE_THRESHOLD" | bc -l) )); then echo "PASS"; else echo "FAIL"; fi)
-
-Coverage Reports Generated:
-- HTML Report: ${COVERAGE_DIR}/comprehensive_coverage.html
-- Function Report: ${comprehensive_report}
-- Raw Coverage Data: ${all_coverage_file}
-
-EOF
-        
-        print_success "Comprehensive coverage report generated"
-    else
-        print_error "Failed to generate comprehensive coverage report"
-        return 1
-    fi
-}
-
-# Function to run benchmarks
-run_benchmarks() {
-    print_status "Running benchmarks..."
-    
-    local benchmark_file="${REPORTS_DIR}/benchmarks_${TIMESTAMP}.txt"
-    
-    if go test -bench=. -benchmem ./... > "${benchmark_file}" 2>&1; then
-        print_success "Benchmarks completed"
-        print_status "Benchmark results saved to: ${benchmark_file}"
-    else
-        print_warning "Benchmarks had issues"
-    fi
-}
-
-# Function to generate test summary
-generate_test_summary() {
-    print_status "Generating test summary..."
-    
-    local summary_file="${REPORTS_DIR}/test_summary_${TIMESTAMP}.txt"
-    
-    cat > "${summary_file}" << EOF
-Enhanced Test Execution Summary - $(date)
-=======================================
-
-Test Run ID: ${TIMESTAMP}
-Project Root: ${PROJECT_ROOT}
-Go Version: $(go version | awk '{print $3}')
-
-Test Configuration:
-- Timeout: ${TEST_TIMEOUT}
-- Coverage Threshold: ${COVERAGE_THRESHOLD}%
-
-Generated Reports:
-- Coverage Directory: ${COVERAGE_DIR}
-- Reports Directory: ${REPORTS_DIR}
-
-Test Types Executed:
-- Unit Tests: ✓
-- Integration Tests: ✓
-- Package Tests: ✓
-- Benchmarks: ✓
-
-Coverage Reports:
-- Comprehensive HTML: ${COVERAGE_DIR}/comprehensive_coverage.html
-- Unit Tests HTML: ${COVERAGE_DIR}/unit/coverage.html
-- Integration Tests HTML: ${COVERAGE_DIR}/integration/coverage.html
-
-EOF
-
-    print_success "Test summary generated: ${summary_file}"
-}
-
-# Function to display usage
-show_usage() {
-    cat << EOF
-Usage: $0 [OPTIONS]
-
-Options:
-    -u, --unit-only     Run only unit tests
-    -i, --integration-only Run only integration tests
-    -p, --packages-only Run only package tests
-    -b, --benchmarks    Run benchmarks
-    -c, --coverage-only Generate coverage reports only
-    -h, --help          Show this help message
-
-Examples:
-    $0                  # Run all tests with default settings
-    $0 -u               # Run only unit tests
-    $0 -b               # Run all tests with benchmarks
-
-EOF
-}
-
-# Main execution function
-main() {
-    local run_unit=true
-    local run_integration=true
-    local run_packages=true
-    local run_benchmarks=false
-    local coverage_only=false
-    
-    # Parse command line arguments
-    while [[ $# -gt 0 ]]; do
-        case $1 in
-            -u|--unit-only)
-                run_integration=false
-                run_packages=false
-                shift
-                ;;
-            -i|--integration-only)
-                run_unit=false
-                run_packages=false
-                shift
-                ;;
-            -p|--packages-only)
-                run_unit=false
-                run_integration=false
-                shift
-                ;;
-            -b|--benchmarks)
-                run_benchmarks=true
-                shift
-                ;;
-            -c|--coverage-only)
-                coverage_only=true
-                shift
-                ;;
-            -h|--help)
-                show_usage
-                exit 0
-                ;;
-            *)
-                print_error "Unknown option: $1"
-                show_usage
-                exit 1
-                ;;
-        esac
-    done
-    
-    print_status "Starting enhanced test suite execution..."
-    print_status "Timestamp: ${TIMESTAMP}"
-    
-    # Setup
-    check_environment
-    setup_directories
-    clean_previous_runs
-    
-    if [ "$coverage_only" = true ]; then
-        print_status "Running coverage generation only..."
-        generate_comprehensive_coverage
-        generate_test_summary
-        print_success "Coverage generation completed!"
-        exit 0
-    fi
-    
-    # Run test suites
-    local test_failures=0
-    
-    if [ "$run_unit" = true ]; then
-        if ! run_unit_tests; then
-            ((test_failures++))
+            log "${YELLOW}⚠️  Unit test coverage below threshold: ${UNIT_COVERAGE}% < ${COVERAGE_THRESHOLD}%${NC}"
         fi
     fi
+else
+    log "${RED}❌ Unit tests failed${NC}"
+    UNIT_TESTS_FAILED=true
+fi
+log ""
+
+# Integration Tests
+log "${YELLOW}🔗 Running Integration Tests...${NC}"
+log "Timeout: ${INTEGRATION_TEST_TIMEOUT}"
+log "Coverage file: ${COVERAGE_DIR}/integration_coverage.out"
+
+go test -race -timeout "${INTEGRATION_TEST_TIMEOUT}" \
+    -coverprofile="${COVERAGE_DIR}/integration_coverage.out" \
+    -covermode=atomic \
+    -v \
+    ./tests/integration/... 2>&1 | tee -a "${LOG_FILE}"
+
+if [ ${PIPESTATUS[0]} -eq 0 ]; then
+    log "${GREEN}✅ Integration tests passed${NC}"
     
-    if [ "$run_integration" = true ]; then
-        if ! run_integration_tests; then
-            ((test_failures++))
-        fi
+    # Generate integration test coverage report
+    if [ -f "${COVERAGE_DIR}/integration_coverage.out" ]; then
+        go tool cover -func="${COVERAGE_DIR}/integration_coverage.out" > "${COVERAGE_DIR}/integration_coverage_func.txt"
+        go tool cover -html="${COVERAGE_DIR}/integration_coverage.out" -o "${COVERAGE_DIR}/integration_coverage.html"
+        
+        INTEGRATION_COVERAGE=$(go tool cover -func="${COVERAGE_DIR}/integration_coverage.out" | grep total | awk '{print $3}' | sed 's/%//')
+        log "${BLUE}📊 Integration Test Coverage: ${INTEGRATION_COVERAGE}%${NC}"
     fi
+else
+    log "${RED}❌ Integration tests failed${NC}"
+    INTEGRATION_TESTS_FAILED=true
+fi
+log ""
+
+# Performance Tests
+log "${YELLOW}⚡ Running Performance Tests...${NC}"
+log "Timeout: ${PERFORMANCE_TEST_TIMEOUT}"
+
+go test -timeout "${PERFORMANCE_TEST_TIMEOUT}" \
+    -bench=. \
+    -benchmem \
+    -cpuprofile="${COVERAGE_DIR}/cpu.prof" \
+    -memprofile="${COVERAGE_DIR}/mem.prof" \
+    -v \
+    ./tests/performance/... 2>&1 | tee -a "${LOG_FILE}"
+
+if [ ${PIPESTATUS[0]} -eq 0 ]; then
+    log "${GREEN}✅ Performance tests completed${NC}"
+else
+    log "${RED}❌ Performance tests failed${NC}"
+    PERFORMANCE_TESTS_FAILED=true
+fi
+log ""
+
+# Combined Coverage Report
+log "${YELLOW}📊 Generating Combined Coverage Report...${NC}"
+
+# Merge coverage files if they exist
+COVERAGE_FILES=""
+if [ -f "${COVERAGE_DIR}/unit_coverage.out" ]; then
+    COVERAGE_FILES="${COVERAGE_FILES} ${COVERAGE_DIR}/unit_coverage.out"
+fi
+if [ -f "${COVERAGE_DIR}/integration_coverage.out" ]; then
+    COVERAGE_FILES="${COVERAGE_FILES} ${COVERAGE_DIR}/integration_coverage.out"
+fi
+
+if [ -n "${COVERAGE_FILES}" ]; then
+    # Simple merge (for demonstration - in production you'd use a proper tool)
+    cat ${COVERAGE_FILES} | grep -v "mode:" > "${COVERAGE_DIR}/merged_coverage.out"
+    echo "mode: atomic" | cat - "${COVERAGE_DIR}/merged_coverage.out" > "${COVERAGE_DIR}/combined_coverage.out"
     
-    if [ "$run_packages" = true ]; then
-        run_package_tests
-    fi
+    # Generate combined reports
+    go tool cover -func="${COVERAGE_DIR}/combined_coverage.out" > "${COVERAGE_DIR}/combined_coverage_func.txt"
+    go tool cover -html="${COVERAGE_DIR}/combined_coverage.out" -o "${COVERAGE_DIR}/combined_coverage.html"
     
-    # Generate comprehensive coverage
-    generate_comprehensive_coverage
+    COMBINED_COVERAGE=$(go tool cover -func="${COVERAGE_DIR}/combined_coverage.out" | grep total | awk '{print $3}' | sed 's/%//')
+    log "${BLUE}📊 Combined Coverage: ${COMBINED_COVERAGE}%${NC}"
     
-    # Run benchmarks if requested
-    if [ "$run_benchmarks" = true ]; then
-        run_benchmarks
-    fi
-    
-    # Generate summary
-    generate_test_summary
-    
-    # Final status
-    if [ $test_failures -eq 0 ]; then
-        print_success "All test suites completed successfully!"
-        print_status "Reports available in: ${REPORTS_DIR}"
-        print_status "Coverage reports available in: ${COVERAGE_DIR}"
-        exit 0
+    if (( $(echo "${COMBINED_COVERAGE} >= ${COVERAGE_THRESHOLD}" | bc -l) )); then
+        log "${GREEN}✅ Combined coverage meets threshold (${COVERAGE_THRESHOLD}%)${NC}"
     else
-        print_error "Some test suites failed (${test_failures} failures)"
-        print_status "Check the reports in: ${REPORTS_DIR}"
-        exit 1
+        log "${YELLOW}⚠️  Combined coverage below threshold: ${COMBINED_COVERAGE}% < ${COVERAGE_THRESHOLD}%${NC}"
+        COVERAGE_BELOW_THRESHOLD=true
     fi
-}
+fi
+log ""
 
-# Change to project root directory
-cd "${PROJECT_ROOT}"
+# Generate Test Report
+log "${YELLOW}📝 Generating Test Report...${NC}"
 
-# Run main function with all arguments
-main "$@"
+REPORT_FILE="${REPORTS_DIR}/test_report_${TIMESTAMP}.md"
+
+cat > "${REPORT_FILE}" << EOF
+# Test Report - $(date)
+
+## Summary
+
+- **Timestamp**: $(date)
+- **Go Version**: ${GO_VERSION}
+- **Coverage Threshold**: ${COVERAGE_THRESHOLD}%
+
+## Test Results
+
+### Unit Tests
+- **Status**: $([ -z "${UNIT_TESTS_FAILED}" ] && echo "✅ PASSED" || echo "❌ FAILED")
+- **Coverage**: ${UNIT_COVERAGE:-"N/A"}%
+- **Report**: [Unit Coverage HTML](../coverage/unit_coverage.html)
+
+### Integration Tests
+- **Status**: $([ -z "${INTEGRATION_TESTS_FAILED}" ] && echo "✅ PASSED" || echo "❌ FAILED")
+- **Coverage**: ${INTEGRATION_COVERAGE:-"N/A"}%
+- **Report**: [Integration Coverage HTML](../coverage/integration_coverage.html)
+
+### Performance Tests
+- **Status**: $([ -z "${PERFORMANCE_TESTS_FAILED}" ] && echo "✅ PASSED" || echo "❌ FAILED")
+- **CPU Profile**: [CPU Profile](../coverage/cpu.prof)
+- **Memory Profile**: [Memory Profile](../coverage/mem.prof)
+
+### Combined Coverage
+- **Coverage**: ${COMBINED_COVERAGE:-"N/A"}%
+- **Report**: [Combined Coverage HTML](../coverage/combined_coverage.html)
+- **Threshold Met**: $([ -z "${COVERAGE_BELOW_THRESHOLD}" ] && echo "✅ YES" || echo "❌ NO")
+
+## Files Generated
+
+- Log File: \`${LOG_FILE}\`
+- Coverage Directory: \`${COVERAGE_DIR}/\`
+- Reports Directory: \`${REPORTS_DIR}/\`
+
+## Coverage Details
+
+EOF
+
+# Add coverage details if available
+if [ -f "${COVERAGE_DIR}/combined_coverage_func.txt" ]; then
+    echo "### Coverage by Package" >> "${REPORT_FILE}"
+    echo '```' >> "${REPORT_FILE}"
+    cat "${COVERAGE_DIR}/combined_coverage_func.txt" >> "${REPORT_FILE}"
+    echo '```' >> "${REPORT_FILE}"
+fi
+
+log "${GREEN}✅ Test report generated: ${REPORT_FILE}${NC}"
+log ""
+
+# Generate JUnit XML if go-junit-report is available
+if command -v go-junit-report &> /dev/null; then
+    log "${YELLOW}📄 Generating JUnit XML report...${NC}"
+    
+    # Extract test output and convert to JUnit XML
+    grep -E "(RUN|PASS|FAIL|SKIP)" "${LOG_FILE}" | go-junit-report > "${REPORTS_DIR}/junit_${TIMESTAMP}.xml"
+    
+    log "${GREEN}✅ JUnit XML report generated: ${REPORTS_DIR}/junit_${TIMESTAMP}.xml${NC}"
+else
+    log "${YELLOW}⚠️  go-junit-report not found, skipping JUnit XML generation${NC}"
+    log "Install with: go install github.com/jstemmer/go-junit-report@latest"
+fi
+log ""
+
+# Performance Analysis
+if [ -f "${COVERAGE_DIR}/cpu.prof" ] && command -v go &> /dev/null; then
+    log "${YELLOW}🔍 Performance Analysis Available${NC}"
+    log "CPU Profile: go tool pprof ${COVERAGE_DIR}/cpu.prof"
+    log "Memory Profile: go tool pprof ${COVERAGE_DIR}/mem.prof"
+    log ""
+fi
+
+# Summary
+log "${BLUE}📋 Test Execution Summary${NC}"
+log "${BLUE}================================================${NC}"
+
+TOTAL_FAILURES=0
+
+if [ -n "${UNIT_TESTS_FAILED}" ]; then
+    log "${RED}❌ Unit Tests: FAILED${NC}"
+    ((TOTAL_FAILURES++))
+else
+    log "${GREEN}✅ Unit Tests: PASSED${NC}"
+fi
+
+if [ -n "${INTEGRATION_TESTS_FAILED}" ]; then
+    log "${RED}❌ Integration Tests: FAILED${NC}"
+    ((TOTAL_FAILURES++))
+else
+    log "${GREEN}✅ Integration Tests: PASSED${NC}"
+fi
+
+if [ -n "${PERFORMANCE_TESTS_FAILED}" ]; then
+    log "${RED}❌ Performance Tests: FAILED${NC}"
+    ((TOTAL_FAILURES++))
+else
+    log "${GREEN}✅ Performance Tests: PASSED${NC}"
+fi
+
+if [ -n "${COVERAGE_BELOW_THRESHOLD}" ]; then
+    log "${YELLOW}⚠️  Coverage: BELOW THRESHOLD${NC}"
+else
+    log "${GREEN}✅ Coverage: MEETS THRESHOLD${NC}"
+fi
+
+log ""
+log "📊 Combined Coverage: ${COMBINED_COVERAGE:-"N/A"}%"
+log "📝 Test Report: ${REPORT_FILE}"
+log "📋 Log File: ${LOG_FILE}"
+log ""
+
+# Final status
+if [ ${TOTAL_FAILURES} -eq 0 ] && [ -z "${COVERAGE_BELOW_THRESHOLD}" ]; then
+    log "${GREEN}🎉 All tests passed and coverage meets threshold!${NC}"
+    exit 0
+elif [ ${TOTAL_FAILURES} -eq 0 ]; then
+    log "${YELLOW}⚠️  Tests passed but coverage is below threshold${NC}"
+    exit 1
+else
+    log "${RED}❌ ${TOTAL_FAILURES} test suite(s) failed${NC}"
+    exit 1
+fi

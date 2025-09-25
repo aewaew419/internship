@@ -39,6 +39,32 @@ export {
   AuditPerformanceMonitor
 } from '../utils/auditUtils';
 
+// History Services and Hooks
+export { default as auditHistoryService } from '../services/auditHistoryService';
+export {
+  useHistoryTimeline,
+  useGroupedTimeline,
+  useDiffVisualization,
+  useHistorySearch,
+  useHistoryAnalytics,
+  useRollback,
+  useHistoryExport,
+  useRealtimeTimeline,
+  useTimelineFilters
+} from '../hooks/useAuditHistory';
+
+// History Types
+export * from '../types/auditHistory';
+
+// History Components
+export {
+  HistoryVisualizationPanel,
+  HistoryTimeline,
+  HistoryAnalytics,
+  DiffVisualization,
+  RollbackModal
+} from '../components/audit';
+
 // Middleware
 export {
   APIAuditMiddleware,
