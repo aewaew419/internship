@@ -8,13 +8,13 @@ RUN apk add --no-cache git ca-certificates tzdata
 WORKDIR /app
 
 # Copy go mod files
-COPY go.mod go.sum ./
+COPY apps/backend/go.mod apps/backend/go.sum ./
 
 # Download dependencies
 RUN go mod download
 
 # Copy source code
-COPY . .
+COPY apps/backend/ .
 
 # Build the application
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main ./cmd/server/main.go
@@ -34,8 +34,8 @@ WORKDIR /root/
 # Copy binary from builder stage
 COPY --from=builder /app/main .
 
-# Copy any necessary config files
-COPY --from=builder /app/config ./config
+# Copy any necessary config files (if exists)
+# COPY --from=builder /app/config ./config
 
 # Create directories for logs and uploads
 RUN mkdir -p /app/logs /app/uploads

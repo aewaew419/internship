@@ -29,8 +29,8 @@ services:
   # Backend API
   backend:
     build:
-      context: ../apps/backend
-      dockerfile: Dockerfile.prod
+      context: ..
+      dockerfile: apps/backend/Dockerfile.prod
     container_name: internship_backend
     restart: unless-stopped
     environment:
@@ -68,8 +68,8 @@ services:
   # Frontend
   frontend:
     build:
-      context: ../apps/frontend
-      dockerfile: Dockerfile.prod
+      context: ..
+      dockerfile: apps/frontend/Dockerfile.prod
       args:
         - REACT_APP_API_URL=https://${DOMAIN}/api
         - REACT_APP_ENVIRONMENT=production
