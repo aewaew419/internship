@@ -9,6 +9,7 @@ import {
   CalendarIcon,
   TagIcon,
   CogIcon,
+  MagnifyingGlassIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   Bars3Icon,
@@ -32,6 +33,12 @@ const navigation: NavigationItem[] = [
     href: "/admin",
     icon: HomeIcon,
     description: "ภาพรวมระบบ",
+  },
+  {
+    name: "Global Search",
+    href: "/admin/search",
+    icon: MagnifyingGlassIcon,
+    description: "ค้นหาข้อมูลทั่วระบบ",
   },
   {
     name: "Role Management",
