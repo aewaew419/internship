@@ -42,8 +42,10 @@ func Setup(app *fiber.App, db *gorm.DB, cfg *config.Config) {
 		})
 	})
 
-	// Production authentication endpoints
-	// Note: Using original auth routes which should work with proper database setup
+	// Production authentication endpoints (temporary simple auth for production)
+	simpleAuthHandler := handlers.NewSimpleAuthHandler(db)
+	api.Post("/login", simpleAuthHandler.SimpleLogin)
+	api.Post("/register", simpleAuthHandler.SimpleRegister)
 
 	// Health check and monitoring endpoints
 	setupHealthRoutes(api, db, cfg, logger)
