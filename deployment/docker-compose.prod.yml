@@ -50,6 +50,7 @@ services:
       - SMTP_PORT=${SMTP_PORT:-587}
       - SMTP_USER=${SMTP_USER}
       - SMTP_PASS=${SMTP_PASS}
+      - DB_AUTO_MIGRATE=true
     volumes:
       - ../logs/backend:/app/logs
       - ../uploads:/app/uploads
