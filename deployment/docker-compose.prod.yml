@@ -29,7 +29,7 @@ services:
   # Backend API
   backend:
     build:
-      context: ../backend-go
+      context: ../apps/backend
       dockerfile: Dockerfile.prod
     container_name: internship_backend
     restart: unless-stopped
