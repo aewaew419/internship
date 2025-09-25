@@ -74,3 +74,6 @@ go.work
 # Build artifacts
 dist/
 build/
+
+# Kiro specs folder (local development only)
+.kiro/specs/
