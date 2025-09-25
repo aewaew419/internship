@@ -1,9 +1,10 @@
 # 📋 ระบบจัดการฝึกงาน - ข้อมูลผู้ใช้งาน Production
 
 ## 🌐 **URLs ระบบ:**
-- **HTTPS:** https://203.170.129.199:8443/
-- **เมื่อตั้งค่า DNS:** https://dev.smart-solutions.com/
-- **API:** https://203.170.129.199:8443/api/v1/
+- **HTTPS (IP):** https://203.170.129.199:8443/
+- **HTTPS (Domain):** https://internship.dev.smart-solutions.com/
+- **API:** https://internship.dev.smart-solutions.com/api/v1/
+- **Portal หลัก:** http://dev.smart-solutions.com:8080/
 
 ---
 
