@@ -1,57 +1,22 @@
-"use client";
+'use client';
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { TestLoginForm } from "@/components/forms/TestLoginForm";
-import { useAuth } from "@/hooks/useAuth";
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
-export default function HomePage() {
-  const { isAuthenticated, isLoading } = useAuth();
+export default function Home() {
   const router = useRouter();
 
-  // Redirect to dashboard if already authenticated
   useEffect(() => {
-    if (!isLoading && isAuthenticated) {
-      router.push("/dashboard");
-    }
-  }, [isAuthenticated, isLoading, router]);
-
-  // Show loading while checking authentication
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
-      </div>
-    );
-  }
-
-  // Don't render login form if already authenticated
-  if (isAuthenticated) {
-    return null;
-  }
+    // Redirect to login page
+    router.push('/login');
+  }, [router]);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow-xl sm:rounded-lg sm:px-10 border border-gray-200">
-          <TestLoginForm />
-        </div>
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="text-center">
+        <h1 className="text-2xl font-bold mb-4">กำลังโหลด...</h1>
+        <p>กำลังเปลี่ยนเส้นทางไปหน้าเข้าสู่ระบบ</p>
       </div>
-      
-      {/* Mobile-specific styling */}
-      <style jsx>{`
-        @media (max-width: 640px) {
-          .bg-white {
-            box-shadow: none;
-            border: none;
-            border-radius: 0;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-          }
-        }
-      `}</style>
     </div>
   );
 }

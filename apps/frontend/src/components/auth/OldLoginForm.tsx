@@ -5,13 +5,13 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
 interface LoginFormData {
-  email: string;
+  student_id: string;
   password: string;
 }
 
 export default function OldLoginForm() {
   const [formData, setFormData] = useState<LoginFormData>({
-    email: '',
+    student_id: '',
     password: ''
   });
   const [error, setError] = useState('');
@@ -25,25 +25,35 @@ export default function OldLoginForm() {
     setError('');
 
     try {
-      // Call your Next.js API
-      const response = await fetch('/api/auth/login', {
+      // Call real API through Next.js proxy
+      const response = await fetch('/api/v1/student-login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          student_id: formData.student_id,
+          password: formData.password,
+        }),
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        // Handle successful login
+      const data = await response.json();
+
+      if (data.success) {
+        // Store token and user data
         localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        
+        alert(`🎉 เข้าสู่ระบบสำเร็จ!\n\nรหัสนักศึกษา: ${data.user.student_id}\nชื่อ: ${data.user.first_name} ${data.user.last_name}\nบทบาท: ${data.user.role}`);
+        
+        // Redirect to dashboard
         router.push('/dashboard');
       } else {
-        setError('อีเมลหรือรหัสผ่านไม่ถูกต้อง');
+        setError(data.error || 'รหัสนักศึกษาหรือรหัสผ่านไม่ถูกต้อง');
       }
     } catch (err) {
-      setError('เกิดข้อผิดพลาดในการเข้าสู่ระบบ');
+      console.error('Login error:', err);
+      setError('เกิดข้อผิดพลาดในการเข้าสู่ระบบ กรุณาลองใหม่อีกครั้ง');
     } finally {
       setIsLoading(false);
     }
@@ -75,17 +85,17 @@ export default function OldLoginForm() {
 
         <form onSubmit={handleSubmit} className="old-login-form">
           {error && (
-            <p className="old-login-error">{error}</p>
+            <p className="text-right text-xs text-red-600 -mb-3">{error}</p>
           )}
           
           <div className="old-login-field">
-            <label htmlFor="email">อีเมล</label>
+            <label htmlFor="student_id">รหัสนักศึกษา</label>
             <input
-              type="email"
-              id="email"
-              name="email"
-              placeholder="email"
-              value={formData.email}
+              type="text"
+              id="student_id"
+              name="student_id"
+              placeholder="รหัสนักศึกษา"
+              value={formData.student_id}
               onChange={handleInputChange}
               required
             />
@@ -97,7 +107,7 @@ export default function OldLoginForm() {
               type="password"
               id="password"
               name="password"
-              placeholder="password"
+              placeholder="รหัสผ่าน"
               value={formData.password}
               onChange={handleInputChange}
               required
@@ -125,77 +135,41 @@ export default function OldLoginForm() {
   );
 }
 
-// Forgot Password Modal Component
 function ForgotPasswordModal({ onClose }: { onClose: () => void }) {
-  const [email, setEmail] = useState('');
+  const [studentId, setStudentId] = useState('');
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle forgot password logic
-    alert('ระบบจะส่งลิงก์เพื่อเปลี่ยนรหัสผ่านไปยังอีเมลของคุณ');
+    alert('ระบบจะส่งลิงก์เพื่อเปลี่ยนรหัสผ่านไปยังอีเมลที่ลงทะเบียนไว้');
     onClose();
   };
 
   return (
     <div className="fixed top-0 left-0 w-full h-full bg-black/50 z-50">
-      <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-fit mx-auto bg-white p-6 rounded-lg shadow-lg">
+      <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-6 rounded-lg shadow-lg">
         <div
           onClick={onClose}
           className="ml-auto cursor-pointer w-fit mb-4"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
+          ✕
         </div>
         
         <div className="px-12">
-          <p className="text-center text-2xl text-secondary-600 font-bold mb-6">
+          <p className="text-center text-2xl font-bold mb-6">
             ลืมรหัสผ่าน
-          </p>
-          
-          <div className="w-fit mx-auto my-8 bg-gray-300 rounded-full p-4">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="80"
-              height="80"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-              <circle cx="12" cy="7" r="4"></circle>
-            </svg>
-          </div>
-
-          <p className="underline text-center text-secondary-600 text-lg mb-6">
-            กรุณากรอกอีเมล
           </p>
           
           <form onSubmit={handleSubmit} className="text-center">
             <input
-              type="email"
-              placeholder="อีเมล (Email)"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              type="text"
+              placeholder="รหัสนักศึกษา"
+              value={studentId}
+              onChange={(e) => setStudentId(e.target.value)}
               className="w-full max-w-xs px-4 py-2 border border-gray-300 rounded mb-4"
               required
             />
             
-            <p className="font-semibold text-lg text-secondary-600 mb-4">
+            <p className="font-semibold text-lg mb-4">
               ระบบจะส่งลิงก์เพื่อเปลี่ยนรหัสผ่าน
             </p>
 
