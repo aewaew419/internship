@@ -7,7 +7,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"gorm.io/driver/sqlite"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
 	"backend-go/internal/models"
@@ -15,7 +15,7 @@ import (
 
 // setupTestDB creates an in-memory SQLite database for testing
 func setupTestDB(t *testing.T) *gorm.DB {
-	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open("postgres://postgres:password@localhost:5432/test_memory?sslmode=disable"), &gorm.Config{})
 	require.NoError(t, err)
 
 	// Auto-migrate the models

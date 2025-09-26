@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
-	"gorm.io/driver/sqlite"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
@@ -23,7 +23,7 @@ type ServicesTestSuite struct {
 
 func (suite *ServicesTestSuite) SetupSuite() {
 	var err error
-	suite.db, err = gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
+	suite.db, err = gorm.Open(postgres.Open("file:postgres://postgres:password@localhost:5432/test_memory?sslmode=disable?cache=shared"), &gorm.Config{})
 	if err != nil {
 		suite.T().Skipf("Skipping database tests - SQLite not available: %v", err)
 		return

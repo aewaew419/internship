@@ -12,7 +12,7 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/assert"
-	"gorm.io/driver/mysql"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
@@ -27,9 +27,9 @@ func setupTestHealthHandler() (*handlers.HealthHandler, *gorm.DB, sqlmock.Sqlmoc
 	mock.ExpectPing()
 
 	// Create GORM DB with mock
-	db, err := gorm.Open(mysql.New(mysql.Config{
+	db, err := gorm.Open(postgres.New(postgres.Config{
 		Conn:                      sqlDB,
-		SkipInitializeWithVersion: true,
+		PreferSimpleProtocol: true,
 	}), &gorm.Config{
 		Logger: nil, // Disable GORM logging for tests
 	})
@@ -248,9 +248,9 @@ func TestHealthHandler_DatabaseFailure(t *testing.T) {
 	mock.ExpectPing()
 
 	// Create GORM DB with mock
-	db, err := gorm.Open(mysql.New(mysql.Config{
+	db, err := gorm.Open(postgres.New(postgres.Config{
 		Conn:                      sqlDB,
-		SkipInitializeWithVersion: true,
+		PreferSimpleProtocol: true,
 	}), &gorm.Config{
 		Logger: nil,
 	})

@@ -89,3 +89,10 @@ build/
 
 # Large test files
 test-models
+# Database files
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+database-export.json
+.env.backup

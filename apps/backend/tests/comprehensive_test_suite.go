@@ -19,7 +19,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
-	"gorm.io/driver/mysql"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
@@ -47,7 +47,7 @@ func (suite *ComprehensiveTestSuite) SetupSuite() {
 	// First try MySQL connection
 	mysqlDSN := "root:password@tcp(localhost:3306)/internship_test_db?charset=utf8mb4&parseTime=True&loc=Local"
 
-	suite.db, err = gorm.Open(mysql.Open(mysqlDSN), &gorm.Config{})
+	suite.db, err = gorm.Open(postgres.Open(mysqlDSN), &gorm.Config{})
 	if err != nil {
 		suite.T().Logf("MySQL connection failed: %v", err)
 		suite.T().Skip("Skipping tests: no database connection available")

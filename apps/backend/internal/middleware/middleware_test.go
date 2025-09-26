@@ -8,7 +8,7 @@ import (
 	"backend-go/internal/services"
 	"github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/assert"
-	"gorm.io/driver/sqlite"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
@@ -19,7 +19,7 @@ func setupTestAppWithDB(t *testing.T) (*fiber.App, *gorm.DB, *services.JWTServic
 	}
 
 	// Setup test database
-	db, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open("file:postgres://postgres:password@localhost:5432/test_memory?sslmode=disable?cache=shared"), &gorm.Config{})
 	if err != nil {
 		t.Skip("Skipping database tests - SQLite not available")
 		return nil, nil, nil

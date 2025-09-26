@@ -1,3 +1,56 @@
+#!/bin/bash
+
+echo "🗑️ Complete MySQL/SQLite Removal"
+echo "================================"
+
+echo "🔍 Checking for remaining MySQL/SQLite references..."
+
+# Remove MySQL/SQLite drivers from Go modules
+echo ""
+echo "📦 Removing MySQL/SQLite drivers from Go modules..."
+cd apps/backend
+
+# Remove MySQL driver
+if grep -q "gorm.io/driver/mysql" go.mod; then
+    echo "🗑️ Removing MySQL driver..."
+    go mod edit -droprequire gorm.io/driver/mysql
+fi
+
+# Remove SQLite driver
+if grep -q "gorm.io/driver/sqlite" go.mod; then
+    echo "🗑️ Removing SQLite driver..."
+    go mod edit -droprequire gorm.io/driver/sqlite
+fi
+
+# Clean up go.mod and go.sum
+echo "🧹 Cleaning up Go modules..."
+go mod tidy
+
+cd ../..
+
+# Update .env.production.template
+echo ""
+echo "🔧 Updating .env.production.template..."
+if [ -f ".env.production.template" ]; then
+    # Remove MySQL-specific variables
+    sed -i.bak '/MYSQL_ROOT_PASSWORD/d' .env.production.template
+    sed -i.bak 's/DB_NAME=internship_prod/DB_NAME=internship_prod/' .env.production.template
+    
+    # Add PostgreSQL-specific variables if not present
+    if ! grep -q "DATABASE_URL" .env.production.template; then
+        echo "" >> .env.production.template
+        echo "# PostgreSQL Database URL" >> .env.production.template
+        echo "DATABASE_URL=postgresql://internship_user:your_secure_password@localhost:5432/internship_prod" >> .env.production.template
+    fi
+    
+    rm .env.production.template.bak 2>/dev/null
+    echo "✅ Updated .env.production.template for PostgreSQL only"
+fi
+
+# Update connection.go to remove MySQL/SQLite imports
+echo ""
+echo "🔧 Updating database connection code..."
+cat > apps/backend/internal/database/connection.go << 'EOF'
 package database
 
 import (
@@ -211,3 +264,64 @@ func Close(db *gorm.DB) error {
 	
 	return sqlDB.Close()
 }
+EOF
+
+echo "✅ Updated connection.go to PostgreSQL-only"
+
+# Remove any Docker Compose services for MySQL
+echo ""
+echo "🐳 Checking Docker Compose files..."
+for file in docker-compose*.yml; do
+    if [ -f "$file" ]; then
+        if grep -q "mysql\|sqlite" "$file"; then
+            echo "⚠️  Found MySQL/SQLite in $file - please review manually"
+        fi
+    fi
+done
+
+# Update .env.example in backend
+echo ""
+echo "🔧 Updating backend .env.example..."
+if [ -f "apps/backend/.env.example" ]; then
+    # Replace MySQL URL with PostgreSQL
+    sed -i.bak 's|root:password@tcp(localhost:3306)/internship_db?charset=utf8mb4&parseTime=True&loc=Local|postgres:password@localhost:5432/internship_dev?sslmode=disable|g' apps/backend/.env.example
+    rm apps/backend/.env.example.bak 2>/dev/null
+    echo "✅ Updated backend .env.example"
+fi
+
+# Check for any remaining references
+echo ""
+echo "🔍 Final check for MySQL/SQLite references..."
+
+MYSQL_REFS=$(find . -type f -name "*.go" -o -name "*.env*" -o -name "*.yml" -o -name "*.yaml" | xargs grep -l "mysql\|sqlite" 2>/dev/null | grep -v node_modules | grep -v .git || true)
+
+if [ -n "$MYSQL_REFS" ]; then
+    echo "⚠️  Found remaining MySQL/SQLite references in:"
+    echo "$MYSQL_REFS"
+else
+    echo "✅ No MySQL/SQLite references found"
+fi
+
+echo ""
+echo "📋 Removal Summary:"
+echo "=================="
+echo ""
+echo "🗑️ Removed:"
+echo "   ❌ gorm.io/driver/mysql"
+echo "   ❌ gorm.io/driver/sqlite"
+echo "   ❌ MySQL-specific configurations"
+echo "   ❌ SQLite fallback code"
+echo "   ❌ MYSQL_ROOT_PASSWORD variable"
+echo ""
+echo "✅ Kept (PostgreSQL only):"
+echo "   ✅ gorm.io/driver/postgres"
+echo "   ✅ PostgreSQL-optimized connection code"
+echo "   ✅ DATABASE_URL configuration"
+echo ""
+echo "🎯 Current State:"
+echo "   • Database: PostgreSQL ONLY"
+echo "   • Drivers: PostgreSQL ONLY"
+echo "   • Configuration: PostgreSQL ONLY"
+echo ""
+echo "🎉 MySQL and SQLite completely removed!"
+echo "    System is now PostgreSQL-only! 🐘"

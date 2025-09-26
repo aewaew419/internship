@@ -1,35 +1,9 @@
 {
   "version": 2,
   "name": "internship-management-system",
-  "builds": [
-    {
-      "src": "apps/frontend/package.json",
-      "use": "@vercel/next"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/apps/frontend/$1"
-    }
-  ],
-  "functions": {
-    "apps/frontend/src/pages/api/**/*.js": {
-      "runtime": "nodejs18.x"
-    }
-  },
-  "env": {
-    "NODE_ENV": "production",
-    "NEXT_PUBLIC_API_URL": "https://internship-management-system.vercel.app/api"
-  },
-  "build": {
-    "env": {
-      "NODE_ENV": "production"
-    }
-  },
-  "outputDirectory": "apps/frontend/.next"
+  "buildCommand": "cd apps/frontend && npm run build",
+  "outputDirectory": "apps/frontend/.next",
+  "installCommand": "cd apps/frontend && npm install",
+  "framework": "nextjs",
+  "rootDirectory": "apps/frontend"
 }

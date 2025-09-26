@@ -8,7 +8,7 @@ import (
 	"backend-go/internal/services"
 	"github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/assert"
-	"gorm.io/driver/sqlite"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
@@ -17,7 +17,7 @@ func setupDashboardTest() *fiber.App {
 	app := fiber.New()
 	
 	// Setup in-memory database for testing
-	db, _ := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	db, _ := gorm.Open(postgres.Open("postgres://postgres:password@localhost:5432/test_memory?sslmode=disable"), &gorm.Config{})
 	
 	// Setup dashboard service and handler
 	dashboardService := services.NewDashboardService(db)

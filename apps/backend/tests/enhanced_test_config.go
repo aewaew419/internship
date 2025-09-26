@@ -13,7 +13,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/suite"
-	"gorm.io/driver/sqlite"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
@@ -159,7 +159,7 @@ func (suite *EnhancedTestSuite) initializeTestDatabase() {
 	}
 	
 	var err error
-	suite.db, err = gorm.Open(sqlite.Open(suite.testConfig.DatabaseURL), &gorm.Config{
+	suite.db, err = gorm.Open(postgres.Open(suite.testConfig.DatabaseURL), &gorm.Config{
 		Logger: gormLogger,
 		NowFunc: func() time.Time {
 			return time.Now().UTC()

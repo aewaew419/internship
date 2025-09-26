@@ -9,7 +9,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/assert"
-	"gorm.io/driver/sqlite"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	
 	"backend-go/internal/errors"
@@ -20,7 +20,7 @@ import (
 
 func setupTestApp() (*fiber.App, *gorm.DB) {
 	// Create in-memory SQLite database for testing
-	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open("postgres://postgres:password@localhost:5432/test_memory?sslmode=disable"), &gorm.Config{})
 	if err != nil {
 		panic("Failed to connect to test database")
 	}

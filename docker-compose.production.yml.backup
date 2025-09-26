@@ -2,6 +2,9 @@ version: '3.8'
 
 services:
   # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: internship-mysql
     restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
@@ -9,13 +12,16 @@ services:
       MYSQL_USER: ${DB_USER}
       MYSQL_PASSWORD: ${DB_PASSWORD}
     volumes:
+      - mysql_data:/var/lib/mysql
       - ./database/init:/docker-entrypoint-initdb.d
       - ./backups:/backups
     ports:
       - "3306:3306"
     networks:
       - internship-network
+    command: --default-authentication-plugin=mysql_native_password
     healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       timeout: 20s
       retries: 10
 
@@ -27,6 +33,8 @@ services:
     container_name: internship-backend
     restart: unless-stopped
     environment:
+      - DATABASE_URL=mysql://${DB_USER}:${DB_PASSWORD}@mysql:3306/${DB_NAME}
+      - DB_HOST=mysql
       - DB_PORT=3306
       - DB_NAME=${DB_NAME}
       - DB_USER=${DB_USER}
@@ -43,6 +51,7 @@ services:
     networks:
       - internship-network
     depends_on:
+      mysql:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3333/health"]
@@ -115,6 +124,7 @@ services:
       retries: 3
 
 volumes:
+  mysql_data:
     driver: local
   redis_data:
     driver: local

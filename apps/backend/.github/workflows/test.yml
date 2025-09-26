@@ -22,17 +22,16 @@ jobs:
         go-version: [1.21, 1.22]
     
     services:
-      mysql:
-        image: mysql:8.0
+      postgres:
+        image: postgres:15
         env:
-          MYSQL_ROOT_PASSWORD: testpassword
-          MYSQL_DATABASE: testdb
-          MYSQL_USER: testuser
-          MYSQL_PASSWORD: testpassword
+          POSTGRES_PASSWORD: testpassword
+          POSTGRES_DB: testdb
+          POSTGRES_USER: testuser
         ports:
-          - 3306:3306
+          - 5432:5432
         options: >-
-          --health-cmd="mysqladmin ping"
+          --health-cmd="pg_isready -U testuser -d testdb"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=3
@@ -71,13 +70,13 @@ jobs:
       working-directory: apps/backend
       run: |
         cp .env.example .env
-        echo "DATABASE_URL=mysql://testuser:testpassword@localhost:3306/testdb" >> .env
+        echo "DATABASE_URL=postgresql://testuser:testpassword@localhost:5432/testdb?sslmode=disable" >> .env
         echo "JWT_SECRET=test-jwt-secret-for-ci" >> .env
         echo "ENVIRONMENT=test" >> .env
 
-    - name: Wait for MySQL
+    - name: Wait for PostgreSQL
       run: |
-        while ! mysqladmin ping -h"127.0.0.1" -P3306 -utestuser -ptestpassword --silent; do
+        while ! pg_isready -h localhost -p 5432 -U testuser; do
           sleep 1
         done
 
@@ -143,7 +142,7 @@ jobs:
         ## Environment
         - Go Version: ${{ matrix.go-version }}
         - OS: Ubuntu Latest
-        - Database: MySQL 8.0
+        - Database: PostgreSQL 15
         
         ## Coverage
         $(cat coverage/coverage_report.txt)

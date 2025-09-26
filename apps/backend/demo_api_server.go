@@ -7,7 +7,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
-	"gorm.io/driver/sqlite"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
@@ -73,7 +73,7 @@ var db *gorm.DB
 func main() {
 	// Initialize database
 	var err error
-	db, err = gorm.Open(sqlite.Open("internship.db"), &gorm.Config{})
+	db, err = gorm.Open(postgres.Open("postgres://postgres:password@localhost:5432/internship_demo?sslmode=disable"), &gorm.Config{})
 	if err != nil {
 		log.Fatal("Failed to connect to database:", err)
 	}

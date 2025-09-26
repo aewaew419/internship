@@ -12,7 +12,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/suite"
-	"gorm.io/driver/sqlite"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
@@ -26,7 +26,7 @@ type TestConfig struct {
 // GetTestConfig returns test configuration
 func GetTestConfig() *TestConfig {
 	return &TestConfig{
-		DatabaseURL: "file::memory:?cache=shared",
+		DatabaseURL: "file:postgres://postgres:password@localhost:5432/test_memory?sslmode=disable?cache=shared",
 		JWTSecret:   "test-jwt-secret-key-for-testing-only",
 		Environment: "test",
 	}
@@ -54,7 +54,7 @@ func (suite *BaseTestSuite) SetupSuite() {
 
 	// Initialize in-memory SQLite database for testing
 	var err error
-	suite.db, err = gorm.Open(sqlite.Open(suite.testConfig.DatabaseURL), &gorm.Config{})
+	suite.db, err = gorm.Open(postgres.Open(suite.testConfig.DatabaseURL), &gorm.Config{})
 	if err != nil {
 		suite.T().Skipf("Skipping tests: database connection failed: %v", err)
 		return
