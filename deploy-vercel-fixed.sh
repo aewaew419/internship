@@ -20,8 +20,9 @@ cat vercel.json
 echo ""
 echo "✅ Configuration fixed:"
 echo "   - Removed conflicting 'routes' property"
+echo "   - Removed invalid 'functions' runtime"
+echo "   - Simplified configuration for Next.js App Router"
 echo "   - Kept 'headers' for security"
-echo "   - Added 'rewrites' for API routing"
 echo ""
 
 echo "🧹 Clean build artifacts..."
