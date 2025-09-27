@@ -1,0 +1,77 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: "Bai Jamjuree", sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: #575860;
+  background-color: #f3f3f3;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.gradient-text {
+  background: linear-gradient(
+    137deg,
+    #d89967 16.63%,
+    #966033 37.95%,
+    #412610 88.14%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.bg-gradient {
+  background: linear-gradient(
+    137deg,
+    #d89967 16.63%,
+    #966033 37.95%,
+    #412610 88.14%
+  );
+}
+
+.primary-button {
+  @apply text-white px-5 py-2 rounded font-medium flex justify-center gap-2 
+          hover:opacity-90 transition duration-300 ease-in-out;
+}
+
+.secondary-button {
+  @apply flex gap-1 bg-orange-700 rounded-2xl text-white px-4 py-2 hover:bg-orange-600;
+}
+
+.start-table {
+  @apply ps-5;
+}
+
+.table-body td {
+  @apply py-4;
+}
+
+.table-body tr {
+  @apply border border-gray-200;
+}
+
+button {
+  @apply cursor-pointer;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Bai Jamjuree", -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}

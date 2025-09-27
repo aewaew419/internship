@@ -1,64 +1,135 @@
 # Internship Management System
 
-A modern monorepo-based internship management system built with Next.js, Node.js, and shared TypeScript packages.
+ระบบจัดการฝึกงานที่พัฒนาด้วย Next.js และ Go/Node.js
 
 ## 🚀 Quick Start
 
+### Development
 ```bash
-# Install dependencies
-pnpm install
+# คัดลอกไฟล์ environment
+cp .env.example .env
 
-# Start development servers
-pnpm dev
-
-# Build all packages
-pnpm build
+# รัน development environment
+./scripts/deploy.sh dev
 ```
+
+### Production
+```bash
+# สร้างไฟล์ .env.production
+cp .env.example .env.production
+# แก้ไขค่าต่างๆ ใน .env.production
+
+# รัน production environment
+./scripts/deploy.sh prod
+```
+
+### Testing
+```bash
+# รัน test environment
+./scripts/deploy.sh test
+```
+
+## 📋 Available Commands
+
+```bash
+./scripts/deploy.sh dev     # Development environment
+./scripts/deploy.sh prod    # Production environment  
+./scripts/deploy.sh test    # Test environment
+./scripts/deploy.sh logs    # View logs
+./scripts/deploy.sh stop    # Stop all services
+```
+
+## 🏗️ Architecture
+
+- **Frontend**: Next.js (React)
+- **Backend**: Go/Node.js API
+- **Database**: PostgreSQL
+- **Cache**: Redis (production only)
+- **Proxy**: Nginx (production only)
 
 ## 📁 Project Structure
 
 ```
-internship-management/
 ├── apps/
 │   ├── frontend/          # Next.js application
-│   └── backend/           # Node.js/Express API
-├── packages/
-│   ├── shared-types/      # TypeScript interfaces & types
-│   ├── ui-components/     # Shared React components
-│   ├── utils/             # Shared utilities
-│   ├── config/            # Shared configurations
-│   └── database/          # Database schemas & migrations
-├── tools/
-│   ├── build/             # Build scripts & configurations
-│   ├── eslint-config/     # ESLint configurations
-│   └── tsconfig/          # TypeScript configurations
-└── docs/                  # Documentation
+│   └── backend/           # API server
+├── database/              # Database scripts
+├── scripts/
+│   ├── deploy.sh         # Main deployment script
+│   ├── backup/           # Database backups
+│   └── old-files/        # Legacy files
+├── docker-compose.yml    # Main Docker configuration
+└── .env.example         # Environment template
 ```
 
-## 🛠️ Development
+## 🌐 Access URLs
 
-See [Getting Started Guide](./docs/development/getting-started.md) for detailed setup instructions.
+### Development
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:8080
 
-## 📦 Packages
+### Production
+- Website: http://localhost (via Nginx)
+- API: http://localhost/api
 
-- **@internship/shared-types** - Shared TypeScript types and interfaces
-- **@internship/ui-components** - Reusable React components
-- **@internship/utils** - Utility functions
-- **@internship/config** - Shared configurations
-- **@internship/database** - Database schemas and migrations
+### Test
+- Frontend: http://localhost:3001
+- Backend API: http://localhost:8081
 
-## 🧪 Testing
+## 🔧 Environment Variables
+
+สำคัญ! ต้องตั้งค่าใน `.env` หรือ `.env.production`:
+
+```env
+# Database
+DB_NAME=internship_db
+DB_USER=postgres
+DB_PASSWORD=your-secure-password
+
+# Security
+JWT_SECRET=your-super-secret-jwt-key
+
+# URLs
+API_URL=http://localhost:8080/api/v1
+```
+
+## 📊 Monitoring
 
 ```bash
-# Run all tests
-pnpm test
+# ดู status ของ containers
+docker-compose ps
 
-# Run tests for specific package
-pnpm --filter @internship/ui-components test
+# ดู logs
+docker-compose logs -f
+
+# ดู resource usage
+docker stats
 ```
 
-## 📚 Documentation
+## 🛠️ Troubleshooting
 
-- [Getting Started](./docs/development/getting-started.md)
-- [API Documentation](./docs/api/)
-- [Deployment Guide](./docs/deployment/)
+### Container ไม่ขึ้น
+```bash
+# ดู logs เพื่อหาสาเหตุ
+docker-compose logs [service-name]
+
+# Restart services
+./scripts/deploy.sh stop
+./scripts/deploy.sh dev
+```
+
+### Database connection error
+```bash
+# ตรวจสอบว่า PostgreSQL ทำงานหรือไม่
+docker-compose exec postgres pg_isready
+
+# Reset database
+docker-compose down -v
+./scripts/deploy.sh dev
+```
+
+## 📝 Development Notes
+
+- ไฟล์เก่าถูกย้ายไปที่ `scripts/old-files/`
+- Database backups อยู่ที่ `scripts/backup/`
+- ใช้ Docker profiles สำหรับแยก dev/prod environments

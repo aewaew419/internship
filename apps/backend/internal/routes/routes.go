@@ -77,6 +77,21 @@ func Setup(app *fiber.App, db *gorm.DB, cfg *config.Config) {
 	// Setup visitor management routes
 	setupVisitorRoutes(api, db, cfg)
 
+	// Setup course management routes
+	setupCourseRoutes(api, db, cfg)
+
+	// Setup student training management routes
+	setupStudentTrainingRoutes(api, db, cfg)
+
+	// Setup document management routes (Yellow Flow)
+	setupDocumentRoutes(api, db, cfg)
+
+	// Setup schedule management routes (Green Flow)
+	setupScheduleRoutes(api, db, cfg)
+
+	// Setup analytics and reporting routes (Purple Flow)
+	setupAnalyticsRoutes(api, db, cfg)
+
 	// Setup PDF generation routes
 	setupPDFRoutes(api, db, cfg)
 
@@ -365,6 +380,203 @@ func setupVisitorRoutes(api fiber.Router, db *gorm.DB, cfg *config.Config) {
 	visitPhotos.Get("/:id", visitorHandler.GetVisitPhoto)                                            // GET /api/v1/visit-photos/:id
 	visitPhotos.Put("/:id", visitorHandler.UpdateVisitPhoto)                                         // PUT /api/v1/visit-photos/:id
 	visitPhotos.Delete("/:id", visitorHandler.DeleteVisitPhoto)                                      // DELETE /api/v1/visit-photos/:id
+}
+
+// setupCourseRoutes sets up course management routes
+func setupCourseRoutes(api fiber.Router, db *gorm.DB, cfg *config.Config) {
+	// Initialize services
+	jwtConfig := &services.JWTConfig{
+		SecretKey: cfg.JWTSecret,
+	}
+	jwtService := services.NewJWTService(jwtConfig, db)
+	courseService := services.NewCourseService(db)
+	courseHandler := handlers.NewCourseHandler(courseService)
+
+	// Authentication middleware
+	authMiddleware := middleware.AuthMiddleware(jwtService)
+
+	// Course routes
+	courses := api.Group("/courses", authMiddleware)
+	courses.Get("/", courseHandler.GetCourses)                                    // GET /api/v1/courses
+	courses.Get("/:id", courseHandler.GetCourse)                                  // GET /api/v1/courses/:id
+	courses.Post("/", courseHandler.CreateCourse)                                 // POST /api/v1/courses
+	courses.Put("/:id", courseHandler.UpdateCourse)                               // PUT /api/v1/courses/:id
+	courses.Delete("/:id", courseHandler.DeleteCourse)                            // DELETE /api/v1/courses/:id
+	
+	// Course assignment routes
+	courses.Post("/assign-instructor", courseHandler.AssignInstructorToCourse)    // POST /api/v1/courses/assign-instructor
+	courses.Post("/assign-committee", courseHandler.AssignCommitteeMember)        // POST /api/v1/courses/assign-committee
+	courses.Delete("/instructor-assignments/:id", courseHandler.RemoveInstructorFromCourse) // DELETE /api/v1/courses/instructor-assignments/:id
+	courses.Delete("/committee-assignments/:id", courseHandler.RemoveCommitteeMember)       // DELETE /api/v1/courses/committee-assignments/:id
+	courses.Put("/instructor-assignments/:id", courseHandler.UpdateInstructorAssignment)    // PUT /api/v1/courses/instructor-assignments/:id
+	courses.Put("/committee-assignments/:id", courseHandler.UpdateCommitteeAssignment)      // PUT /api/v1/courses/committee-assignments/:id
+	courses.Put("/enrollments/:id", courseHandler.UpdateStudentEnrollmentStatus)            // PUT /api/v1/courses/enrollments/:id
+
+	// Course Section routes
+	courseSections := api.Group("/course-sections", authMiddleware)
+	courseSections.Get("/", courseHandler.GetCourseSections)                      // GET /api/v1/course-sections
+	courseSections.Get("/:id", courseHandler.GetCourseSection)                    // GET /api/v1/course-sections/:id
+	courseSections.Post("/", courseHandler.CreateCourseSection)                   // POST /api/v1/course-sections
+	courseSections.Put("/:id", courseHandler.UpdateCourseSection)                 // PUT /api/v1/course-sections/:id
+	courseSections.Delete("/:id", courseHandler.DeleteCourseSection)              // DELETE /api/v1/course-sections/:id
+
+	// Student Enrollment Status routes
+	enrollmentStatuses := api.Group("/student-enrollment-statuses", authMiddleware)
+	enrollmentStatuses.Get("/", courseHandler.GetStudentEnrollmentStatuses)      // GET /api/v1/student-enrollment-statuses
+	enrollmentStatuses.Post("/", courseHandler.CreateStudentEnrollmentStatus)    // POST /api/v1/student-enrollment-statuses
+	enrollmentStatuses.Put("/:id", courseHandler.UpdateStudentEnrollmentStatusRecord) // PUT /api/v1/student-enrollment-statuses/:id
+}
+
+// setupStudentTrainingRoutes sets up student training management routes
+func setupStudentTrainingRoutes(api fiber.Router, db *gorm.DB, cfg *config.Config) {
+	// Initialize services
+	jwtConfig := &services.JWTConfig{
+		SecretKey: cfg.JWTSecret,
+	}
+	jwtService := services.NewJWTService(jwtConfig, db)
+	studentTrainingService := services.NewStudentTrainingService(db)
+	studentTrainingHandler := handlers.NewStudentTrainingHandler(studentTrainingService)
+
+	// Authentication middleware
+	authMiddleware := middleware.AuthMiddleware(jwtService)
+
+	// Student Training routes
+	studentTrainings := api.Group("/student-trainings", authMiddleware)
+	studentTrainings.Get("/", studentTrainingHandler.GetStudentTrainings)                  // GET /api/v1/student-trainings
+	studentTrainings.Get("/:id", studentTrainingHandler.GetStudentTraining)               // GET /api/v1/student-trainings/:id
+	studentTrainings.Post("/", studentTrainingHandler.CreateStudentTraining)              // POST /api/v1/student-trainings
+	studentTrainings.Put("/:id", studentTrainingHandler.UpdateStudentTraining)            // PUT /api/v1/student-trainings/:id
+	studentTrainings.Delete("/:id", studentTrainingHandler.DeleteStudentTraining)         // DELETE /api/v1/student-trainings/:id
+	studentTrainings.Get("/stats", studentTrainingHandler.GetStudentTrainingStats)        // GET /api/v1/student-trainings/stats
+}
+
+// setupDocumentRoutes sets up document management routes (Yellow Flow)
+func setupDocumentRoutes(api fiber.Router, db *gorm.DB, cfg *config.Config) {
+	// Initialize services
+	jwtConfig := &services.JWTConfig{
+		SecretKey: cfg.JWTSecret,
+	}
+	jwtService := services.NewJWTService(jwtConfig, db)
+	documentService := services.NewDocumentService(db)
+	documentHandler := handlers.NewDocumentHandler(documentService)
+
+	// Authentication middleware
+	authMiddleware := middleware.AuthMiddleware(jwtService)
+
+	// Document routes
+	documents := api.Group("/documents", authMiddleware)
+	documents.Get("/", documentHandler.GetDocuments)                          // GET /api/v1/documents
+	documents.Get("/:id", documentHandler.GetDocument)                        // GET /api/v1/documents/:id
+	documents.Post("/upload", documentHandler.UploadDocument)                 // POST /api/v1/documents/upload
+	documents.Put("/:id", documentHandler.UpdateDocument)                     // PUT /api/v1/documents/:id
+	documents.Delete("/:id", documentHandler.DeleteDocument)                  // DELETE /api/v1/documents/:id
+	documents.Post("/:id/approve", documentHandler.ApproveDocument)           // POST /api/v1/documents/:id/approve
+	documents.Post("/:id/comments", documentHandler.AddComment)               // POST /api/v1/documents/:id/comments
+	documents.Get("/:id/download", documentHandler.DownloadDocument)          // GET /api/v1/documents/:id/download
+	documents.Get("/stats", documentHandler.GetDocumentStats)                 // GET /api/v1/documents/stats
+
+	// Document Template routes
+	pdfService := services.NewPDFService("uploads/pdf")
+	templateService := services.NewDocumentTemplateService(db, "templates", "uploads/documents", pdfService)
+	templateHandler := handlers.NewDocumentTemplateHandler(templateService)
+	
+	templates := api.Group("/document-templates", authMiddleware)
+	templates.Get("/", templateHandler.GetTemplates)                          // GET /api/v1/document-templates
+	templates.Get("/:id", templateHandler.GetTemplate)                        // GET /api/v1/document-templates/:id
+	templates.Post("/", templateHandler.CreateTemplate)                       // POST /api/v1/document-templates
+	templates.Put("/:id", templateHandler.UpdateTemplate)                     // PUT /api/v1/document-templates/:id
+	templates.Delete("/:id", templateHandler.DeleteTemplate)                  // DELETE /api/v1/document-templates/:id
+	templates.Post("/:id/generate", templateHandler.GenerateDocument)         // POST /api/v1/document-templates/:id/generate
+	templates.Post("/:id/preview", templateHandler.PreviewTemplate)           // POST /api/v1/document-templates/:id/preview
+}
+
+// setupScheduleRoutes sets up schedule management routes (Green Flow)
+func setupScheduleRoutes(api fiber.Router, db *gorm.DB, cfg *config.Config) {
+	// Initialize services
+	jwtConfig := &services.JWTConfig{
+		SecretKey: cfg.JWTSecret,
+	}
+	jwtService := services.NewJWTService(jwtConfig, db)
+	scheduleService := services.NewScheduleService(db)
+	scheduleHandler := handlers.NewScheduleHandler(scheduleService)
+
+	// Authentication middleware
+	authMiddleware := middleware.AuthMiddleware(jwtService)
+
+	// Schedule routes
+	schedules := api.Group("/schedules", authMiddleware)
+	schedules.Get("/", scheduleHandler.GetSchedules)                          // GET /api/v1/schedules
+	schedules.Get("/:id", scheduleHandler.GetSchedule)                        // GET /api/v1/schedules/:id
+	schedules.Post("/", scheduleHandler.CreateSchedule)                       // POST /api/v1/schedules
+	schedules.Put("/:id", scheduleHandler.UpdateSchedule)                     // PUT /api/v1/schedules/:id
+	schedules.Delete("/:id", scheduleHandler.DeleteSchedule)                  // DELETE /api/v1/schedules/:id
+	schedules.Post("/:id/participants", scheduleHandler.AddParticipant)       // POST /api/v1/schedules/:id/participants
+	schedules.Delete("/:id/participants/:userId", scheduleHandler.RemoveParticipant) // DELETE /api/v1/schedules/:id/participants/:userId
+
+	// Appointment routes
+	appointments := api.Group("/appointments", authMiddleware)
+	appointments.Get("/", scheduleHandler.GetAppointments)                    // GET /api/v1/appointments
+	appointments.Get("/:id", scheduleHandler.GetAppointment)                  // GET /api/v1/appointments/:id
+	appointments.Post("/", scheduleHandler.CreateAppointment)                 // POST /api/v1/appointments
+	appointments.Put("/:id", scheduleHandler.UpdateAppointment)               // PUT /api/v1/appointments/:id
+	appointments.Post("/:id/approve", scheduleHandler.ApproveAppointment)     // POST /api/v1/appointments/:id/approve
+	appointments.Delete("/:id", scheduleHandler.DeleteAppointment)            // DELETE /api/v1/appointments/:id
+
+	// Calendar routes
+	calendars := api.Group("/calendars", authMiddleware)
+	calendars.Get("/", scheduleHandler.GetCalendars)                          // GET /api/v1/calendars
+	calendars.Get("/:id", scheduleHandler.GetCalendar)                        // GET /api/v1/calendars/:id
+	calendars.Post("/", scheduleHandler.CreateCalendar)                       // POST /api/v1/calendars
+	calendars.Put("/:id", scheduleHandler.UpdateCalendar)                     // PUT /api/v1/calendars/:id
+	calendars.Delete("/:id", scheduleHandler.DeleteCalendar)                  // DELETE /api/v1/calendars/:id
+}
+
+// setupAnalyticsRoutes sets up analytics and reporting routes (Purple Flow)
+func setupAnalyticsRoutes(api fiber.Router, db *gorm.DB, cfg *config.Config) {
+	// Initialize services
+	jwtConfig := &services.JWTConfig{
+		SecretKey: cfg.JWTSecret,
+	}
+	jwtService := services.NewJWTService(jwtConfig, db)
+	analyticsService := services.NewAnalyticsService(db)
+	analyticsHandler := handlers.NewAnalyticsHandler(analyticsService)
+
+	// Authentication middleware
+	authMiddleware := middleware.AuthMiddleware(jwtService)
+
+	// Report routes
+	reports := api.Group("/reports", authMiddleware)
+	reports.Get("/", analyticsHandler.GetReports)                             // GET /api/v1/reports
+	reports.Get("/:id", analyticsHandler.GetReport)                           // GET /api/v1/reports/:id
+	reports.Post("/", analyticsHandler.CreateReport)                          // POST /api/v1/reports
+	reports.Post("/:id/generate", analyticsHandler.GenerateReport)            // POST /api/v1/reports/:id/generate
+	reports.Get("/:id/download", analyticsHandler.DownloadReport)             // GET /api/v1/reports/:id/download
+	reports.Delete("/:id", analyticsHandler.DeleteReport)                     // DELETE /api/v1/reports/:id
+
+	// Dashboard routes
+	dashboards := api.Group("/dashboards", authMiddleware)
+	dashboards.Get("/", analyticsHandler.GetDashboards)                       // GET /api/v1/dashboards
+	dashboards.Get("/:id", analyticsHandler.GetDashboard)                     // GET /api/v1/dashboards/:id
+	dashboards.Post("/", analyticsHandler.CreateDashboard)                    // POST /api/v1/dashboards
+	dashboards.Put("/:id", analyticsHandler.UpdateDashboard)                  // PUT /api/v1/dashboards/:id
+	dashboards.Delete("/:id", analyticsHandler.DeleteDashboard)               // DELETE /api/v1/dashboards/:id
+	dashboards.Post("/:id/widgets", analyticsHandler.AddWidget)               // POST /api/v1/dashboards/:id/widgets
+	dashboards.Put("/:id/widgets/:widgetId", analyticsHandler.UpdateWidget)   // PUT /api/v1/dashboards/:id/widgets/:widgetId
+	dashboards.Delete("/:id/widgets/:widgetId", analyticsHandler.DeleteWidget) // DELETE /api/v1/dashboards/:id/widgets/:widgetId
+
+	// Metrics routes
+	metrics := api.Group("/metrics", authMiddleware)
+	metrics.Get("/", analyticsHandler.GetMetrics)                             // GET /api/v1/metrics
+	metrics.Get("/:name/values", analyticsHandler.GetMetricValues)            // GET /api/v1/metrics/:name/values
+	metrics.Post("/", analyticsHandler.CreateMetric)                          // POST /api/v1/metrics
+	metrics.Post("/:name/values", analyticsHandler.RecordMetricValue)         // POST /api/v1/metrics/:name/values
+
+	// Export routes
+	exports := api.Group("/exports", authMiddleware)
+	exports.Get("/", analyticsHandler.GetExportJobs)                          // GET /api/v1/exports
+	exports.Post("/", analyticsHandler.CreateExportJob)                       // POST /api/v1/exports
+	exports.Get("/:id", analyticsHandler.GetExportJob)                        // GET /api/v1/exports/:id
+	exports.Get("/:id/download", analyticsHandler.DownloadExport)             // GET /api/v1/exports/:id/download
 }
 
 // setupPDFRoutes sets up PDF generation routes

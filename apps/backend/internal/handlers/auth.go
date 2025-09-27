@@ -29,16 +29,20 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	// Parse request body
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"success": false,
 			"error": "Invalid request body",
 			"code":  "INVALID_REQUEST_BODY",
+			"message": "ข้อมูลที่ส่งมาไม่ถูกต้อง",
 		})
 	}
 
 	// Validate request
 	if err := h.validator.Struct(req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"success": false,
 			"error": "Validation failed",
 			"code":  "VALIDATION_ERROR",
+			"message": "ข้อมูลไม่ครบถ้วนหรือไม่ถูกต้อง",
 			"details": err.Error(),
 		})
 	}
@@ -48,17 +52,22 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	if err != nil {
 		if err.Error() == "invalid credentials" {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"success": false,
 				"error": "Invalid email or password",
 				"code":  "INVALID_CREDENTIALS",
+				"message": "อีเมลหรือรหัสผ่านไม่ถูกต้อง",
 			})
 		}
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"success": false,
 			"error": "Internal server error",
 			"code":  "INTERNAL_ERROR",
+			"message": "เกิดข้อผิดพลาดภายในระบบ",
 		})
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"success": true,
 		"message": "Login successful",
 		"data":    response,
 	})
